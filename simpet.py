@@ -78,7 +78,7 @@ class SIMPET(object):
         #Now the map generation
         from src.PETMR_to_maps import PETMR_to_maps
 
-        my_map_generation = PETMR_to_maps(self.spm_run, self.sim_maps_dir, log, mri_img, correg_pet_img, logfile, mode=mode)
+        my_map_generation = PETMR_to_maps(self.spm_run, self.sim_maps_dir, logfile, mri_img, correg_pet_img, logfile, mode=mode)
         activity_map_hdr, attenuation_map_hdr = my_map_generation.run()
 
         return activity_map_hdr, attenuation_map_hdr

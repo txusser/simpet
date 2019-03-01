@@ -6,6 +6,7 @@ from os.path import join, exists, isdir, dirname, basename, split
 import shutil
 from multiprocessing import Process
 import pandas as pd
+import nibabel as nib
 
 from utils import apple as ap
 from utils import spm_tools as spm
@@ -136,7 +137,6 @@ class PETMR_to_maps(object):
         rcommand = '%s %s %s %s %s 1' % (cambia_val_interval, pet_mask, pet_mask, 0.01*patient_vmax, patient_vmax)
         ap.rsystem(rcommand, self.log_file)
         
-
         # Priority of Gray is higher than White
         # GWSEGA = ATLAS.* (WSEG < 0.5 & GSEG >0.1 ) + 100.* (WSEG >= 0.5);
 

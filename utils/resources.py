@@ -3,7 +3,7 @@ from os.path import abspath, join, dirname
 
 # Ablotue paths to folders with resources used
 RESOURCES = abspath(join(dirname(dirname(abspath(__file__))), 'resources'))
-FRUTICAKE = abspath(join(dirname(dirname(abspath(__file__))),'include', 'fruitcake_src', 'bin'))
+FRUTICAKE = abspath(join(dirname(dirname(abspath(__file__))),'include', 'fruitcake', 'bin'))
 BIN = abspath(join(dirname(dirname(abspath(__file__))), 'include', 'bin'))
 STIR = abspath(join(dirname(dirname(abspath(__file__))), 'include', 'stir','bin'))
 SIMSET = abspath(join(dirname(dirname(abspath(__file__))), 'include', 'simset','2.9.2','bin'))
@@ -17,10 +17,12 @@ def get_rsc(resource, type):
     :return: 
     
     Type os resources can be:
-    1) template
-    2) mask
-    3) convert
-    4) fruitcake
+    1) image
+    2) exe
+    3) fruitcake
+    4) simset
+    5) stir
+    
     """
     rpath = False
 

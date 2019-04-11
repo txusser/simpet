@@ -323,7 +323,7 @@ def verify_roi_exists(rois_image, roi_number):
     if nvox == 0:
         return False
     else:
-        return nvox
+        return True
 
 def operate_single_image(input_image, operation, factor, output_image, logfile):
     """

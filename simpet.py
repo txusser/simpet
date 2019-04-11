@@ -52,7 +52,7 @@ class SIMPET(object):
             self.matlab_mcr_path = "/usr/local/MATLAB/MATLAB_Runtime/v901/"
         self.spm_run = "sh %s/run_spm12.sh %s batch" % (self.spm_path, self.matlab_mcr_path)
 
-    def petmr2maps(self,pet_image,mri_image,mode="STIR"):
+    def petmr2maps(self,pet_image,mri_image,mode="SIMSET"):
         """
         It will create act and att maps from PET and MR images.
         Required inputs are:

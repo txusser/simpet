@@ -201,7 +201,6 @@ class patient2maps(object):
         for roi_num in rois_nums:
 
             if tools.verify_roi_exists(grey_matter_atlas, roi_num)==True:
-
                 rcommand = '%s %s %s %s 0' % (calc_vm, pet_hdr, grey_matter_atlas, roi_num)
                 patient_vm_gm = tools.osrun(rcommand, self.log_file, catch_out=True)
 
@@ -209,7 +208,6 @@ class patient2maps(object):
                 tools.osrun(rcommand, self.log_file)
 
             if tools.verify_roi_exists(white_matter_atlas, roi_num)==True:
-
                 rcommand = '%s %s %s %s 0' % (calc_vm, pet_hdr, white_matter_atlas, roi_num)
                 patient_vm_wm = tools.osrun(rcommand, self.log_file, catch_out=True)
 

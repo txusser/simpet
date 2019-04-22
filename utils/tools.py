@@ -10,7 +10,7 @@ def osrun(command, logfile, catch_out=False):
     Executes command, raise an error if it fails and send status to logger
     :param command: command to be executed
     :param logger: logger file
-    :return: 
+    :return:
     """
     if catch_out:
         status, out = getoutput(command)
@@ -23,7 +23,7 @@ def osrun(command, logfile, catch_out=False):
 
     else:
         if os.system(command) != 0:
-            
+
             log_message(logfile, command, 'error')
             raise TypeError(command)
         else:
@@ -48,11 +48,11 @@ def nib_load(image, logfile=False):
 
 def copy_analyze(image1, image2=False, dest_dir=False, logfile=False):
     """
-    Create a copy of an Analyze format image 
+    Create a copy of an Analyze format image
     :param image1: (string) path to the original image
-    :param image2: (string, optional) path to the copy image 
+    :param image2: (string, optional) path to the copy image
     :param dest_dir: (string, optional) path to the destination folder
-    :return: 
+    :return:
     """
 
     if image2:
@@ -150,7 +150,7 @@ def nii_analyze_convert(image, logfile=False, outfile=False):
     Converts the provided image file to the analyze or nifti format
     depending on the filex extension
     :param image: image to be converted
-    :return: 
+    :return:
     """
 
     if not logfile: logfile = join(dirname(image), 'log_nii_analyze_convert.txt')
@@ -201,7 +201,7 @@ def anything_to_hdr_convert(image, logfile=False, outfile=False ):
         return image[0:-3]+"hdr"
 
     elif image[-3:] == "nii":
-        hdr = nii_analyze_convert(image,logfile=logfile) 
+        hdr = nii_analyze_convert(image,logfile=logfile)
         if exists(hdr):
             return hdr
         else:
@@ -220,7 +220,7 @@ def anything_to_hdr_convert(image, logfile=False, outfile=False ):
         else:
             raise TypeError ("dicom-nifti conversion failed....")
 
-    if isdir(image):
+    elif isdir(image):
         print("I think the provided image:\n %s \n is a dicom directory. I will try to convert it...")
         dicom2nii = rsc.get_rsc("dicom2nii","exe")
         nii = join(self.patient_dir,"image.nii")
@@ -236,13 +236,40 @@ def anything_to_hdr_convert(image, logfile=False, outfile=False ):
         else:
             raise TypeError ("dicom-nifti conversion failed....")
 
+    elif image[-2:] == "hv": #Only works with floats data
+
+        with open(image) as f:
+            lines = f.readlines()
+
+        lines = [x.strip() for x in lines]
+
+        pixel_x = lines[13].split()[4]
+        pixel_size_x = lines[14].split()[5]
+        pixel_y = lines[16].split()[4]
+        pixel_size_y = lines[17].split()[5]
+        pixel_z = lines[19].split()[4]
+        pixel_size_z = lines[20].split()[5]
+
+        hdr_header = image[0:-2] + "hdr"
+        img_file = image[0:-2] + "img"
+        data_file = image[0:-2] + "v"
+
+        #This will convert .hv to .hdr and copy the data
+        os.system("gen_hdr %s %s %s %s fl %s %s %s 0" % (hdr_header, pixel_x, pixel_y, pixel_z, pixel_size_x, pixel_size_y, pixel_size_z))
+        shutil.copy(data_file, img_file))
+
+        if exists(hdr_header):
+            return hdr_header
+        else:
+            raise TypeError ("Interfile-analyze conversion failed....")
+
 def prepare_input_image(image_hdr, logfile, min_voxel_size=1):
     """
-    This method converts input_image to float data type, re-sizes the image to 
+    This method converts input_image to float data type, re-sizes the image to
     1mm size voxels if too large to keep a reasonable analysis execution time and
     removes the negative and NaN values.
-    :param input_image: image to prepare for the analysis 
-    :return: 
+    :param input_image: image to prepare for the analysis
+    :return:
     """
 
     # Tools for image manipulation
@@ -268,7 +295,7 @@ def prepare_input_image(image_hdr, logfile, min_voxel_size=1):
     osrun(rcommand, logfile)
 
     return image_hdr
-    
+
 def recalculate_matrix(input_image, voxelsize, mode="downsampling"):
 
     new_dimensions = []
@@ -305,17 +332,17 @@ def recalculate_matrix(input_image, voxelsize, mode="downsampling"):
             new_dimensions.append(z_lenght)
         else:
             new_dimensions.append(dimensions[2])
-    
+
     return new_dimensions
 
 def verify_roi_exists(rois_image, roi_number):
     """
     Compute the number of voxels in each ROI
-    :param rois_image: (string) path to the ROI parcelled image 
+    :param rois_image: (string) path to the ROI parcelled image
     :param rois_list: (array) ROIs indexing
     :return: False if the number of voxels is zero
     :return: nvox is not zero
-    """ 
+    """
     rois_img = nib.load(rois_image)
     rois_data = rois_img.get_data()[:, :, :]
     indx = np.where(rois_data == roi_number)
@@ -333,7 +360,7 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     :param operation: 1 = multiply, 2 = divide
     :param factor: operation factor
     :param output_image: output image file
-    :return: 
+    :return:
     """
     try:
         img = nib.load(input_image)
@@ -425,10 +452,10 @@ def new_normalize(matlab_rcommand, mfile_name, image_to_norm, template_image,  l
                   bb=[-78, -112, -70, 78, 76, 85], write_vox_size='[1 1 1]', interpolation=4):
 
     design_type = "matlabbatch{1}.spm.spatial.normalise.estwrite."
-    
+
     if not images_to_write:
         images_to_write = [image_to_norm]
-        
+
     new_spm = open(mfile_name, "w")
 
     new_spm.write(
@@ -466,14 +493,14 @@ def new_normalize(matlab_rcommand, mfile_name, image_to_norm, template_image,  l
 
     return output, transformation_matrix
 
-def new_deformations(matlab_rcommand, mfile_name, def_matrix, base_image, images_to_deform, 
+def new_deformations(matlab_rcommand, mfile_name, def_matrix, base_image, images_to_deform,
                      save_dir, interpolation, log_file, mask = 0, fwhm = "[0 0 0]"):
-    
+
     design_type_comp = "matlabbatch{1}.spm.util.defs.comp{1}.inv."
     design_type_out = "matlabbatch{1}.spm.util.defs.out{1}."
-    
+
     new_spm = open(mfile_name, "w")
-    
+
     new_spm.write(
         design_type_comp + "comp{1}.def = {'" + def_matrix + "'};" + "\n" +
         design_type_comp + "space = {'" + base_image + "'};" + "\n" +
@@ -490,19 +517,19 @@ def new_deformations(matlab_rcommand, mfile_name, def_matrix, base_image, images
         design_type_out + "pull.mask =" + str(mask) + ";" + "\n" +
         design_type_out + "pull.fwhm =" + str(fwhm) + ";" + "\n"
         )
-    
+
     new_spm.close()
 
     os.system("%s %s >> %s" % (matlab_rcommand, mfile_name, log_file))
-    
-def old_deformations(matlab_rcommand, mfile_name, def_matrix, base_image, images_to_deform, 
+
+def old_deformations(matlab_rcommand, mfile_name, def_matrix, base_image, images_to_deform,
                      save_dir, interpolation, log_file, mask=1, fwhm ="[0 0 0]"):
 
     design_type_comp = "matlabbatch{1}.spm.util.defs.comp{1}.inv."
     design_type_out = "matlabbatch{1}.spm.util.defs.out{1}."
 
     new_spm = open(mfile_name, "w")
-    
+
     new_spm.write(
         design_type_comp + "comp{1}.sn2def.matname = {'" + def_matrix + "'};" + "\n" +
         design_type_comp + "comp{1}.sn2def.vox = [NaN NaN NaN];" + "\n" +
@@ -541,11 +568,11 @@ def smoothing(matlab_rcommand, mfile_name, image_to_smooth, smoothing, prefix, l
     os.system("%s %s >> %s" % (matlab_rcommand, mfile_name, log_file))
 
     components = os.path.split(image_to_smooth)
-    output = os.path.join(components[0], prefix + components[1]) 
+    output = os.path.join(components[0], prefix + components[1])
 
     return output
 
-def smoothing_xyz(matlab_rcommand, mfile_name, image_to_smooth, 
+def smoothing_xyz(matlab_rcommand, mfile_name, image_to_smooth,
                   smoothing_x, smoothing_y, smoothing_z, prefix, log_file):
 
     design_type = "matlabbatch{1}.spm.spatial.smooth."
@@ -562,14 +589,14 @@ def smoothing_xyz(matlab_rcommand, mfile_name, image_to_smooth,
     os.system("%s %s >> %s" % (matlab_rcommand, mfile_name, log_file))
 
     components = os.path.split(image_to_smooth)
-    output = os.path.join(components[0], prefix + components[1]) 
+    output = os.path.join(components[0], prefix + components[1])
 
     return output
 
 def image_fusion(matlab_rcommand, mfile_name, reference_image, source_image, log_file):
-    
+
     design_type = "matlabbatch{1}.spm.spatial.coreg.estwrite."
-    
+
     new_spm = open(mfile_name, "w")
 
     new_spm.write(design_type + "ref = {'" + reference_image + ",1'};" + "\n")
@@ -588,7 +615,7 @@ def image_fusion(matlab_rcommand, mfile_name, reference_image, source_image, log
     os.system("%s %s >> %s" % (matlab_rcommand, mfile_name, log_file))
 
     components = os.path.split(source_image)
-    output = os.path.join(components[0], "r" + components[1]) 
+    output = os.path.join(components[0], "r" + components[1])
 
     return output
 

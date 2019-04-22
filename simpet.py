@@ -10,15 +10,15 @@ from utils import tools
 
 class SIMPET(object):
     """
-    This class provides main SimPET functions. 
+    This class provides main SimPET functions.
     You have to initialize the class with a simulation_name.
-    
+
     A directory structure will be created under Data/simulation_name including:
     Data/simulation_name/Patient: If your process starts with PET and MR images, they will be copied here
     Data/simulation_name/Maps: If your process starts with act and att maps, they will be copied here
     Data/simulation_name/Results: Your sim results and brainviset results will be stored here
-    
-    This class is meant to work out of the box. 
+
+    This class is meant to work out of the box.
     You need Matlab MCR v901 in order to run this. It is possible that you need to modify the self.matlab_mcr_path.
     MCR Paths working out of the box are:
     /opt/MATLAB/MATLAB_Compiler_Runtime/v901/
@@ -30,7 +30,8 @@ class SIMPET(object):
         #Initialization
         self.simpet_dir = dirname(abspath(__file__))
         self.dir_data = join(self.simpet_dir, "Data")
-        self.simulation_dir = join(self.dir_data,simulation_name)
+        self.simulation_name=simulation_name
+        self.simulation_dir = join(self.dir_data,self.simulation_name)
         if not isdir(self.simulation_dir):
             os.makedirs(self.simulation_dir)
         self.patient_dir = join(self.simulation_dir,"Patient")
@@ -42,7 +43,7 @@ class SIMPET(object):
         self.results_dir = join(self.simulation_dir,"Results")
         if not isdir(self.results_dir):
             os.makedirs(self.results_dir)
-        
+
         self.logfile = join(self.simulation_dir, "Simpet.log")
 
         #SPM variables
@@ -52,7 +53,7 @@ class SIMPET(object):
             self.matlab_mcr_path = "/usr/local/MATLAB/MATLAB_Runtime/v901/"
         self.spm_run = "sh %s/run_spm12.sh %s batch" % (self.spm_path, self.matlab_mcr_path)
 
-    def petmr2maps(self,pet_image,mri_image,mode="SIMSET"):
+    def petmr2maps(self,pet_image,mri_image,mode="STIR"):
         """
         It will create act and att maps from PET and MR images.
         Required inputs are:
@@ -64,7 +65,7 @@ class SIMPET(object):
         """
         message = "GENERATING ACT AND ATT MAPS FROM PETMR IMAGES"
         tools.log_message(self.logfile, message, mode='info')
-        
+
         #First of all lets take all to analyze
         pet_hdr = tools.anything_to_hdr_convert(pet_image)
         pet_hdr = tools.copy_analyze(pet_hdr,image2=False,dest_dir=self.patient_dir)
@@ -83,20 +84,20 @@ class SIMPET(object):
         #Now the map generation
         from src.patient2maps import patient2maps
 
-        my_map_generation = patient2maps(self.spm_run, self.sim_maps_dir, self.logfile, 
+        my_map_generation = patient2maps(self.spm_run, self.sim_maps_dir, self.logfile,
                                          mri_img, correg_pet_img, mode=mode)
         activity_map_hdr, attenuation_map_hdr = my_map_generation.run()
 
         return activity_map_hdr, attenuation_map_hdr
 
-    def conver_map_mode(self,act_map,att_map,mode="STIR"):
+    def conver_map_mode(self,act_map,att_map,mode="SIMSET"):
 
         message = "CONVERTING ACT AND ATT TO %s" % mode
         tools.log_message(self.logfile, message, mode='info')
 
         cambia_formato = rsc.get_rsc('change_format', 'fruitcake')
         cambia_val = rsc.get_rsc('change_values', 'fruitcake')
-        
+
         new_att_map = join(self.sim_maps_dir, "attenuation_map_" + mode +".hdr")
         new_act_map = join(self.sim_maps_dir,"activity_map_" + mode +".hdr")
 
@@ -124,10 +125,6 @@ class SIMPET(object):
 
         return new_act_map, new_att_map
 
-    def stir_simulation(self,act_map,att_map,scanner):
+    def stir_simulation(self,act_map,att_map,scanner,simpet_dir):
 
         from src.stir.STIR_Simulation import STIR_Simulation
-
-
-   
-

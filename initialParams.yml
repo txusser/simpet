@@ -1,0 +1,31 @@
+simulation_environment: 0 # Set to 0 for local computer, 1 for Cesga
+
+#Define the simulation type and the environment
+sim_type: "SimSET" # SimSET, STIR or GATE (only SimSET working) 
+do_simulation: 0 # Set to 0 to reconstruction previous simulation
+do_reconstruction: 1 # Set to 0 to generate adq data only
+division: 10 #Number os subprocesses for parallel simulation
+
+# PET system (Vereos, Siemens_mCT, GE_Discovery, GE_Advance)
+scanner: "Vereos"
+
+#Patient Variables
+patient_dirname: "Calidade_Imaxe"
+act_map: "IEC_NEMA_ACT_contrast4_4spheres"
+att_map: "IEC_NEMA_ATT"
+output_dirname: "NEMA_IEC_Body_4spheres" #Name of the Results Dir
+
+#Config your phantom
+corte_central: 87 # The slice number to be placed on the center of the scanner
+total_dose: 1 # mCi
+
+#SimSET Photons Parameters (not used by STIR sim)
+SAMPLINGPHOTONS:  10000000
+PHOTONS:  1000000000 # Set to 0 to do a realistic noise simulation
+LENGTH:  300 # secods
+
+# Reconstruction type: 0: OSEM, 1: FBP3D, 2: FBP2D
+recons_type: 1
+
+#BrainVISET Iterations (Iterations: 1 will run a conventional simulation)
+maximumIteration: 1

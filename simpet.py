@@ -7,6 +7,7 @@ import shutil
 import datetime
 from utils import resources as rsc
 from utils import tools
+import config
 
 class SIMPET(object):
     """
@@ -25,12 +26,13 @@ class SIMPET(object):
     /usr/local/MATLAB/MATLAB_Runtime/v901/
     """
 
-    def __init__(self,simulation_name):
+    def __init__(self,param_file):
 
         #Initialization
         self.simpet_dir = dirname(abspath(__file__))
         self.dir_data = join(self.simpet_dir, "Data")
-        self.simulation_name=simulation_name
+        self.param_file = param_file
+        
         self.simulation_dir = join(self.dir_data,self.simulation_name)
         if not isdir(self.simulation_dir):
             os.makedirs(self.simulation_dir)
@@ -47,10 +49,8 @@ class SIMPET(object):
         self.logfile = join(self.simulation_dir, "Simpet.log")
 
         #SPM variables
-        self.spm_path = join(self.simpet_dir, "include", "spm12")
-        self.matlab_mcr_path = "/opt/MATLAB/MATLAB_Compiler_Runtime/v901/"
-        if not isdir(self.matlab_mcr_path):
-            self.matlab_mcr_path = "/usr/local/MATLAB/MATLAB_Runtime/v901/"
+        self.matlab_mcr_path = config.matlab_mcr_path
+        self.spm_path = config.spm_path
         self.spm_run = "sh %s/run_spm12.sh %s batch" % (self.spm_path, self.matlab_mcr_path)
 
     def petmr2maps(self,pet_image,mri_image,mode="STIR"):
@@ -125,6 +125,30 @@ class SIMPET(object):
 
         return new_act_map, new_att_map
 
-    def stir_simulation(self,act_map,att_map,scanner,simpet_dir):
+    def simset_simulation(self,param_file):
 
-        from src.stir.STIR_Simulation import STIR_Simulation
+        from src.simset import simset_sim as sim
+
+    def stir_simulation(self,param_file):
+
+        from src.simset import simset_sim as sim
+
+
+    def run(self,param_file):
+        
+        import param_file as params
+
+        
+
+        if params.sim_type=="SimSET":
+            self.simset_simulation(param_file)
+
+        if params.sim_type=="STIR":
+            self.stir_simulation(param_file)
+
+        
+
+
+
+        
+

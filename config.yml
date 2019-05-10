@@ -1,0 +1,16 @@
+# Directories to the necesary binaries
+dir_stirbin:  "/home/jesus/Work/Software/STIR-github/install/bin"
+dir_simsetbin:  "/home/jesus/Work/Software/SIMSET/2.9.2/bin"
+matlab_mcr_path:  "/opt/MATLAB/MATLAB_Compiler_Runtime/v901/"
+spm_path:  "/home/jesus/Work/repositories/simpet/include/spm12"
+
+# Cesga Configuration
+cesga_results_path:  "$LUSTRE/SimPET/brainviset_simset"
+cesga_max_time:  "02:00:00" # Cesga Jobs need to configure a max running time
+
+# SimSET simulation configuration
+scatter_param:  1
+min_s:  0
+max_s:  9
+positron_range:  True
+no_colinearidad:  True

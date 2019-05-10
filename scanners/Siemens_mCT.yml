@@ -1,0 +1,31 @@
+Scanner_name: "Siemens Biograph mCT"
+simset_material: 18       # LSO
+# Axial Description
+num_rings:  52            # Number of rings
+min_z:  -10.9             # Axial FOV min
+max_z:  10.9              # Axial FOV max
+# Cylinder Description
+radio_scanner:  42.45     # Scanner radius
+num_aa_bins:  312         # Number of views (Numero de detectores por anillo divido por 2)
+num_td_bins:  312         # Number of bins
+min_td:  -31.2            # FOV min cm
+max_td:  31.2             # FOV max cm (bin_size:   (max_td-min_td/num_td_bins)
+# Energy window
+min_energy_window:  450
+max_energy_window:  625
+# Reconstruction
+max_segment:  49          # Maximum Ring difference on the reconstruction
+zoomFactor:  1		        # Zoom factor in x and y
+xyOutputSize:  256 	          
+zOutputSize:  103 	             
+numberOfSubsets:  26	    # Number of subsets
+numberOfIterations:  260  # Number of iterations
+savingInterval:  26	      # The interval that we want to save intermediate subiterations images
+# Scatter and attenuation corrections
+anal_scatt_corr_factor:  1   # 0.15 WILL REMOVE 85% of scatter.0 for trues only
+# Enables Att and Scatter Correction into the simulation. "" activates the correction, ";" deactivates it.
+Recons_att_corr:  True
+Recons_scatt_corr:  True
+# Enable List-mode acquisition. "" activates listnode, "#" deactivates LM.
+phglistmode:  False        # History Files from the phg module
+detlistmode:  True         # History Files from the detector module (You need this for adding randoms)

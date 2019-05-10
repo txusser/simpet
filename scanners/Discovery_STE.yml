@@ -1,0 +1,31 @@
+Scanner_name: "GE Discovery STE"
+simset_material: 10          # BGO
+# Axial Description
+num_rings:  24               # Number of rings
+min_z:  -7.85                # Axial FOV min
+max_z:  7.85                 # Axial FOV max
+# Cylinder Description
+radio_scanner:  44.31        # Scanner radius
+num_aa_bins:  280            # Number of views (Numero de detectores por anillo divido por 2)
+num_td_bins:  293            # Number of bins
+min_td:  -68.855             # FOV min cm
+max_td:  68.855              # FOV max cm (bin_size:   (max_td-min_td/num_td_bins)
+# Energy window
+min_energy_window:  375
+max_energy_window:  675
+# Reconstruction
+max_segment:  23             # Maximum Ring difference on the reconstruction
+zoomFactor:  1.32		         # Zoom factor in x and y
+xyOutputSize:  128 	          
+zOutputSize:  47 	             
+numberOfSubsets:  7	         # Number of subsets
+numberOfIterations:  70      # Number of iterations
+savingInterval:  7	         # The interval that we want to save intermediate subiterations images
+# Scatter and attenuation corrections
+anal_scatt_corr_factor:  1   # 0.15 WILL REMOVE 85% of scatter.0 for trues only
+# Enables Att and Scatter Correction into the simulation. "" activates the correction, ";" deactivates it.
+Recons_att_corr:  False
+Recons_scatt_corr:  False
+# Enable List-mode acquisition. "" activates listnode, "#" deactivates LM.
+phglistmode:  False
+detlistmode:  False

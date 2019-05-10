@@ -1,0 +1,31 @@
+Scanner_name: "Philips Vereos Digital PET/CT"
+simset_material: 29          # LYSO
+# Axial Description
+num_rings: 40                # Number of rings
+min_z: -8.2                  # Axial FOV min
+max_z: 8.2                   # Axial FOV max
+# Cylinder Description
+radio_scanner: 38.2          # Scanner radius
+num_aa_bins: 306             # Number of views (Numero de detectores por anillo divido por 2)
+num_td_bins: 306             # Number of bins
+min_td: -35                  # FOV min cm
+max_td: 35                   # FOV max cm (bin_size:   (max_td-min_td/num_td_bins)
+# Energy window
+min_energy_window: 450
+max_energy_window: 613
+# Reconstruction
+max_segment: 39              # Maximum Ring difference on the reconstruction
+zoomFactor: 1		             # Zoom factor in x and y
+xyOutputSize: 256 	          
+zOutputSize: 79 	             
+numberOfSubsets: 9	         #Number of subsets
+numberOfIterations: 90       #Number of iterations
+savingInterval: 10	         #The interval that we want to save intermediate subiterations images
+# Scatter and attenuation corrections
+anal_scatt_corr_factor:  1   # 0.15 WILL REMOVE 85% of scatter.0 for trues only
+# Enable Att and Scatter Correction into the simulation.
+Recons_att_corr:  True
+Recons_scatt_corr:  True
+# Enable List-mode acquisition.
+phglistmode:  False          # History Files from the phg module
+detlistmode:  True           # History Files from the detector module (You need this for adding randoms)

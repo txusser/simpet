@@ -1,11 +1,18 @@
 Scanner_name: "Siemens Biograph mCT"
+# Scanner Description
 simset_material: 18       # LSO
-# Axial Description
+average_doi: 1.1          # cm
+radio_scanner:  42.45     # Scanner radius
 num_rings:  52            # Number of rings
 min_z:  -10.9             # Axial FOV min
 max_z:  10.9              # Axial FOV max
-# Cylinder Description
-radio_scanner:  42.45     # Scanner radius
+z_crystal_size: 0.4
+transaxial_crystal_size: 0.4 # Transaxial Crystal size (cm)
+energy_resolution: 11.5      # Energy resolution (%)
+# STIR normalization
+crystals_per_block_axial: 40
+crystals_per_block_trans: 34
+# Scanner binning
 num_aa_bins:  312         # Number of views (Numero de detectores por anillo divido por 2)
 num_td_bins:  312         # Number of bins
 min_td:  -31.2            # FOV min cm

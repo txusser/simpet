@@ -1,11 +1,20 @@
-Scanner_name: "Philips Vereos Digital PET/CT"
+scanner_name: "Philips Vereos"
+# Scanner Description
 simset_material: 29          # LYSO
-# Axial Description
-num_rings: 40                # Number of rings
-min_z: -8.2                  # Axial FOV min
-max_z: 8.2                   # Axial FOV max
-# Cylinder Description
+average_doi: 1.1             # cm
 radio_scanner: 38.2          # Scanner radius
+num_rings: 40                # Number of rings
+min_z: -8.2                  # Axial FOV min (cm)
+max_z: 8.2                   # Axial FOV max (cm)
+z_crystal_size: 0.4          # Axial Crystal size (cm)
+transaxial_crystal_size: 0.4 # Transaxial Crystal size (cm)
+crystal_thickness: 1.9       # Crystal Thickness (cm)
+energy_resolution: 11.3      # Energy resolution (%)
+timing_resolution: 0.230     # nanoseconds. WARNING: TOF_resolution/sqrt(2)
+# STIR normalization
+crystals_per_block_axial: 40
+crystals_per_block_trans: 34
+# Scanner binning
 num_aa_bins: 306             # Number of views (Numero de detectores por anillo divido por 2)
 num_td_bins: 306             # Number of bins
 min_td: -35                  # FOV min cm
@@ -15,12 +24,12 @@ min_energy_window: 450
 max_energy_window: 613
 # Reconstruction
 max_segment: 39              # Maximum Ring difference on the reconstruction
-zoomFactor: 1		             # Zoom factor in x and y
-xyOutputSize: 256 	          
-zOutputSize: 79 	             
-numberOfSubsets: 9	         #Number of subsets
+zoomFactor: 1                # Zoom factor in x and y
+xyOutputSize: 256
+zOutputSize: 79  
+numberOfSubsets: 9           #Number of subsets
 numberOfIterations: 90       #Number of iterations
-savingInterval: 10	         #The interval that we want to save intermediate subiterations images
+savingInterval: 10           #The interval that we want to save intermediate subiterations images
 # Scatter and attenuation corrections
 anal_scatt_corr_factor:  1   # 0.15 WILL REMOVE 85% of scatter.0 for trues only
 # Enable Att and Scatter Correction into the simulation.

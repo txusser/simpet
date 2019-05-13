@@ -1,9 +1,11 @@
 Scanner_name: "GE Discovery STE"
 simset_material: 10          # BGO
+average_doi: 1.1             # cm
 # Axial Description
 num_rings:  24               # Number of rings
 min_z:  -7.85                # Axial FOV min
 max_z:  7.85                 # Axial FOV max
+z_crystal_size: 
 # Cylinder Description
 radio_scanner:  44.31        # Scanner radius
 num_aa_bins:  280            # Number of views (Numero de detectores por anillo divido por 2)

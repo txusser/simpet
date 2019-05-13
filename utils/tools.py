@@ -256,7 +256,7 @@ def anything_to_hdr_convert(image, logfile=False, outfile=False ):
 
         #This will convert .hv to .hdr and copy the data
         os.system("gen_hdr %s %s %s %s fl %s %s %s 0" % (hdr_header, pixel_x, pixel_y, pixel_z, pixel_size_x, pixel_size_y, pixel_size_z))
-        shutil.copy(data_file, img_file))
+        shutil.copy(data_file, img_file)
 
         if exists(hdr_header):
             return hdr_header

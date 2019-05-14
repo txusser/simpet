@@ -696,3 +696,78 @@ def log_message(logfile, message, mode='info'):
     else:
         with open(logfile, 'w') as lfile:
             lfile.write(stream)
+
+def petmr2maps(pet_image,mri_image,log_file,mode="SimSET"):
+        """
+        It will create act and att maps from PET and MR images.
+        Required inputs are:
+        pet_image: dicom_dir, nii.gz, nii or Analyze (.hdr or .img)
+        mri_image: dicom_dir, nii.gz, nii or Analyze (.hdr or .img)
+        mode: Choose STIR or SIMSET. The maps will be different for each simulation.
+        The inputs will be stored to Data/simulation_name/Patient as reformatted/corregistered Analyze
+        The maps will be stored on Data/simulation_name/Maps
+        """
+        message = "GENERATING ACT AND ATT MAPS FROM PETMR IMAGES"
+        tools.log_message(log_file, message, mode='info')
+
+        #First of all lets take all to analyze
+        pet_hdr = tools.anything_to_hdr_convert(pet_image)
+        pet_hdr = tools.copy_analyze(pet_hdr,image2=False,dest_dir=self.patient_dir)
+        pet_hdr = tools.prepare_input_image(pet_hdr,log_file,min_voxel_size=1.5)
+        pet_img = pet_hdr[0:-3]+"img"
+
+        mri_hdr = tools.anything_to_hdr_convert(mri_image)
+        mri_hdr = tools.copy_analyze(mri_hdr,image2=False,dest_dir=self.patient_dir)
+        mri_hdr = tools.prepare_input_image(mri_hdr,log_file,min_voxel_size=1.5)
+        mri_img = mri_hdr[0:-3]+"img"
+
+        #Performing PET/MR coregister
+        mfile = os.path.join(self.patient_dir,"fusion.m")
+        correg_pet_img = tools.image_fusion(self.spm_run, mfile, mri_img, pet_img, log_file)
+
+        #Now the map generation
+        from src.patient2maps import patient2maps
+
+        my_map_generation = patient2maps(self.spm_run, self.sim_maps_dir, log_file,
+                                         mri_img, correg_pet_img, mode=mode)
+        activity_map_hdr, attenuation_map_hdr = my_map_generation.run()
+
+        return activity_map_hdr, attenuation_map_hdr
+
+def convert_map_values(act_map,att_map,output_dir,log_file,mode="SimSET"):
+
+        message = "CONVERTING ACT AND ATT TO %s" % mode
+        log_message(log_file, message, mode='info')
+
+        act_map = anything_to_hdr_convert(act_map)
+        att_map = anything_to_hdr_convert(att_map)
+
+        cambia_formato = rsc.get_rsc('change_format', 'fruitcake')
+        cambia_val = rsc.get_rsc('change_values', 'fruitcake')
+
+        new_att_map = join(output_dir, "att_map_" + mode +".hdr")
+        new_act_map = join(output_dir,"act_map_" + mode +".hdr")
+
+        if mode == "SimSET":
+
+            rcommand = '%s %s %s 0.096 1' % (cambia_val, att_map, new_att_map)
+            osrun(rcommand, log_file)
+            rcommand = '%s %s %s 0.135 3 ' % (cambia_val, new_att_map, new_att_map)
+            osrun(rcommand, log_file)
+            rcommand = '%s %s %s 1B' % (cambia_formato, new_att_map, new_att_map)
+            osrun(rcommand, log_file)
+            rcommand = '%s %s %s 1B' % (cambia_formato, act_map, new_act_map)
+            osrun(rcommand, log_file)
+
+        if mode == "STIR":
+
+            rcommand = '%s %s %s fl' % (cambia_formato, att_map, new_att_map)
+            osrun(rcommand, log_file)
+            rcommand = '%s %s %s fl' % (cambia_formato, new_act_map, new_act_map)
+            osrun(rcommand, log_file)
+            rcommand = '%s %s %s 1  0.096' % (cambia_val, new_att_map, new_att_map)
+            osrun(rcommand, log_file)
+            rcommand = '%s %s %s 3  0.135' % (cambia_val, new_att_map, new_att_map)
+            osrun(rcommand, log_file)
+
+        return new_act_map, new_att_map

@@ -107,4 +107,5 @@ venv.bak/
 include
 Data
 resources
+Results
 .vscode

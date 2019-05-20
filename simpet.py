@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from os.path import join,dirname,abspath,isdir,exists
-import os
+import os, sys
 import shutil
 import datetime
 from utils import resources as rsc
@@ -35,29 +35,57 @@ class SimPET(object):
         if not exists(self.dir_results):
             os.makedirs(self.dir_results)
 
+        # The following lines will read the general, scanner and config parameters
         with open(param_file, 'rb') as f:
             self.params = yaml.load(f.read(), Loader=yaml.FullLoader)
-        
+
+        # This will load the scanner params for the selected scanner
+        scanner_model = self.params.get("scanner")
+        scanner_parfile = join(self.simpet_dir,"scanners",scanner_model + ".yml")
+        with open(scanner_parfile, 'rb') as f:
+            self.scanner = yaml.load(f.read(), Loader=yaml.FullLoader)
+
+        # This will load the environment config
         with open(config_file, 'rb') as f:
             self.config = yaml.load(f.read(), Loader=yaml.FullLoader)
 
-        #SPM variables
+        #SPM variables (Only used to create initial maps from patient data)
         self.matlab_mcr_path = self.config.get("matlab_mcr_path")
         self.spm_path = self.config.get("spm_path")
         self.spm_run = "sh %s/run_spm12.sh %s batch" % (self.spm_path, self.matlab_mcr_path)
 
     def simset_simulation(self,act_map,att_map,output_dir):
 
-        if self.params.get("do_simulation")==True:
+        if self.params.get("do_simulation")==1:
 
             from src.simset import simset_sim as sim
 
-            my_simulation = sim.SimSET_Simulation(self.params,self.config,act_map,att_map,output_dir)
+            projections_dir = join(output_dir, "SimSET_Sim")
+
+            if exists(projections_dir) and self.config.get("interactive_mode")==1:
+                print("The introduced output dir already has a SimSET simulation.Proceeding will delete it.")
+                remove = raw_input(" Write 'Y' to delete it: ")
+                print("You can disable this prompt by deactivating interactive mode in the config file.")
+                if remove == "Y":
+                    shutil.rmtree(projections_dir)
+                else:
+                    raise Exception('The simulation was aborted.')
+                    ## Place some logging here
+                    sys.exit(1)
+
+            os.makedirs(projections_dir)
+            
+            my_simulation = sim.SimSET_Simulation(self.params,self.config,act_map,att_map, self.scanner,projections_dir)
             my_simulation.run()
 
-        if self.params.get("do_reconstruction")==True:
+        if self.params.get("do_reconstruction")==1:
 
             from src.simset import simset_recons as recons
+
+            reconstruction_dir = join(output_dir, "SimSET_STIR_Recons")
+
+            if not exists(reconstruction_dir):
+                os.makedirs(reconstruction_dir)
             
             my_reconstruction = recons.SimSET_Reconstruction(self.params,self.config)
             my_reconstruction.run()
@@ -75,21 +103,12 @@ class SimPET(object):
         act_map = join(self.dir_data, patient_dir, self.params.get("act_map"))
         att_map = join(self.dir_data, patient_dir, self.params.get("att_map"))
         output_dir = join(self.dir_results,self.params.get("output_dir"))
-
-        print self.config.get("interactive_mode")==True
-
-        if exists(output_dir) and self.config.get("interactive_mode")==1:
-            print("The introduced output directory already exists.Proceeding will delete it.")
-            remove = raw_input(" Write 'Y' to delete it, or enter a new output name: ")
-            print("You can disable this prompt by deactivating interactive mode in the config file.")
-            if remove == "Y":
-                shutil.rmtree(output_dir)
-            else:
-                output_dir = join(self.dir_results,remove)
-
-        os.makedirs(output_dir)
         maps_dir = join(output_dir,"Maps")
-        os.makedirs(maps_dir)
+
+        # THIS WILL POP UP EVEN IF ONLY RECONSTRUCTION IS DONE. MOVE IT OUT
+        if not exists(output_dir):
+            os.makedirs(output_dir)
+            os.makedirs(maps_dir)
 
         log_file = join(output_dir,"logfile.log")
 
@@ -101,7 +120,7 @@ class SimPET(object):
 
         if sim_type=="STIR":
 
-            self.stir_simulation(act_map,att_map,output_dir)
+            self.stir_simulation(self.params, self.config, act_map,att_map,self.scanner,output_dir)
 
         
 

@@ -3,8 +3,8 @@ simulation_environment: 0 # Set to 0 for local computer, 1 for Cesga
 #Define the simulation type and the environment
 sim_type: "SimSET"        # SimSET, STIR or GATE (only SimSET working) 
 do_simulation: 1          # Set to 0 to reconstruction previous simulation
-do_reconstruction: 1      # Set to 0 to generate adq data only
-division: 4              #Number os subprocesses for parallel simulation
+do_reconstruction: 0      # Set to 0 to generate adq data only
+divisions: 4              # Number os subprocesses for parallel simulation
 
 # PET system (Vereos, Siemens_mCT, Discovery_ST, Discovery_STE, GE_Advance)
 scanner: "Vereos"
@@ -16,13 +16,14 @@ att_map: "IEC_NEMA_ATT.hdr"
 output_dir: "Test1"         #Name of the Results Dir
 
 #Config your phantom
-corte_central: 87           # The slice number to be placed on the center of the scanner
-total_dose: 1               # mCi
+center_slice: 87           # The slice number to be placed on the center of the scanner
+total_dose: 1              # mCi
 
 #SimSET Photons Parameters (not used by STIR sim)
-SAMPLINGPHOTONS:  10000000
-PHOTONS:  1000000000        # Set to 0 to do a realistic noise simulation
-LENGTH:  300                # secods
+sampling_photons:  10000000 # Set to 0 to avoid importance sampling
+photons:  1000000000        # Set to 0 to do a realistic noise simulation
+simulation_time:  300       # secods
+addrandoms: 0               # 1 activate Randoms simulation
 
 # Reconstruction type: 0: OSEM, 1: FBP3D, 2: FBP2D
 recons_type: 1

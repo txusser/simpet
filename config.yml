@@ -1,18 +1,31 @@
 # Directories to the necesary binaries
-dir_stirbin:  "/home/jesus/Work/Software/STIR-github/install/bin"
-dir_simsetbin:  "/home/jesus/Work/Software/SIMSET/2.9.2/bin"
+dir_stir:  "/home/jesus/Work/Software/STIR-github/install"
+dir_simset:  "/home/jesus/Work/Software/SIMSET/2.9.2"
 matlab_mcr_path:  "/opt/MATLAB/MATLAB_Compiler_Runtime/v901/"
 spm_path:  "/home/jesus/Work/repositories/simpet/include/spm12"
 
+# If set to one you may see some prompts to prevent you to overwrite existing data
 interactive_mode: 1
 
 # Cesga Configuration
 cesga_results_path:  "$LUSTRE/SimPET/brainviset_simset"
 cesga_max_time:  "02:00:00" # Cesga Jobs need to configure a max running time
 
-# SimSET simulation configuration
+# SimSET base configuration. Don't change if you don't know what you are doing
 scatter_param:  1
 min_s:  0
 max_s:  9
-positron_range:  1
-no_colinearidad: 1
+stratification: "true"
+forced_detection: "true"
+forced_non_absortion: "true"
+acceptance_angle: 90.0
+positron_range:  "true"
+isotope: "f18"  # For positron range. Options are f18, c11, n13, o15, ga68, rb82
+non_colinearity: "true"
+minimum_energy: 350.0
+weight_window_ratio: 1.0
+point_source_voxels: "false"
+coherent_scatter_object: "false"
+coherent_scatter_detector: "false"
+
+

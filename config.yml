@@ -5,16 +5,13 @@ matlab_mcr_path:  "/opt/MATLAB/MATLAB_Compiler_Runtime/v901/"
 spm_path:  "/home/jesus/Work/repositories/simpet/include/spm12"
 
 # If set to one you may see some prompts to prevent you to overwrite existing data
-interactive_mode: 1
+interactive_mode: 0
 
 # Cesga Configuration
 cesga_results_path:  "$LUSTRE/SimPET/brainviset_simset"
 cesga_max_time:  "02:00:00" # Cesga Jobs need to configure a max running time
 
 # SimSET base configuration. Don't change if you don't know what you are doing
-scatter_param:  1
-min_s:  0
-max_s:  9
 stratification: "true"
 forced_detection: "true"
 forced_non_absortion: "true"

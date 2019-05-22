@@ -2,7 +2,9 @@ import random
 import os
 from os.path import join
 
-def make_simset_act_table (act_table_factor,my_act_table):
+from utils import tools
+
+def make_simset_act_table (act_table_factor, my_act_table, log_file=False):
 
     with open(my_act_table, 'w') as f:
         f.write("256\n")
@@ -11,10 +13,14 @@ def make_simset_act_table (act_table_factor,my_act_table):
             f.write(str('{:.12f}'.format(act_value))+"\n")
     f.close()
 
+    if log_file:
+        message = "Wrote act_table with factor %s" % act_table_factor
+        tools.log_message(log_file,message,'info')
+
 def make_simset_phg(config, output_file, simulation_dir, act,
                     scanner_radius, center_slice,
                     photons, sim_time, 
-                    add_randoms=False, phg_hf=False, S=0):
+                    add_randoms=False, phg_hf=False, S=0, log_file=False):
 
     stir_identifier = "# Hello, I am a SimSET PHG file!\n"
 
@@ -71,13 +77,13 @@ def make_simset_phg(config, output_file, simulation_dir, act,
     yMin, yMax = -act_fov[1,1]/20, act_fov[1,1]/20
 
     z_offset = abs(act.affine[2,2]*center_slice/10) #cm
-    zMin, zMax = -z_offset, act_fov[2,2]/10 - z_offset
+    zMin, zMax = round(-z_offset,4), round(act_fov[2,2]/10 - z_offset,4)
 
-    dz = (zMax-zMin)/nslices
+    dz = round((zMax-zMin)/nslices,4)
 
     # Directory variables
     simset_dir = config.get("dir_simset")
-    simset_phgdata_dir = join(simset_dir,"phg_data")
+    simset_phgdata_dir = join(simset_dir,"phg.data")
 
     # Now we write the phg file
     with open (output_file, 'w') as f:
@@ -159,9 +165,13 @@ def make_simset_phg(config, output_file, simulation_dir, act,
         if phg_hf==1:
             f.write(string + 'history_file = "' + join(simulation_dir, "phg_hf.hist" + '"\n'))
 
-    f.close
+    f.close()
 
-def make_simset_bin(config, output_file, scanner):
+    if log_file:
+        message = "Created phg_file in: %s" % output_file
+        tools.log_message(log_file,message,'info')
+
+def make_simset_bin(config, output_file, simulation_dir, scanner, add_randoms=False, log_file=False):
 
     stir_identifier = "# Hello, I am a SimSET BIN file!\n"
 
@@ -171,10 +181,18 @@ def make_simset_bin(config, output_file, scanner):
     integer = "INT	    "
     string  = "STR      "
 
+    # We will create an extra bin for randoms if the randoms simulation is activated.
+    if add_randoms:
+        accept_randoms = "true"
+        scatter_param = "6"
+    else:
+        accept_randoms = "false"
+        scatter_param = "1"
+        
+    min_s = "0"
+    max_s = "9"
+    
     # Here we get the parameters from the parameter files.
-    scatter_param = str(config.get("scatter_param"))
-    min_s = str(config.get("min_s"))
-    max_s = str(config.get("max_s"))
     num_z_bins = str(scanner.get("num_rings"))
     axial_fov = scanner.get("axial_fov")
     min_z, max_z = -axial_fov/2, axial_fov/2
@@ -182,9 +200,13 @@ def make_simset_bin(config, output_file, scanner):
     num_td_bins = str(scanner.get("num_td_bins"))
     min_td = str(scanner.get("min_td"))
     max_td = str(scanner.get("max_td"))
+    min_e = str(scanner.get("min_energy_window"))
+    max_e = str(scanner.get("max_energy_window"))
+    rec_weight_file = join(simulation_dir,"rec.weight")
 
     with open (output_file, 'w') as f:
         f.write(stir_identifier)
+        f.write(boolean + " accept_randoms = " + accept_randoms + "\n")
         f.write(integer + "scatter_param = " + scatter_param + "\n")
         f.write(integer + "min_s = " + min_s + "\n")
         f.write(integer + "max_s = " + max_s + "\n")
@@ -195,14 +217,28 @@ def make_simset_bin(config, output_file, scanner):
         f.write(integer + "num_td_bins = " + num_td_bins + "\n")
         f.write(real + "min_td = " + min_td + "\n")
         f.write(real + "max_td = " + max_td + "\n")
-        
+        f.write("INT     num_e1_bins = 1\n")
+        f.write("INT     num_e2_bins = 1\n")
+        f.write(real + "min_e = " + min_e + "\n")
+        f.write(real + "max_e = " + max_e + "\n")
+        f.write("INT     weight_image_type = 2\n")
+        f.write("INT     count_image_type	= 2\n")
+        f.write("BOOL	 add_to_existing_img = false\n")
+        f.write(string + 'weight_image_path = "' + rec_weight_file + '"\n')
 
-def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0):
-        
+    f.close()
+
+    if log_file:
+        message = "Created bin_file in: %s" % output_file
+        tools.log_message(log_file,message,'info')
+
+def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0, log_file=False):
+    
     num_rings = scanner_params.get("num_rings")
     z_crystal_size = scanner_params.get("z_crystal_size")
-    max_z = scanner_params.get("max_z")
-    min_z = scanner_params.get("min_z")
+    axial_fov = scanner_params.get("axial_fov")
+    max_z = axial_fov/2
+    min_z = -axial_fov/2
     gap_z_size = (max_z-min_z-z_crystal_size*num_rings)/(num_rings-1)
     cyln_inner_radius = scanner_params.get("scanner_radius")
     cyln_outer_radius = cyln_inner_radius + scanner_params.get("crystal_thickness")
@@ -211,13 +247,6 @@ def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0):
     material = scanner_params.get("simset_material")
 
     nrings_total = 2*num_rings-1
-
-    print "Number of rings in the scanner is: %s" % num_rings
-    print "Cristal z is: %s cm" % z_crystal_size
-    print "Gaps are: %s cm" % gap_z_size
-    print "Ring thickness is: %s cm" % (cyln_outer_radius-cyln_inner_radius)
-    print "Energy resolution is: %s" % energy_resolution
-    print "Timing resolution is: %s" % timing_resolution
 
     new_file = open(output, "w")
     new_file.write(
@@ -271,4 +300,87 @@ def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0):
             new_file.write('STR     history_file = "' + join(sim_dir, "det_hf.hist" + '"\n'))
 
     new_file.close()
+
+    if log_file:
+
+        message = ("Created det_file with:\n" +
+                  "Cristal z: %s cm\n" % z_crystal_size +
+                  "Gap size: %s cm\n" % gap_z_size +
+                  "Ring thickness: %s cm" % (cyln_outer_radius-cyln_inner_radius) +
+                  "Energy resolution: %s" % energy_resolution +
+                  "Timing resolution: %s" % timing_resolution)
+
+        tools.log_message(log_file,message,'info')
+
+def make_index_file(simulation_dir, simset_dir, log_file=False):
+
+    output = join(simulation_dir,"index_file.log")
+    phg_file = join(simulation_dir, "phg.rec")
+    act_dat = join(simulation_dir, "act.dat")
+    att_dat = join(simulation_dir, "att.dat")
+    make_index_file = join(simset_dir,"bin", "makeindexfile")
+
+    prompts = (phg_file + "\n" + "y\n" + "y\n" + "0\n" + "y\n" + act_dat + "\n" +
+               "0\n" + "0\n" + "1\n" + "n\n" + "n\n" + "y\n" + "y\n" + "0\n" + "y\n" +
+               att_dat +"\n" + "0\n" + "0\n" + "1\n" + "n\n" + "n\n")
+
+    os.system('printf "%s" | %s > %s' % (prompts, make_index_file, output))
+
+    if log_file:
+        message = 'printf "%s" | %s > %s' % (prompts, make_index_file, output)
+        tools.log_message(log_file,message,'info')
+
+def process_weights(weights_file, output_dir, scanner, add_randoms = 0):
+
+    nbins = scanner.get("num_td_bins")
+    nangles = scanner.get("num_aa_bins")
+    nrings = scanner.get("num_rings")
+    nslices = nrings*nrings
+
+    Simset_offset = 32768
+    block_size = nbins*nangles*nslices*4
+
+    trues_start = Simset_offset
+    trues_end = Simset_offset + block_size
+    trues_file = join(output_dir,"w1")
     
+
+    with open(weights_file, 'rb') as in_file:
+        with open(trues_file, 'wb') as out_file:
+            out_file.write(in_file.read()[trues_start:trues_end])
+
+    output = join(output_dir,"trues.hdr")
+    tools.create_analyze_from_imgdata(trues_file,output,nbins,nangles,nslices,1,1,1,"fl")
+    os.remove(trues_file)
+
+    scatter_start = trues_end
+    scatter_end = trues_end + block_size
+    scatter_file = join(output_dir,"w2")
+    
+
+    with open(weights_file, 'rb') as in_file:
+        with open(scatter_file, 'wb') as out_file:
+            out_file.write(in_file.read()[scatter_start:scatter_end])
+
+    output = join(output_dir,"scatter.hdr")
+    tools.create_analyze_from_imgdata(scatter_file,output,nbins,nangles,nslices,1,1,1,"fl")
+    os.remove(scatter_file)
+
+    if add_randoms == 1:
+
+        randoms_start = scatter_end
+        randoms_end = scatter_end + block_size
+        randoms_file = join(output_dir,"w3")
+
+        with open(weights_file, 'rb') as in_file:
+            with open(randoms_file, 'wb') as out_file:
+                out_file.write(in_file.read()[randoms_start:randoms_end])
+
+        output = join(output_dir,"randoms.hdr")
+        tools.create_analyze_from_imgdata(randoms_file,output,nbins,nangles,nslices,1,1,1,"fl")
+        os.remove(randoms_file)
+
+    
+
+    
+

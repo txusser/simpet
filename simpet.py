@@ -56,27 +56,32 @@ class SimPET(object):
 
     def simset_simulation(self,act_map,att_map,output_dir):
 
+        projections_dir = join(output_dir, "SimSET_Sim")
+
         if self.params.get("do_simulation")==1:
 
             from src.simset import simset_sim as sim
 
-            projections_dir = join(output_dir, "SimSET_Sim")
-
-            if exists(projections_dir) and self.config.get("interactive_mode")==1:
-                print("The introduced output dir already has a SimSET simulation.Proceeding will delete it.")
-                remove = raw_input(" Write 'Y' to delete it: ")
-                print("You can disable this prompt by deactivating interactive mode in the config file.")
-                if remove == "Y":
-                    shutil.rmtree(projections_dir)
+            if exists(projections_dir):
+                if self.config.get("interactive_mode")==1:
+                    print("The introduced output dir already has a SimSET simulation.Proceeding will delete it.")
+                    remove = raw_input(" Write 'Y' to delete it: ")
+                    print("You can disable this prompt by deactivating interactive mode in the config file.")
+                    if remove == "Y":
+                        shutil.rmtree(projections_dir)
+                    else:
+                        raise Exception('The simulation was aborted.')
+                        ## Place some logging here
+                        sys.exit(1)
                 else:
-                    raise Exception('The simulation was aborted.')
-                    ## Place some logging here
-                    sys.exit(1)
+                    shutil.rmtree(projections_dir)
 
             os.makedirs(projections_dir)
             
             my_simulation = sim.SimSET_Simulation(self.params,self.config,act_map,att_map, self.scanner,projections_dir)
             my_simulation.run()
+
+        
 
         if self.params.get("do_reconstruction")==1:
 

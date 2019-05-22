@@ -20,10 +20,10 @@ center_slice: 87           # The slice number to be placed on the center of the 
 total_dose: 1              # mCi
 
 #SimSET Photons Parameters (not used by STIR sim)
-sampling_photons:  10000000 # Set to 0 to avoid importance sampling
-photons:  1000000000        # Set to 0 to do a realistic noise simulation
+sampling_photons:  100000   # Set to 0 to avoid importance sampling
+photons:  2000000           # Set to 0 to do a realistic noise simulation
 simulation_time:  300       # secods
-addrandoms: 0               # 1 activate Randoms simulation
+add_randoms: 0              # 1 activate Randoms simulation
 
 # Reconstruction type: 0: OSEM, 1: FBP3D, 2: FBP2D
 recons_type: 1

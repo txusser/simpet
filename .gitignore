@@ -103,7 +103,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-.pyc
+*.pyc
 include
 Data
 resources

@@ -21,6 +21,8 @@ class SimSET_Simulation(object):
         self.config = config
         self.scanner = scanner
 
+        self.simset_dir = self.config.get("dir_simset")
+
         self.act_map = act_map
         self.att_map = att_map
         self.output_dir = projections_dir
@@ -31,60 +33,11 @@ class SimSET_Simulation(object):
         self.photons = params.get("photons")
         self.sim_time = params.get("simulation_time")
         self.divisions = params.get("divisions")
-        self.phglistmode = scanner.get("phglistmode")
-
-    def run_simset_simulation(self,sim_dir):
         
-        act, act_data = tools.nib_load(self.act_map)
-        att, att_data = tools.nib_load(self.att_map)
+        self.detlistmode = scanner.get("detlistmode")
+        self.phglistmode = scanner.get("phglistmode")
+        self.add_randoms = params.get("add_randoms")
 
-        # Creates the data files for the simulation maps
-        act_img = self.act_map[0:-3] + "img"
-        att_img = self.att_map[0:-3] + "img"
-        shutil.copy(act_img,join(sim_dir,"act.dat"))
-        shutil.copy(att_img,join(sim_dir,"att.dat"))
-
-        # It generates a new act_table for the simulation
-        if self.sim_dose !=0:
-            phantom_counts = np.sum(act_data) #mCi
-            phantom_dose = abs(phantom_counts*act.affine[0,0]*act.affine[1,1]*act.affine[2,2]) #mCi
-            act_table_factor = self.sim_dose*1000/phantom_dose
-        else:
-            act_table_factor = 1
-
-        my_act_table = join(sim_dir,"phg_act_table")
-        simset_tools.make_simset_act_table(act_table_factor, my_act_table)
-
-        # If Sampling Photons is 0, importance sampling is deactivated, so we use photons as the input.
-        if self.s_photons == 0:
-            sim_photons = self.photons/self.divisions
-        else:
-        # If Sampling Photons is not 0, we make a first simulation for importance sampling
-            sim_photons = self.s_photons
-
-        sim_time = self.sim_time/self.divisions
-        scanner_radius = self.scanner.get("scanner_radius")
-
-        my_phg_file = join(sim_dir,"phg.rec")
-
-        simset_tools.make_simset_phg(self.config, my_phg_file, sim_dir, 
-                                     act, scanner_radius, self.center_slice,
-                                     sim_photons, sim_time, 
-                                     add_randoms=False, phg_hf=self.phglistmode, S=0)
-
-        my_det_file = join(sim_dir,"det.rec")
-
-        # We activate det_listmode if demanded by user or if add_randoms is on
-        if self.params.add_randoms==1 or self.scanner.get("detlistmode")==1:
-            det_listmode = 1
-        else: 
-            det_listmode = 0
-
-        simset_tools.make_simset_cyl_det(self.scanner, my_det_file, sim_dir, det_listmode)
-
-        my_bin_file = join(sim_dir,"bin.rec")
-        simset_tools.make_simset_bin(self.config, my_bin_file, self.scanner)
-    
     def run(self): 
 
         processes = []
@@ -97,6 +50,105 @@ class SimSET_Simulation(object):
             processes.append(p)
             p.start()
             time.sleep(5)
+        
+        for process in processes:
+            process.join()
 
+    def prepare_simset_files(self, sim_dir, act_table_factor, act, sim_photons, sim_time, sampling):
+
+        log_file = join(sim_dir, "simpet.log")
+        # Establishing necessary parameters
+        scanner_radius = self.scanner.get("scanner_radius")
+
+        # We activate det_listmode if demanded by user or if add_randoms is on
+        if self.add_randoms==1 and self.detlistmode==1:
+            det_listmode = 1
+            add_randoms = True
+        elif self.add_randoms==0 and self.detlistmode==1==1: 
+            det_listmode = 1
+            add_randoms = False
+        else:
+            det_listmode = 0
+            add_randoms = False
+
+        # Creating the act table for the simulation....
+        my_act_table = join(sim_dir,"phg_act_table")
+        simset_tools.make_simset_act_table(act_table_factor, my_act_table, log_file=log_file)
+
+        # Creating the phg for the simulation...
+        my_phg_file = join(sim_dir,"phg.rec")
+        simset_tools.make_simset_phg(self.config, my_phg_file, sim_dir, act, scanner_radius, self.center_slice,
+                                     sim_photons, sim_time, add_randoms, self.phglistmode, sampling, log_file=log_file)
+
+        my_det_file = join(sim_dir,"det.rec")
+        simset_tools.make_simset_cyl_det(self.scanner, my_det_file, sim_dir, det_listmode, log_file=log_file)
+
+        my_bin_file = join(sim_dir,"bin.rec")
+        simset_tools.make_simset_bin(self.config, my_bin_file, sim_dir, self.scanner, add_randoms, log_file=log_file)
+
+        simset_tools.make_index_file(sim_dir, self.simset_dir, log_file=log_file)
+
+        return my_phg_file
+
+    def run_simset_simulation(self,sim_dir):
+        
+        log_file = join(sim_dir, "simpet.log")
+
+        act, act_data = tools.nib_load(self.act_map) 
+
+        # It generates a new act_table for the simulation
+        if self.sim_dose !=0:
+            phantom_counts = np.sum(act_data)
+            voxel_size = act.affine[0,0]*act.affine[1,1]*act.affine[2,2]/1000
+            phantom_dose = abs(phantom_counts*voxel_size) #uCi
+            act_table_factor = self.sim_dose*1000/phantom_dose
+        else:
+            act_table_factor = 1
+
+        # Creates the data files from the simulation maps
+        act_img = self.act_map[0:-3] + "img"
+        att_img = self.att_map[0:-3] + "img"
+        shutil.copy(act_img,join(sim_dir,"act.dat"))
+        shutil.copy(att_img,join(sim_dir,"att.dat"))
+
+        # If Sampling Photons is 0, importance sampling is deactivated, so we use photons as the input.
+        if self.s_photons == 0 or self.params.get("add_randoms") == 1:
+            print("Importance sampling is being deactivated because add_randoms is set to 1")
+            if self.photons!=0:
+                sim_photons = self.photons/self.divisions
+            else:
+                sim_photons = self.photons
+        else:
+            # If Sampling Photons is not 0 and no randoms, we make a first simulation for importance sampling
+            sim_photons = self.s_photons
+
+        sim_time = self.sim_time/self.divisions
+
+        my_phg = self.prepare_simset_files(sim_dir, act_table_factor, act, sim_photons, sim_time, 0)
+        my_log = join(sim_dir,"simset_s0.log")
+
+        command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
+        tools.osrun(command, log_file)
+
+        if self.s_photons != 0 and self.params.get("add_randoms") != 1:
+            if self.photons!=0:
+                sim_photons = self.photons/self.divisions
+            else:
+                sim_photons = self.photons
+            
+            rec_weight = join(sim_dir,"rec.weight")
+            os.remove(rec_weight)
+            
+            my_phg = self.prepare_simset_files(sim_dir, act_table_factor, act, sim_photons, sim_time, 1)
+            my_log = join(sim_dir,"simset_s1.log")
+            
+            command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
+            tools.osrun(command, log_file)
+
+        simset_tools.process_weights(rec_weight,sim_dir,self.scanner,self.add_randoms)
+
+        if self.add_randoms == 1:
+
+            print ("To be done")
 
         

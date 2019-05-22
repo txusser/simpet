@@ -92,17 +92,39 @@ def copy_analyze(image1, image2=False, dest_dir=False, logfile=False):
         if logfile: log_message(logfile, message, 'error')
         raise TypeError(message)
 
+def create_analyze_from_imgdata(data, out, pix_x, pix_y, pix_z, tx, ty, tz, data_type="fl"):
+
+    if data_type == "1b":
+        dtype=np.int8
+    elif data_type == "2b":
+        dtype=np.int16
+    elif data_type == "db":
+        dtype=np.float64
+    else:
+        dtype=np.float32
+   
+    hdr_name = data[0:-3] + "hdr"
+    hdr1 = nib.AnalyzeHeader()
+    hdr1.set_data_dtype(dtype)
+    hdr1.set_data_shape((pix_x,pix_y,pix_z))
+    hdr1.set_zooms((tx,ty,tz))
+
+    img_data = hdr1.raw_data_from_fileobj(data)
+
+    analyze_img = nib.AnalyzeImage(img_data, hdr1.get_base_affine(), hdr1)
+
+    nib.save(analyze_img,hdr_name)
+
 def read_analyze_header(header_file,logfile):
 
-    rcommand = 'printf_header_hdr %s' % header_file
-    header = osrun(rcommand, logfile,catch_out=True)
+    img = nib.load(header_file)
 
-    zpix = int(header.split()[13])
-    zsize = float(header.split()[31])
-    xpix = int(header.split()[19])
-    xsize = float(header.split()[37])
-    ypix = int(header.split()[25])
-    ysize = float(header.split()[43])
+    zpix = img.shape[2]
+    zsize = abs(img.get_affine[2,2])
+    xpix = img.shape[0]
+    xsize = abs(img.get_affine[0,0])
+    ypix = img.shape[1]
+    ysize = abs(img.get_affine[1,1])
 
     return zpix, zsize, xpix, xsize, ypix, ysize
 
@@ -472,24 +494,24 @@ def convert_map_values(act_map,att_map,output_dir,log_file,mode="SimSET"):
 
         if mode == "SimSET":
 
-            rcommand = '%s %s %s 0.096 1' % (cambia_val, att_map, new_att_map)
+            rcommand = '%s %s %s 0.096 1 >> %s' % (cambia_val, att_map, new_att_map, log_file)
             osrun(rcommand, log_file)
-            rcommand = '%s %s %s 0.135 3 ' % (cambia_val, new_att_map, new_att_map)
+            rcommand = '%s %s %s 0.135 3 >> %s' % (cambia_val, new_att_map, new_att_map, log_file)
             osrun(rcommand, log_file)
-            rcommand = '%s %s %s 1B' % (cambia_formato, new_att_map, new_att_map)
+            rcommand = '%s %s %s 1B >> %s' % (cambia_formato, new_att_map, new_att_map, log_file)
             osrun(rcommand, log_file)
-            rcommand = '%s %s %s 1B' % (cambia_formato, act_map, new_act_map)
+            rcommand = '%s %s %s 1B >> %s' % (cambia_formato, act_map, new_act_map, log_file)
             osrun(rcommand, log_file)
 
         if mode == "STIR":
 
-            rcommand = '%s %s %s fl' % (cambia_formato, att_map, new_att_map)
+            rcommand = '%s %s %s fl >> %s' % (cambia_formato, att_map, new_att_map, log_file)
             osrun(rcommand, log_file)
-            rcommand = '%s %s %s fl' % (cambia_formato, new_act_map, new_act_map)
+            rcommand = '%s %s %s fl >> %s' % (cambia_formato, new_act_map, new_act_map, log_file)
             osrun(rcommand, log_file)
-            rcommand = '%s %s %s 1  0.096' % (cambia_val, new_att_map, new_att_map)
+            rcommand = '%s %s %s 1  0.096 >> %s' % (cambia_val, new_att_map, new_att_map, log_file)
             osrun(rcommand, log_file)
-            rcommand = '%s %s %s 3  0.135' % (cambia_val, new_att_map, new_att_map)
+            rcommand = '%s %s %s 3  0.135 >> %s' % (cambia_val, new_att_map, new_att_map, log_file)
             osrun(rcommand, log_file)
 
         return new_act_map, new_att_map

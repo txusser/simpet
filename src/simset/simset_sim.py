@@ -54,8 +54,6 @@ class SimSET_Simulation(object):
         for process in processes:
             process.join()
 
-        self.simulation_postprocessing()
-
     def prepare_simset_files(self, sim_dir, act_table_factor, act, sim_photons, sim_time, sampling):
 
         log_file = join(sim_dir, "simpet.log")
@@ -183,6 +181,28 @@ class SimSET_Simulation(object):
                     tools.operate_images_analyze(added_image,division_image,added_image,'sum')
                     #os.remove(division_image)
 
+class SimSET_Reconstruction(object):
+    """This class provides functions to reconstruct a SimSET simulation."""
+
+    def __init__(self,params,config,att_map,scanner,projections_dir,reconstructions_dir):
+
+        #Initialization
+        self.simpet_dir = dirname(abspath(__file__))
+
+        self.params = params
+        self.config = config
+        self.scanner = scanner
+
+        self.simset_dir = self.config.get("dir_simset")
+        self.dir_stir = self.config.get("dir_stir")
+
+        self.att_map = att_map
+        self.input_dir = projections_dir
+        self.output_dir = reconstructions_dir
+        self.center_slice = params.get("center_slice")
+
+
+    def run(self): 
 
 
 

@@ -81,18 +81,18 @@ class SimPET(object):
             my_simulation = sim.SimSET_Simulation(self.params,self.config,act_map,att_map, self.scanner,projections_dir)
             my_simulation.run()
 
-        
+        # If it is a new simulation or if the trues.hdr were not added previously, it makes the postprocessing
+        if self.params.get("do_simulation")==1 or not exists (join(projections_dir, "trues.hdr")):
+            my_simulation.simulation_postprocessing()
 
         if self.params.get("do_reconstruction")==1:
-
-            from src.simset import simset_recons as recons
 
             reconstruction_dir = join(output_dir, "SimSET_STIR_Recons")
 
             if not exists(reconstruction_dir):
                 os.makedirs(reconstruction_dir)
             
-            my_reconstruction = recons.SimSET_Reconstruction(self.params,self.config)
+            my_reconstruction = sim.SimSET_Reconstruction(self.params,self.config)
             my_reconstruction.run()
 
     def stir_simulation(self,param_file):

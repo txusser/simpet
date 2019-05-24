@@ -34,7 +34,6 @@ def make_simset_phg(config, output_file, simulation_dir, act,
 
     #Configuring the importance sampling parameters
     if add_randoms==1:
-        print("Importance sampling techniques are being deactivated since add_randoms is on")
         stratification = "false"
         forced_detection = "false"
         non_absortion = "false"
@@ -380,7 +379,69 @@ def process_weights(weights_file, output_dir, scanner, add_randoms = 0):
         tools.create_analyze_from_imgdata(randoms_file,output,nbins,nangles,nslices,1,1,1,"fl")
         os.remove(randoms_file)
 
-    
+def add_randoms(sim_dir, simset_dir, coincidence_window, log_file=False):
 
-    
+    string  = "STR      "
+    integer = "INT      "
+    enum    = "ENUM 	"
+    real    = "REAL		"
+
+    sorted_file = join(sim_dir, "sorted_det_hf.hist")
+    template = join(sim_dir, "sort.params")
+    det_hf = join(sim_dir, "det_hf.hist")
+
+    with open (template, 'w') as f:
+
+        f.write(string + 'history_file = "' + det_hf + '"\n')
+        f.write(string + 'sorted_history_file = "' + sorted_file + '"\n')
+        f.write(integer + 'buffer_size = 1024\n')
+
+    f.close()
+
+    sorting_bin = join(simset_dir, "bin", "timesort -d")
+
+    command = command = "%s %s >> %s" % (sorting_bin, template, log_file)
+    tools.osrun(command, log_file)
+
+    randoms_file = join(sim_dir, "randoms.hist")
+    template = join(sim_dir, "randoms.params")
+
+    with open (template, 'w') as f:
+
+        f.write(enum + 'detector_type = cylindrical\n')
+        f.write(string + 'history_file = "' + sorted_file + '"\n')
+        f.write(string + 'randoms_history_file = "' + randoms_file + '"\n')
+        f.write(real + "coincidence_timing_window_in_ns = " + str(coincidence_window) + "\n")
+
+    f.close()
+
+    addrand_bin = join(simset_dir, "bin", "addrandoms")
+
+    command = command = "%s %s >> %s" % (addrand_bin, template, log_file)
+    tools.osrun(command, log_file)
+
+    # The following will replace the existing det-hist file with the new including randoms
+    det_file = join(sim_dir, "det.rec")
+
+    with open (det_file, 'r') as f:
+        lines = f.readlines()
+    with open(det_file, 'w') as f:
+        for line in lines:
+            line = line.replace("det_hf.hist", "randoms.hist")
+            f.write(line)
+
+    binfile = join(sim_dir, "phg.rec")
+    phgbin = join(simset_dir, "bin", "bin -d")
+
+    command = command = "%s %s >> %s" % (phgbin, binfile, log_file)
+    tools.osrun(command, log_file)
+
+
+
+
+
+
+
+
+
 

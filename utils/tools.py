@@ -103,7 +103,6 @@ def create_analyze_from_imgdata(data, out, pix_x, pix_y, pix_z, tx, ty, tz, data
     else:
         dtype=np.float32
    
-    hdr_name = data[0:-3] + "hdr"
     hdr1 = nib.AnalyzeHeader()
     hdr1.set_data_dtype(dtype)
     hdr1.set_data_shape((pix_x,pix_y,pix_z))
@@ -113,7 +112,7 @@ def create_analyze_from_imgdata(data, out, pix_x, pix_y, pix_z, tx, ty, tz, data
 
     analyze_img = nib.AnalyzeImage(img_data, hdr1.get_base_affine(), hdr1)
 
-    nib.save(analyze_img,hdr_name)
+    nib.save(analyze_img,out)
 
 def read_analyze_header(header_file,logfile):
 
@@ -413,6 +412,44 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     except Exception as e:
         print "Error:", e
 
+def operate_images_analyze(image1, image2, out_image, operation='mult', ):
+    """
+    Given the input images, calculate the multiplication image or the ratio between them
+    :param image1: string, path to the first image
+    :param image2: string, path to the second image
+    :param operation: string, multi (default) for multiplication divid for division
+    :param out_image: string (optional), path to the output image
+    :return: 
+    """
+    img1, data1 = nib_load(image1)
+    img2, data2 = nib_load(image2)
+
+    # TODO CHECK IF NEGATIVE VALUES NEED TO BE REMOVED
+    # Remove NaN and negative values
+    data1 = np.nan_to_num(data1)
+    data2 = np.nan_to_num(data2)
+
+    if operation == 'mult':
+        res_data = data1 * data2
+    elif operation == 'div':
+        res_data = data1 / data2
+    elif operation == 'sum':
+        res_data = data1 + data2
+    elif operation == 'diff':
+        res_data = data1 - data2
+    else:
+        message = 'Error! Unknown operation: ' + str(operation)
+        raise TypeError(message)
+
+    hdr1 = nib.AnalyzeHeader()
+    hdr1.set_data_dtype(img1.get_data_dtype())
+    hdr1.set_data_shape(img1.get_shape())
+    hdr1.set_zooms(abs(np.diag(img1.affine))[0:3])
+        
+    analyze_img = nib.AnalyzeImage(res_data, hdr1.get_base_affine(), hdr1)
+
+    nib.save(analyze_img,out_image)
+    
 def log_message(logfile, message, mode='info'):
     """"
     Print outs logger messages to the specified logfile

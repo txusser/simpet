@@ -1,4 +1,4 @@
-from os.path import join,dirname,abspath,isdir
+from os.path import join,dirname,abspath,isdir,basename,exists
 import os, sys
 import shutil
 import datetime, time
@@ -34,8 +34,8 @@ class SimSET_Simulation(object):
         self.sim_time = params.get("simulation_time")
         self.divisions = params.get("divisions")
         
-        self.detlistmode = scanner.get("detlistmode")
-        self.phglistmode = scanner.get("phglistmode")
+        self.detlistmode = params.get("detlistmode")
+        self.phglistmode = params.get("phglistmode")
         self.add_randoms = params.get("add_randoms")
 
     def run(self): 
@@ -54,6 +54,8 @@ class SimSET_Simulation(object):
         for process in processes:
             process.join()
 
+        self.simulation_postprocessing()
+
     def prepare_simset_files(self, sim_dir, act_table_factor, act, sim_photons, sim_time, sampling):
 
         log_file = join(sim_dir, "simpet.log")
@@ -61,10 +63,10 @@ class SimSET_Simulation(object):
         scanner_radius = self.scanner.get("scanner_radius")
 
         # We activate det_listmode if demanded by user or if add_randoms is on
-        if self.add_randoms==1 and self.detlistmode==1:
+        if self.add_randoms==1 or self.detlistmode==1:
             det_listmode = 1
             add_randoms = True
-        elif self.add_randoms==0 and self.detlistmode==1==1: 
+        elif self.add_randoms==0 and self.detlistmode==1: 
             det_listmode = 1
             add_randoms = False
         else:
@@ -94,6 +96,8 @@ class SimSET_Simulation(object):
         
         log_file = join(sim_dir, "simpet.log")
 
+        print("Starting simulation for %s" % os.path.basename(sim_dir))
+
         act, act_data = tools.nib_load(self.act_map) 
 
         # It generates a new act_table for the simulation
@@ -112,17 +116,20 @@ class SimSET_Simulation(object):
         shutil.copy(att_img,join(sim_dir,"att.dat"))
 
         # If Sampling Photons is 0, importance sampling is deactivated, so we use photons as the input.
-        if self.s_photons == 0 or self.params.get("add_randoms") == 1:
-            print("Importance sampling is being deactivated because add_randoms is set to 1")
-            if self.photons!=0:
-                sim_photons = self.photons/self.divisions
-            else:
-                sim_photons = self.photons
+        if self.add_randoms ==1:
+            sim_photons = 0
+            print("WARNING: add_randoms=0, so simulation is forced to realistic noise")
+            print("Importance sampling is also being deactivated")
+            print("All these means the simulation can take very long...")
+            print("\n")
+
+        elif self.s_photons == 0 and self.photons !=0:
+            sim_photons = self.photons/self.divisions
+        
         else:
-            # If Sampling Photons is not 0 and no randoms, we make a first simulation for importance sampling
             sim_photons = self.s_photons
 
-        sim_time = self.sim_time/self.divisions
+        sim_time = float(self.sim_time)/self.divisions
 
         my_phg = self.prepare_simset_files(sim_dir, act_table_factor, act, sim_photons, sim_time, 0)
         my_log = join(sim_dir,"simset_s0.log")
@@ -130,25 +137,54 @@ class SimSET_Simulation(object):
         command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
         tools.osrun(command, log_file)
 
+        rec_weight = join(sim_dir,"rec.weight")
+
         if self.s_photons != 0 and self.params.get("add_randoms") != 1:
             if self.photons!=0:
                 sim_photons = self.photons/self.divisions
             else:
                 sim_photons = self.photons
             
-            rec_weight = join(sim_dir,"rec.weight")
             os.remove(rec_weight)
             
             my_phg = self.prepare_simset_files(sim_dir, act_table_factor, act, sim_photons, sim_time, 1)
             my_log = join(sim_dir,"simset_s1.log")
+
+            print("Running the sencond simulation with importance sampling...")
+            print("\n")
             
             command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
             tools.osrun(command, log_file)
 
-        simset_tools.process_weights(rec_weight,sim_dir,self.scanner,self.add_randoms)
-
         if self.add_randoms == 1:
 
-            print ("To be done")
+            coincidence_window = self.scanner.get("coincidence_window")
 
-        
+            simset_tools.add_randoms(sim_dir, self.simset_dir, coincidence_window, log_file=log_file)
+
+        simset_tools.process_weights(rec_weight,sim_dir,self.scanner,self.add_randoms)
+
+    def simulation_postprocessing(self):
+
+        print "Postprocessing simulation..."
+
+        for image in ["trues", "scatter", "randoms"]:
+
+            division_zero = join(self.output_dir, "division_0")
+            zero_image = join(division_zero, image + ".hdr")
+
+            if exists(zero_image):
+                added_image = join(self.output_dir, image + ".hdr")
+                tools.copy_analyze(zero_image, dest_dir=self.output_dir)
+
+                for division in range(1,self.divisions):
+                    division_dir = join(self.output_dir, "division_" + str(division))
+                    division_image = join(division_dir, image + ".hdr")
+                    tools.operate_images_analyze(added_image,division_image,added_image,'sum')
+                    #os.remove(division_image)
+
+
+
+
+
+

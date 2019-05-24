@@ -1,6 +1,8 @@
 import random
 import os
 from os.path import join
+import nibabel as nib
+import numpy as np
 
 from utils import tools
 
@@ -435,6 +437,21 @@ def add_randoms(sim_dir, simset_dir, coincidence_window, log_file=False):
 
     command = command = "%s %s >> %s" % (phgbin, binfile, log_file)
     tools.osrun(command, log_file)
+
+def convert_simset_to_stir(input, output=False):
+
+    simset_img = nib.load(input)
+    simset_img_data = simset_img.get_fdata()
+    shape = simset_img_data.shape
+
+    n_slices = shape[2]
+    nrings = np.sqrt(n_slices)
+    max_segment = nrings-1
+
+    for i in n_slices:
+
+        slice1 = simset_img_data[:,:,i]
+    
 
 
 

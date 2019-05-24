@@ -188,21 +188,53 @@ class SimSET_Reconstruction(object):
 
         #Initialization
         self.simpet_dir = dirname(abspath(__file__))
+        self.simset_dir = config.get("dir_simset")
+        self.dir_stir = config.get("dir_stir")
 
         self.params = params
         self.config = config
         self.scanner = scanner
-
-        self.simset_dir = self.config.get("dir_simset")
-        self.dir_stir = self.config.get("dir_stir")
-
+        self.scatt_corr_factor = scanner.get("analytic_scatt_corr_factor")
+        self.add_randoms = params.get("add_randoms")
+        self.random_corr_factor = scanner.get("analytic_randoms_corr_factor")
+        
         self.att_map = att_map
         self.input_dir = projections_dir
         self.output_dir = reconstructions_dir
         self.center_slice = params.get("center_slice")
 
+        self.log_file = join(self.output_dir, "recons.log")
 
-    def run(self): 
+    def prepare_sinograms(self):
+
+        trues_sino = join(self.input_dir, "trues.hdr")
+        scatter_sino = join(self.input_dir, "scatter.hdr")
+        randoms_sino = join(self.input_dir, "randoms.hdr")
+        corr_scatter_sino = join(self.input_dir, "corr_scatter.hdr")
+        corr_randoms_sino = join(self.input_dir, "corr_randoms.hdr")
+        my_simset_sino = join(self.input_dir, "my_sinogram.hdr")
+
+        tools.operate_single_image(scatter_sino, "mult", self.scatt_corr_factor, corr_scatter_sino, self.log_file)
+        tools.operate_images_analyze(trues_sino,corr_scatter_sino,my_simset_sino,operation="mult")
+
+        if self.add_randoms == 1:
+
+            tools.operate_single_image(randoms_sino, "mult", self.random_corr_factor, corr_randoms_sino, self.log_file)
+            tools.operate_images_analyze(my_simset_sino,corr_randoms_sino,my_simset_sino,operation="mult")
+
+        
+        shutil.copy(my_simset_sino [0:-3] + "img",my_simset_sino [0:-3] + "s")
+
+
+
+
+
+    def run(self):
+
+        if not exists(self.output_dir):
+            os.makedirs(self.output_dir)
+        
+
 
 
 

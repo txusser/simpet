@@ -383,36 +383,30 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     :param output_image: output image file
     :return:
     """
-    try:
-        img = nib.load(input_image)
-        data = img.get_data()[:,:,:]
-        data = np.nan_to_num(data)
 
-        if operation == 'mult':
-            data = data * float(factor)
-        elif operation == 'div':
-            data = data / float(factor)
-        else:
-            message = "Error! Invalid operation: " +str(operation)
-            print message
-            log_message(logfile, message, 'error')
+    img = nib.load(input_image)
+    data = img.get_data()[:,:,:]
+    data = np.nan_to_num(data)
 
-        affine = img.affine
-        header = img.header
-        img = nib.Nifti1Image(data, affine, header)
-        nib.save(img, output_image)
+    if operation == 'mult':
+        data = data * float(factor)
+    elif operation == 'div':
+        data = data / float(factor)
+    else:
+        message = "Error! Invalid operation: " +str(operation)
+        print message
+        log_message(logfile, message, 'error')
 
-        if os.path.exists(output_image):
-            message = 'Created image: ' + str(output_image)
-            log_message(logfile, message)
-        else:
-            message = 'Error! Could not create image: ' + str(output_image)
-            raise TypeError(message)
+    hdr1 = nib.AnalyzeHeader()
+    hdr1.set_data_dtype(img.get_data_dtype())
+    hdr1.set_data_shape(img.get_shape())
+    hdr1.set_zooms(abs(np.diag(img.affine))[0:3])
+        
+    analyze_img = nib.AnalyzeImage(data, hdr1.get_base_affine(), hdr1)
 
-    except Exception as e:
-        print "Error:", e
+    nib.save(analyze_img,out_image)
 
-def operate_images_analyze(image1, image2, out_image, operation='mult', ):
+def operate_images_analyze(image1, image2, out_image, operation='mult'):
     """
     Given the input images, calculate the multiplication image or the ratio between them
     :param image1: string, path to the first image
@@ -449,7 +443,7 @@ def operate_images_analyze(image1, image2, out_image, operation='mult', ):
     analyze_img = nib.AnalyzeImage(res_data, hdr1.get_base_affine(), hdr1)
 
     nib.save(analyze_img,out_image)
-    
+
 def log_message(logfile, message, mode='info'):
     """"
     Print outs logger messages to the specified logfile

@@ -82,6 +82,8 @@ class SimPET(object):
             my_simulation.run()
 
         # If it is a new simulation or if the trues.hdr were not added previously, it makes the postprocessing
+        ### WARNING my_simulation will not be defined...
+        
         if self.params.get("do_simulation")==1 or not exists (join(projections_dir, "trues.hdr")):
             my_simulation.simulation_postprocessing()
 

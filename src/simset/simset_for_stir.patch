@@ -1,0 +1,1561 @@
+Binary files 2.9.2_orig/.DS_Store and 2.9.2/.DS_Store differ
+diff -ruN 2.9.2_orig/make.files/simset.make 2.9.2/make.files/simset.make
+--- 2.9.2_orig/make.files/simset.make	2013-07-30 20:19:26.000000000 +0100
++++ 2.9.2/make.files/simset.make	2019-06-03 10:53:26.164586631 +0100
+@@ -59,7 +59,7 @@
+ PHG_SRC_USR = $(SIMSET_PATH_USR)/src
+ OBJ_DIR = $(SIMSET_PATH_USR)/obj
+ PROGRAMS = $(SIMSET_PATH_USR)/bin
+-
++LIB_DIR = $(SIMSET_PATH_USR)/lib
+ 
+ # Set OS Flags; all Unix systems should set GEN_UNIX.
+ # Choose one of the following for CFLAGS:
+@@ -85,11 +85,11 @@
+ # WINNT
+ 
+ # Suggested compiler flags for Macintosh Unix (Darwin)
+-OS_CFLAGS = -DDARWIN -g
++#OS_CFLAGS = -DDARWIN -g
+ 
+ # LINUX
+ # Suggested compiler flags for LINUX
+-# OS_CFLAGS = -DGEN_UNIX -DLINUX
++OS_CFLAGS = -DGEN_UNIX -DLINUX -Wall -fPIC -g
+ 
+ 
+ COMPILER = cc
+@@ -97,14 +97,15 @@
+ # Select the debug or nodebug CFLAGS option:  debug has added data checking
+ #  and is recommended
+ # Choose between the last two options instead if your compiler does not yet support -iquote
+-CFLAGS = ${OS_CFLAGS} -c -DPHG_DEBUG -iquote"${PHG_SRC}" -DkSimSET_Path='"${SIMSET_PATH}"' 
++# CFLAGS = ${OS_CFLAGS} -c -DPHG_DEBUG -iquote"${PHG_SRC}" -DkSimSET_Path='"${SIMSET_PATH}"' 
+ # CFLAGS = ${OS_CFLAGS} -c -iquote"${PHG_SRC}" -DkSimSET_Path='"${SIMSET_PATH}"' 
+ # 
+-# CFLAGS = ${OS_CFLAGS} -c -DPHG_DEBUG -I"${PHG_SRC}" -DkSimSET_Path='"${SIMSET_PATH}"' 
++CFLAGS = ${OS_CFLAGS} -c -DPHG_DEBUG -I"${PHG_SRC}" -DkSimSET_Path='"${SIMSET_PATH}"' 
+ # CFLAGS = ${OS_CFLAGS} -c -I"${PHG_SRC}" -DkSimSET_Path='"${SIMSET_PATH}"' 
+ 
+ 
+ PROGRAM = ${PROGRAMS}/simset
++LIBRARY = ${LIB_DIR}/libsimset.so
+ MKFILE = ${MKFILES}/simset.make
+ 
+ 
+@@ -230,11 +231,16 @@
+ 
+ # Linking instructions
+ 
+-${PROGRAM}:: ${MKFILE} $(OBJECTS)
+-	echo linking
+-	${COMPILER}  -o ${PROGRAM} $(OBJECTS)   -lm 
++all : ${LIBRARY} ${PROGRAM}
+ 
++${LIBRARY}: ${MKFILE} $(OBJECTS)
++	echo linking
++	${COMPILER} -shared -Wl,-soname,${LIBRARY} -o ${LIBRARY} $(OBJECTS)
+ 
++${PROGRAM}: ${MKFILE} $(OBJECTS)
++	echo linking
++	${COMPILER}  -o ${PROGRAM} $(OBJECTS)   -lm 
++	
+ 
+ # Compiling instructions
+ 
+diff -ruN 2.9.2_orig/.prepDistribution.sh 2.9.2/.prepDistribution.sh
+--- 2.9.2_orig/.prepDistribution.sh	1970-01-01 01:00:00.000000000 +0100
++++ 2.9.2/.prepDistribution.sh	2013-10-26 22:12:39.000000000 +0100
+@@ -0,0 +1,32 @@
++##################################################
++#
++#
++#       This script clears the bin and obj
++#		directories.  It also clears results
++#		out of the samples directory.  This
++#       reduces the size of the distribution
++#       package and insures that users will
++#       not accidentally run the results script
++#       and compare the base results with
++#       UW results instead of their own.
++#
++#
++##################################################
++
++cd bin
++rm *
++cd ..
++
++cd obj
++rm *
++cd ..
++
++cd samples/fastTest
++.clearResults.sh
++cd ../..
++
++cd samples/userFuncExamples
++.clearBinaries.sh
++.clearResults.sh
++cd ../..
++
+diff -ruN 2.9.2_orig/src/bin.phg.c 2.9.2/src/bin.phg.c
+--- 2.9.2_orig/src/bin.phg.c	2013-07-15 10:53:34.000000000 +0100
++++ 2.9.2/src/bin.phg.c	2019-03-30 16:57:08.522896562 +0000
+@@ -96,85 +96,13 @@
+  *********************************************************************************/
+ #define PHG_BIN_MAIN	/* Note we are substituting ourselves for phg's main */
+ 
+-#include <stdio.h>
+-#include <string.h>
+-
+-#include "SystemDependent.h"
+-
+-#include "LbTypes.h"
+-#include "LbError.h"
+-#include "LbDebug.h"
+-#include "LbEnvironment.h"
+-#include "LbFile.h"
+-#include "LbMemory.h"
+-#include "LbParamFile.h"
+-#include "LbInterface.h"
+-#include "LbHeader.h"
+-
+-#include "Photon.h"
+-#include "PhgParams.h"
+-#include "ColTypes.h"
+-#include "ColParams.h"
+-#include "DetTypes.h"
+-#include "DetParams.h"
+-#include "CylPos.h"
+-#include "PhgMath.h"
+-#include "PhoHFile.h"
+-#include "PhgHdr.h"
+-#include "ProdTbl.h"
+-#include "PhoTrk.h"
+-#include "SubObj.h"
+-#include "EmisList.h"
+-#include "Collimator.h"
+-#include "Detector.h"
+-#include "phg.h"
+-#include "PhgBin.h"
++#include "bin.phg.h"
+ 
+ 
+ #ifdef MPW
+ #pragma segment PHG_BIN_MAIN
+ #endif
+ 
+-/* LOCAL CONSTANTS */
+-#define PHGRDHST_IsUsePHGHistory()		LbFgIsSet(PhgOptions, LBFlag0)		/* Will we use the PHG history file */
+-#define PHGRDHST_IsUseColHistory()		LbFgIsSet(PhgOptions, LBFlag1)		/* Will we use the Collimator history file */
+-#define PHGRDHST_IsUseDetHistory()		LbFgIsSet(PhgOptions, LBFlag2)		/* Will we use the Detector history file */
+-
+-#define	PHGRDHST_NumFlags	3													/* Number of flags defined */
+-
+-/* LOCAL TYPES */
+-typedef enum  {Null, Decay, Photon} EventTy;
+-
+-/* LOCAL GLOBALS */
+-static Boolean				phgrdhstCanceled;				/* Global cancelation flag */
+-static CollimatedPhotonsTy	phgrdhstColPhotons;				/* These are the successfully collimated photons */
+-static DetectedPhotonsTy	phgrdhstDetPhotons;				/* These are the successfully detected photons */
+-static char					phgrdhstErrStr[1024];			/* Error string storage */
+-static LbUsFourByte			phgrdhstNumToProc;				/* Number of histories to process */
+-static char					phgrdhstHistName[1024];			/* Name of history file */
+-static char					phgrdhstHistParamsName[1024];	/* Name of history parameters file */
+-static LbUsFourByte			phgrdhstArgIndex;
+-static ProdTblProdTblInfoTy	phgrdhstPrdTblInfo;				/* Info for initializing productivity table */
+-static PhoHFileHdrTy		phgrdhstHdrParams;				/* Input header */
+-
+-/* PROTOTYPES */
+-Boolean 		phgrdhstInitialize(int argc, char *argv[]);
+-void			phgrdhstTerminate(void);
+-Boolean			phgbin(int argc, char *argv[]);
+-EventTy			readEvent(FILE *historyFile,
+-						  PHG_Decay *decayPtr,
+-						  PHG_DetectedPhoton *photonPtr);
+-EventTy			oldReadEvent(FILE *historyFile,
+-                             PHG_Decay *decayPtr,
+-                             PHG_DetectedPhoton *photonPtr,
+-                             Boolean isOldPhotons1,
+-                             Boolean isOldPhotons2);
+-Boolean			phgrdhstStandard(char *argv[]);
+-Boolean			phgrdhstCustom(char *argv[]);
+-void			phgbinProcessPhotons(PhoHFileHkTy *histHk, PHG_Decay *decayPtr,
+-                                     PHG_TrackingPhoton *bluePhotons, LbUsFourByte numBlues,
+-                                     PHG_TrackingPhoton *pinkPhotons, LbUsFourByte numPinks);
+-
+ 
+ /* FUNCTIONS */
+ /**********************
+@@ -220,7 +148,7 @@
+ 		if ((phgrdhstArgIndex != 0) && (argv[phgrdhstArgIndex] != 0)) {
+             
+ 			/* Get first param file and save number of param files to process */
+-			strcpy(PhgRunTimeParams.PhgParamFilePath,argv[phgrdhstArgIndex]);
++            strcpy(PhgRunTimeParams.PhgParamFilePath,argv[phgrdhstArgIndex]);
+ 			phgrdhstNumToProc = (argc - phgrdhstArgIndex);
+ 		}
+ 		else {
+@@ -682,7 +610,8 @@
+ 						eventType = readEvent(historyFile, &nextDecay, &detectedPhoton);
+ 					}
+ 					
+-					while ( eventType == Photon) {
++                    while ( eventType == Photon)
++                    {
+                         
+ 						/* Convert to a tracking photon */
+ 						{
+diff -ruN 2.9.2_orig/src/bin.phg.h 2.9.2/src/bin.phg.h
+--- 2.9.2_orig/src/bin.phg.h	1970-01-01 01:00:00.000000000 +0100
++++ 2.9.2/src/bin.phg.h	2019-03-28 16:48:00.601727849 +0000
+@@ -0,0 +1,80 @@
++#ifndef BIN_PHG_HDR
++#define BIN_PHG_HDR
++
++#include <stdio.h>
++#include <string.h>
++
++#include "SystemDependent.h"
++
++#include "LbTypes.h"
++#include "LbError.h"
++#include "LbDebug.h"
++#include "LbEnvironment.h"
++#include "LbFile.h"
++#include "LbMemory.h"
++#include "LbParamFile.h"
++#include "LbInterface.h"
++#include "LbHeader.h"
++
++#include "Photon.h"
++#include "PhgParams.h"
++#include "ColTypes.h"
++#include "ColParams.h"
++#include "DetTypes.h"
++#include "DetParams.h"
++#include "CylPos.h"
++#include "PhgMath.h"
++#include "PhoHFile.h"
++#include "PhgHdr.h"
++#include "ProdTbl.h"
++#include "PhoTrk.h"
++#include "SubObj.h"
++#include "EmisList.h"
++#include "Collimator.h"
++#include "Detector.h"
++#include "phg.h"
++#include "PhgBin.h"
++
++/* LOCAL CONSTANTS */
++#define PHGRDHST_IsUsePHGHistory()		LbFgIsSet(PhgOptions, LBFlag0)		/* Will we use the PHG history file */
++#define PHGRDHST_IsUseColHistory()		LbFgIsSet(PhgOptions, LBFlag1)		/* Will we use the Collimator history file */
++#define PHGRDHST_IsUseDetHistory()		LbFgIsSet(PhgOptions, LBFlag2)		/* Will we use the Detector history file */
++
++#define	PHGRDHST_NumFlags	3													/* Number of flags defined */
++
++/* LOCAL TYPES */
++typedef enum  {Null, Decay, Photon} EventTy;
++
++/* LOCAL GLOBALS */
++static Boolean				phgrdhstCanceled;				/* Global cancelation flag */
++static CollimatedPhotonsTy	phgrdhstColPhotons;				/* These are the successfully collimated photons */
++static DetectedPhotonsTy	phgrdhstDetPhotons;				/* These are the successfully detected photons */
++static char					phgrdhstErrStr[1024];			/* Error string storage */
++static LbUsFourByte			phgrdhstNumToProc;				/* Number of histories to process */
++static char					phgrdhstHistName[1024];			/* Name of history file */
++static char					phgrdhstHistParamsName[1024];	/* Name of history parameters file */
++static LbUsFourByte			phgrdhstArgIndex;
++static ProdTblProdTblInfoTy	phgrdhstPrdTblInfo;				/* Info for initializing productivity table */
++static PhoHFileHdrTy		phgrdhstHdrParams;				/* Input header */
++
++/* PROTOTYPES */
++Boolean 		phgrdhstInitialize(int argc, char *argv[]);
++void			phgrdhstTerminate(void);
++Boolean			phgbin(int argc, char *argv[]);
++EventTy			readEvent(FILE *historyFile,
++                                                  PHG_Decay *decayPtr,
++                                                  PHG_DetectedPhoton *photonPtr);
++EventTy			oldReadEvent(FILE *historyFile,
++                             PHG_Decay *decayPtr,
++                             PHG_DetectedPhoton *photonPtr,
++                             Boolean isOldPhotons1,
++                             Boolean isOldPhotons2);
++Boolean			phgrdhstStandard(char *argv[]);
++Boolean			phgrdhstCustom(char *argv[]);
++void			phgbinProcessPhotons(PhoHFileHkTy *histHk, PHG_Decay *decayPtr,
++                                     PHG_TrackingPhoton *bluePhotons, LbUsFourByte numBlues,
++                                     PHG_TrackingPhoton *pinkPhotons, LbUsFourByte numPinks);
++
++
++
++#endif
+diff -ruN 2.9.2_orig/src/combine.hist.c 2.9.2/src/combine.hist.c
+--- 2.9.2_orig/src/combine.hist.c	2013-07-15 10:53:34.000000000 +0100
++++ 2.9.2/src/combine.hist.c	2019-06-03 10:40:47.105344114 +0100
+@@ -103,7 +103,7 @@
+ 	char				*dataBuffPtr;				/* Buffer for reading in data */
+ 	FILE				*inputFile;					/* Current input file */
+ 	FILE				*outputFile;				/* The output file */
+-	LbUsFourByte		hdrSize;					/* Size of the file's header */
++    LbUsFourByte		hdrSize = 32768;					/* Size of the file's header */
+ 	LbUsFourByte		curFileIndex;				/* Current file index */
+ 	LbUsFourByte		numToProcess;				/* Number of files to process */
+ 	LbUsFourByte		numRead;					/* Number of bytes read */
+@@ -159,21 +159,21 @@
+ 		}
+ 		
+ 		/* Open first input file */
+-		if ((inputFile = LbFlFileOpen(argv[curFileIndex], "rb")) == 0) {
+-			sprintf(errStr, "Unable to open input file\n'%s'.", argv[curFileIndex]);
+-			ErStFileError(errStr);
+-			break;
+-		}
++        if ((inputFile = LbFlFileOpen(argv[curFileIndex], "rb")) == 0) {
++            sprintf(errStr, "Unable to open input file\n'%s'.", argv[curFileIndex]);
++            ErStFileError(errStr);
++            break;
++        }
+ 
+ 		/* Read the header in the first input file */
+-		{
++        {
+ 			/* First, read the header size; it is in the first four bytes */
+-			if (fread(&hdrSize, sizeof(LbUsFourByte), 1, inputFile) != 1) {
+-				sprintf(errStr, "\nUnable to read header size from input file '%s'.\n",
+-					argv[curFileIndex]);
+-				ErStFileError(errStr);
+-				break;
+-			}
++//            if (fread(&hdrSize, sizeof(LbUsFourByte), 1, inputFile) != 1) {
++//                sprintf(errStr, "\nUnable to read header size from input file '%s'.\n",
++//                    argv[curFileIndex]);
++//                ErStFileError(errStr);
++//                break;
++//            }
+ 			
+ 			/* Verify we know how to deal with this */
+ 			if (hdrSize == sizeof(header)) {
+@@ -191,21 +191,21 @@
+ 			}
+ 			
+ 			/* Reset to zero and read in the header */
+-			if (fseek(inputFile, 0, SEEK_SET) != 0) {
+-				ErStFileError("\nUnable to reset to beginning of history file.");
+-				break;
+-			}
++            if (fseek(inputFile, 0, SEEK_SET) != 0) {
++                ErStFileError("\nUnable to reset to beginning of history file.");
++                break;
++            }
+ 
+ 			/* Read in the header */
+-			if (fread(hdrBuffPtr, hdrSize, 1, inputFile) != 1) {
+-				ErStFileError("\nUnable to read header from history file.");
+-				break;
+-			}
++            if (fread(hdrBuffPtr, hdrSize, 1, inputFile) != 1) {
++                ErStFileError("\nUnable to read header from history file.");
++                break;
++            }
+ 
+ 			/* Save the header */
+ 			if (updateHdr == true){
+ 				memcpy(&newHeader, &header, sizeof(header));
+-			}
++            }
+ 
+ 		}
+ 
+@@ -268,10 +268,10 @@
+ 					break;
+ 				}
+ 				/* First, read the header size; it is in the first four bytes */
+-				if (fread(&hdrSize, sizeof(LbUsFourByte), 1, inputFile) != 1) {
+-					ErStFileError("\nUnable to read header size from input file.");
+-					break;
+-				}
++//                if (fread(&hdrSize, sizeof(LbUsFourByte), 1, inputFile) != 1) {
++//					ErStFileError("\nUnable to read header size from input file.");
++//					break;
++//                }
+ 				
+ 				/* Allocate header buffer if unknown */
+ 				if (updateHdr == false) {
+diff -ruN 2.9.2_orig/src/LbTypes.h 2.9.2/src/LbTypes.h
+--- 2.9.2_orig/src/LbTypes.h	2014-01-24 16:26:37.000000000 +0000
++++ 2.9.2/src/LbTypes.h	2019-03-16 16:27:11.119406411 +0000
+@@ -77,7 +77,7 @@
+ 
+ /* Define this value if your system has the file /usr/include/sys/types.h
+     (otherwise comment out the following line).  */
+-/* #define LB_TYPE_USE_SYS_INTS */
++#define LB_TYPE_USE_SYS_INTS
+ 
+ 
+ #include <float.h>
+diff -ruN 2.9.2_orig/src/PhgParams.c 2.9.2/src/PhgParams.c
+--- 2.9.2_orig/src/PhgParams.c	2013-07-25 02:36:01.000000000 +0100
++++ 2.9.2/src/PhgParams.c	2019-03-26 22:44:55.991673505 +0000
+@@ -97,8 +97,6 @@
+ /* LOCAL GLOBALS */
+ static 	char		phgBinErrString[512];				/* Storage for error string s*/
+ 
+-static	LbPfHkTy	phgParamFileHk;				/* Our parameter file */
+-
+ /* When changing the following list also change PhgEn_RunTimeParamsTy in PhgParams.h.
+ The two lists must have the same order */
+ static	labelTy		phgRunTimeParamLabels[] = {	/* The parameter labels */
+diff -ruN 2.9.2_orig/src/PhgParams.h 2.9.2/src/PhgParams.h
+--- 2.9.2_orig/src/PhgParams.h	2013-07-15 10:53:35.000000000 +0100
++++ 2.9.2/src/PhgParams.h	2019-03-26 22:45:11.478506154 +0000
+@@ -606,6 +606,8 @@
+ *********************************************************************************/
+ #define PHGGetLengthOfScan() PhgRunTimeParams.Phg_LengthOfScan
+ 
++static	LbPfHkTy	phgParamFileHk;				/* Our parameter file */
++
+ /* PROTOTYPES */
+ PhgEn_RunTimeParamsTy	PhgLookupRunTimeParamLabel(char *label);
+ Boolean					PhgGetRunTimeParams(void);
+diff -ruN 2.9.2_orig/src/print.header.c 2.9.2/src/print.header.c
+--- 2.9.2_orig/src/print.header.c	2013-07-25 02:35:00.000000000 +0100
++++ 2.9.2/src/print.header.c	2019-03-17 14:13:12.877848060 +0000
+@@ -50,51 +50,9 @@
+ *
+ *********************************************************************************/
+ 
+-#include <stdio.h>
+-#include <string.h>
++#include "print.header.h"
+ 
+-#include "SystemDependent.h"
+ 
+-#include "LbTypes.h"
+-#include "LbError.h"
+-#include "LbDebug.h"
+-#include "LbEnvironment.h"
+-#include "LbFile.h"
+-#include "LbMemory.h"
+-#include "LbInterface.h"
+-#include "LbParamFile.h"
+-#include "LbHeader.h"
+-
+-#include "Photon.h"
+-#include "PhgParams.h"
+-#include "ColTypes.h"
+-#include "ColParams.h"
+-#include "DetTypes.h"
+-#include "DetParams.h"
+-#include "CylPos.h"
+-#include "PhgMath.h"
+-#include "PhoHFile.h"
+-#include "ProdTbl.h"
+-#include "PhoTrk.h"
+-#include "SubObj.h"
+-#include "EmisList.h"
+-#include "Collimator.h"
+-#include "Detector.h"
+-#include "PhgHdr.h"
+-#include "phg.h"
+-#include "PhgBin.h"
+-
+-/* LOCAL CONSTANTS */
+-
+-/* LOCAL TYPES */
+-
+-/* LOCAL GLOBALS */
+-static	PhoHFileHdrTy		header;					/* The history file header */
+-static	LbHdrHkTy			headerHk;				/* The header hook */
+-
+-/* PROTOTYPES */
+-Boolean			PrintHeader(int argc, char *argv[]);
+-static	void			display(PhoHFileHdrTy *headerPtr);
+ 
+ /* FUNCTIONS */
+ 
+diff -ruN 2.9.2_orig/src/print.header.h 2.9.2/src/print.header.h
+--- 2.9.2_orig/src/print.header.h	1970-01-01 01:00:00.000000000 +0100
++++ 2.9.2/src/print.header.h	2019-03-17 14:13:10.067802670 +0000
+@@ -0,0 +1,52 @@
++#ifndef PRINT_HEADER
++#define PRINT_HEADER
++
++
++#include <stdio.h>
++#include <string.h>
++
++#include "SystemDependent.h"
++
++#include "LbTypes.h"
++#include "LbError.h"
++#include "LbDebug.h"
++#include "LbEnvironment.h"
++#include "LbFile.h"
++#include "LbMemory.h"
++#include "LbInterface.h"
++#include "LbParamFile.h"
++#include "LbHeader.h"
++
++#include "Photon.h"
++#include "PhgParams.h"
++#include "ColTypes.h"
++#include "ColParams.h"
++#include "DetTypes.h"
++#include "DetParams.h"
++#include "CylPos.h"
++#include "PhgMath.h"
++#include "PhoHFile.h"
++#include "ProdTbl.h"
++#include "PhoTrk.h"
++#include "SubObj.h"
++#include "EmisList.h"
++#include "Collimator.h"
++#include "Detector.h"
++#include "PhgHdr.h"
++#include "phg.h"
++#include "PhgBin.h" 
++
++
++/* LOCAL CONSTANTS */
++
++/* LOCAL TYPES */
++
++/* LOCAL GLOBALS */
++static	PhoHFileHdrTy		header;					/* The history file header */
++static	LbHdrHkTy			headerHk;				/* The header hook */
++
++/* PROTOTYPES */
++Boolean			PrintHeader(int argc, char *argv[]);
++static	void			display(PhoHFileHdrTy *headerPtr);
++
++#endif
+diff -ruN 2.9.2_orig/src/SimSET.cflags 2.9.2/src/SimSET.cflags
+--- 2.9.2_orig/src/SimSET.cflags	1970-01-01 01:00:00.000000000 +0100
++++ 2.9.2/src/SimSET.cflags	2019-06-02 23:53:31.541319043 +0100
+@@ -0,0 +1 @@
++-std=c17
+\ No newline at end of file
+diff -ruN 2.9.2_orig/src/SimSET.config 2.9.2/src/SimSET.config
+--- 2.9.2_orig/src/SimSET.config	1970-01-01 01:00:00.000000000 +0100
++++ 2.9.2/src/SimSET.config	2019-04-03 13:04:47.740633671 +0100
+@@ -0,0 +1,2 @@
++// Add predefined macros for your project here. For example:
++// #define THE_ANSWER 42
+diff -ruN 2.9.2_orig/src/SimSET.creator 2.9.2/src/SimSET.creator
+--- 2.9.2_orig/src/SimSET.creator	1970-01-01 01:00:00.000000000 +0100
++++ 2.9.2/src/SimSET.creator	2019-04-03 13:04:47.740633671 +0100
+@@ -0,0 +1 @@
++[General]
+diff -ruN 2.9.2_orig/src/simset.creator.user 2.9.2/src/simset.creator.user
+--- 2.9.2_orig/src/simset.creator.user	1970-01-01 01:00:00.000000000 +0100
++++ 2.9.2/src/simset.creator.user	2019-04-02 15:20:35.749145777 +0100
+@@ -0,0 +1,258 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE QtCreatorProject>
++<!-- Written by QtCreator 4.8.2, 2019-04-02T15:20:35. -->
++<qtcreator>
++ <data>
++  <variable>EnvironmentId</variable>
++  <value type="QByteArray">{c62e0ab5-e250-4d63-8bd6-413f8f0df425}</value>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.ActiveTarget</variable>
++  <value type="int">0</value>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.EditorSettings</variable>
++  <valuemap type="QVariantMap">
++   <value type="bool" key="EditorConfiguration.AutoIndent">true</value>
++   <value type="bool" key="EditorConfiguration.AutoSpacesForTabs">false</value>
++   <value type="bool" key="EditorConfiguration.CamelCaseNavigation">true</value>
++   <valuemap type="QVariantMap" key="EditorConfiguration.CodeStyle.0">
++    <value type="QString" key="language">Cpp</value>
++    <valuemap type="QVariantMap" key="value">
++     <value type="QByteArray" key="CurrentPreferences">CppGlobal</value>
++    </valuemap>
++   </valuemap>
++   <valuemap type="QVariantMap" key="EditorConfiguration.CodeStyle.1">
++    <value type="QString" key="language">QmlJS</value>
++    <valuemap type="QVariantMap" key="value">
++     <value type="QByteArray" key="CurrentPreferences">QmlJSGlobal</value>
++    </valuemap>
++   </valuemap>
++   <value type="int" key="EditorConfiguration.CodeStyle.Count">2</value>
++   <value type="QByteArray" key="EditorConfiguration.Codec">UTF-8</value>
++   <value type="bool" key="EditorConfiguration.ConstrainTooltips">false</value>
++   <value type="int" key="EditorConfiguration.IndentSize">4</value>
++   <value type="bool" key="EditorConfiguration.KeyboardTooltips">false</value>
++   <value type="int" key="EditorConfiguration.MarginColumn">80</value>
++   <value type="bool" key="EditorConfiguration.MouseHiding">true</value>
++   <value type="bool" key="EditorConfiguration.MouseNavigation">true</value>
++   <value type="int" key="EditorConfiguration.PaddingMode">1</value>
++   <value type="bool" key="EditorConfiguration.ScrollWheelZooming">true</value>
++   <value type="bool" key="EditorConfiguration.ShowMargin">false</value>
++   <value type="int" key="EditorConfiguration.SmartBackspaceBehavior">0</value>
++   <value type="bool" key="EditorConfiguration.SmartSelectionChanging">true</value>
++   <value type="bool" key="EditorConfiguration.SpacesForTabs">true</value>
++   <value type="int" key="EditorConfiguration.TabKeyBehavior">0</value>
++   <value type="int" key="EditorConfiguration.TabSize">8</value>
++   <value type="bool" key="EditorConfiguration.UseGlobal">true</value>
++   <value type="int" key="EditorConfiguration.Utf8BomBehavior">1</value>
++   <value type="bool" key="EditorConfiguration.addFinalNewLine">true</value>
++   <value type="bool" key="EditorConfiguration.cleanIndentation">true</value>
++   <value type="bool" key="EditorConfiguration.cleanWhitespace">true</value>
++   <value type="bool" key="EditorConfiguration.inEntireDocument">false</value>
++  </valuemap>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.PluginSettings</variable>
++  <valuemap type="QVariantMap">
++   <valuelist type="QVariantList" key="ClangCodeModel.CustomCommandLineKey"/>
++   <value type="bool" key="ClangCodeModel.UseGlobalConfig">true</value>
++  </valuemap>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.Target.0</variable>
++  <valuemap type="QVariantMap">
++   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop</value>
++   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Desktop</value>
++   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{7a6826a5-1cc3-4f1a-a2f0-7c499b37d398}</value>
++   <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
++   <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
++   <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">1</value>
++   <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
++    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/nikos/Workspace/src/2.9.2</value>
++    <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
++     <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
++      <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
++      <value type="QString" key="ProjectExplorer.ProcessStep.Arguments"></value>
++      <value type="QString" key="ProjectExplorer.ProcessStep.Command">/home/nikos/Workspace/src/2.9.2/make_all.sh</value>
++      <value type="QString" key="ProjectExplorer.ProcessStep.WorkingDirectory">%{buildDir}</value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Custom Process Step</value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.ProcessStep</value>
++     </valuemap>
++     <value type="int" key="ProjectExplorer.BuildStepList.StepsCount">1</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Build</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.BuildSteps.Build</value>
++    </valuemap>
++    <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.1">
++     <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
++      <valuelist type="QVariantList" key="GenericProjectManager.GenericMakeStep.BuildTargets">
++       <value type="QString">all</value>
++      </valuelist>
++      <value type="bool" key="GenericProjectManager.GenericMakeStep.Clean">false</value>
++      <value type="QString" key="GenericProjectManager.GenericMakeStep.MakeArguments">-f simset.make</value>
++      <value type="QString" key="GenericProjectManager.GenericMakeStep.MakeCommand"></value>
++      <value type="bool" key="GenericProjectManager.GenericMakeStep.OverrideMakeflags">false</value>
++      <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Make</value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">GenericProjectManager.GenericMakeStep</value>
++     </valuemap>
++     <value type="int" key="ProjectExplorer.BuildStepList.StepsCount">1</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Clean</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.BuildSteps.Clean</value>
++    </valuemap>
++    <value type="int" key="ProjectExplorer.BuildConfiguration.BuildStepListCount">2</value>
++    <value type="bool" key="ProjectExplorer.BuildConfiguration.ClearSystemEnvironment">false</value>
++    <valuelist type="QVariantList" key="ProjectExplorer.BuildConfiguration.UserEnvironmentChanges"/>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Default</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Default</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">GenericProjectManager.GenericBuildConfiguration</value>
++   </valuemap>
++   <value type="int" key="ProjectExplorer.Target.BuildConfigurationCount">1</value>
++   <valuemap type="QVariantMap" key="ProjectExplorer.Target.DeployConfiguration.0">
++    <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
++     <value type="int" key="ProjectExplorer.BuildStepList.StepsCount">0</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Deploy</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.BuildSteps.Deploy</value>
++    </valuemap>
++    <value type="int" key="ProjectExplorer.BuildConfiguration.BuildStepListCount">1</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Deploy Configuration</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.DefaultDeployConfiguration</value>
++   </valuemap>
++   <value type="int" key="ProjectExplorer.Target.DeployConfigurationCount">1</value>
++   <valuemap type="QVariantMap" key="ProjectExplorer.Target.PluginSettings"/>
++   <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.0">
++    <value type="bool" key="Analyzer.QmlProfiler.AggregateTraces">false</value>
++    <value type="bool" key="Analyzer.QmlProfiler.FlushEnabled">false</value>
++    <value type="uint" key="Analyzer.QmlProfiler.FlushInterval">1000</value>
++    <value type="QString" key="Analyzer.QmlProfiler.LastTraceFile"></value>
++    <value type="bool" key="Analyzer.QmlProfiler.Settings.UseGlobalSettings">true</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.AddedSuppressionFiles"/>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.CollectBusEvents">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.CollectSystime">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableBranchSim">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableCacheSim">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableEventToolTips">true</value>
++    <value type="double" key="Analyzer.Valgrind.Callgrind.MinimumCostRatio">0.01</value>
++    <value type="double" key="Analyzer.Valgrind.Callgrind.VisualisationMinimumCostRatio">10</value>
++    <value type="bool" key="Analyzer.Valgrind.FilterExternalIssues">true</value>
++    <value type="int" key="Analyzer.Valgrind.LeakCheckOnFinish">1</value>
++    <value type="int" key="Analyzer.Valgrind.NumCallers">25</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.RemovedSuppressionFiles"/>
++    <value type="int" key="Analyzer.Valgrind.SelfModifyingCodeDetection">1</value>
++    <value type="bool" key="Analyzer.Valgrind.Settings.UseGlobalSettings">true</value>
++    <value type="bool" key="Analyzer.Valgrind.ShowReachable">false</value>
++    <value type="bool" key="Analyzer.Valgrind.TrackOrigins">true</value>
++    <value type="QString" key="Analyzer.Valgrind.ValgrindExecutable">valgrind</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.VisibleErrorKinds">
++     <value type="int">0</value>
++     <value type="int">1</value>
++     <value type="int">2</value>
++     <value type="int">3</value>
++     <value type="int">4</value>
++     <value type="int">5</value>
++     <value type="int">6</value>
++     <value type="int">7</value>
++     <value type="int">8</value>
++     <value type="int">9</value>
++     <value type="int">10</value>
++     <value type="int">11</value>
++     <value type="int">12</value>
++     <value type="int">13</value>
++     <value type="int">14</value>
++    </valuelist>
++    <value type="int" key="PE.EnvironmentAspect.Base">2</value>
++    <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
++    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable">/home/nikos/Workspace/src/2.9.2/bin/printheader</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Custom Executable</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">PrintHeader</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.CustomExecutableRunConfiguration</value>
++    <value type="QString" key="RunConfiguration.Arguments">my_history.lm</value>
++    <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
++    <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
++    <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
++    <value type="bool" key="RunConfiguration.UseMultiProcess">false</value>
++    <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
++    <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
++    <value type="bool" key="RunConfiguration.UseTerminal">true</value>
++    <value type="QString" key="RunConfiguration.WorkingDirectory">/home/nikos/Workspace/brainviset_simset/Results/fast_Test/Siemens_mCT/Projections/Iteration1/initialParams_Nikos1/</value>
++    <value type="QString" key="RunConfiguration.WorkingDirectory.default"></value>
++   </valuemap>
++   <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.1">
++    <value type="bool" key="Analyzer.QmlProfiler.AggregateTraces">false</value>
++    <value type="bool" key="Analyzer.QmlProfiler.FlushEnabled">false</value>
++    <value type="uint" key="Analyzer.QmlProfiler.FlushInterval">1000</value>
++    <value type="QString" key="Analyzer.QmlProfiler.LastTraceFile"></value>
++    <value type="bool" key="Analyzer.QmlProfiler.Settings.UseGlobalSettings">true</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.AddedSuppressionFiles"/>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.CollectBusEvents">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.CollectSystime">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableBranchSim">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableCacheSim">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableEventToolTips">true</value>
++    <value type="double" key="Analyzer.Valgrind.Callgrind.MinimumCostRatio">0.01</value>
++    <value type="double" key="Analyzer.Valgrind.Callgrind.VisualisationMinimumCostRatio">10</value>
++    <value type="bool" key="Analyzer.Valgrind.FilterExternalIssues">true</value>
++    <value type="int" key="Analyzer.Valgrind.LeakCheckOnFinish">1</value>
++    <value type="int" key="Analyzer.Valgrind.NumCallers">25</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.RemovedSuppressionFiles"/>
++    <value type="int" key="Analyzer.Valgrind.SelfModifyingCodeDetection">1</value>
++    <value type="bool" key="Analyzer.Valgrind.Settings.UseGlobalSettings">true</value>
++    <value type="bool" key="Analyzer.Valgrind.ShowReachable">false</value>
++    <value type="bool" key="Analyzer.Valgrind.TrackOrigins">true</value>
++    <value type="QString" key="Analyzer.Valgrind.ValgrindExecutable">valgrind</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.VisibleErrorKinds">
++     <value type="int">0</value>
++     <value type="int">1</value>
++     <value type="int">2</value>
++     <value type="int">3</value>
++     <value type="int">4</value>
++     <value type="int">5</value>
++     <value type="int">6</value>
++     <value type="int">7</value>
++     <value type="int">8</value>
++     <value type="int">9</value>
++     <value type="int">10</value>
++     <value type="int">11</value>
++     <value type="int">12</value>
++     <value type="int">13</value>
++     <value type="int">14</value>
++    </valuelist>
++    <value type="int" key="PE.EnvironmentAspect.Base">2</value>
++    <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
++    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable">/home/nikos/Workspace/src/2.9.2/bin/phgbin</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Custom Executable</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">BinHistoryFile</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.CustomExecutableRunConfiguration</value>
++    <value type="QString" key="RunConfiguration.Arguments">-p phginitialParams_Nikos.rec</value>
++    <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
++    <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
++    <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
++    <value type="bool" key="RunConfiguration.UseMultiProcess">false</value>
++    <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
++    <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
++    <value type="bool" key="RunConfiguration.UseTerminal">true</value>
++    <value type="QString" key="RunConfiguration.WorkingDirectory">/home/nikos/Workspace/brainviset_simset/Results/fast_Test/Siemens_mCT/Projections/Iteration1/initialParams_Nikos1/</value>
++    <value type="QString" key="RunConfiguration.WorkingDirectory.default"></value>
++   </valuemap>
++   <value type="int" key="ProjectExplorer.Target.RunConfigurationCount">2</value>
++  </valuemap>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.TargetCount</variable>
++  <value type="int">1</value>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.Updater.FileVersion</variable>
++  <value type="int">20</value>
++ </data>
++ <data>
++  <variable>Version</variable>
++  <value type="int">20</value>
++ </data>
++</qtcreator>
+diff -ruN 2.9.2_orig/src/SimSET.creator.user 2.9.2/src/SimSET.creator.user
+--- 2.9.2_orig/src/SimSET.creator.user	1970-01-01 01:00:00.000000000 +0100
++++ 2.9.2/src/SimSET.creator.user	2019-06-03 10:39:33.415825090 +0100
+@@ -0,0 +1,345 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE QtCreatorProject>
++<!-- Written by QtCreator 4.9.1, 2019-06-03T10:39:33. -->
++<qtcreator>
++ <data>
++  <variable>EnvironmentId</variable>
++  <value type="QByteArray">{c62e0ab5-e250-4d63-8bd6-413f8f0df425}</value>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.ActiveTarget</variable>
++  <value type="int">0</value>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.EditorSettings</variable>
++  <valuemap type="QVariantMap">
++   <value type="bool" key="EditorConfiguration.AutoIndent">true</value>
++   <value type="bool" key="EditorConfiguration.AutoSpacesForTabs">false</value>
++   <value type="bool" key="EditorConfiguration.CamelCaseNavigation">true</value>
++   <valuemap type="QVariantMap" key="EditorConfiguration.CodeStyle.0">
++    <value type="QString" key="language">Cpp</value>
++    <valuemap type="QVariantMap" key="value">
++     <value type="QByteArray" key="CurrentPreferences">CppGlobal</value>
++    </valuemap>
++   </valuemap>
++   <valuemap type="QVariantMap" key="EditorConfiguration.CodeStyle.1">
++    <value type="QString" key="language">QmlJS</value>
++    <valuemap type="QVariantMap" key="value">
++     <value type="QByteArray" key="CurrentPreferences">QmlJSGlobal</value>
++    </valuemap>
++   </valuemap>
++   <value type="int" key="EditorConfiguration.CodeStyle.Count">2</value>
++   <value type="QByteArray" key="EditorConfiguration.Codec">UTF-8</value>
++   <value type="bool" key="EditorConfiguration.ConstrainTooltips">false</value>
++   <value type="int" key="EditorConfiguration.IndentSize">4</value>
++   <value type="bool" key="EditorConfiguration.KeyboardTooltips">false</value>
++   <value type="int" key="EditorConfiguration.MarginColumn">80</value>
++   <value type="bool" key="EditorConfiguration.MouseHiding">true</value>
++   <value type="bool" key="EditorConfiguration.MouseNavigation">true</value>
++   <value type="int" key="EditorConfiguration.PaddingMode">1</value>
++   <value type="bool" key="EditorConfiguration.ScrollWheelZooming">true</value>
++   <value type="bool" key="EditorConfiguration.ShowMargin">false</value>
++   <value type="int" key="EditorConfiguration.SmartBackspaceBehavior">0</value>
++   <value type="bool" key="EditorConfiguration.SmartSelectionChanging">true</value>
++   <value type="bool" key="EditorConfiguration.SpacesForTabs">true</value>
++   <value type="int" key="EditorConfiguration.TabKeyBehavior">0</value>
++   <value type="int" key="EditorConfiguration.TabSize">8</value>
++   <value type="bool" key="EditorConfiguration.UseGlobal">true</value>
++   <value type="int" key="EditorConfiguration.Utf8BomBehavior">1</value>
++   <value type="bool" key="EditorConfiguration.addFinalNewLine">true</value>
++   <value type="bool" key="EditorConfiguration.cleanIndentation">true</value>
++   <value type="bool" key="EditorConfiguration.cleanWhitespace">true</value>
++   <value type="bool" key="EditorConfiguration.inEntireDocument">false</value>
++  </valuemap>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.PluginSettings</variable>
++  <valuemap type="QVariantMap">
++   <valuelist type="QVariantList" key="ClangCodeModel.CustomCommandLineKey"/>
++   <value type="bool" key="ClangCodeModel.UseGlobalConfig">true</value>
++  </valuemap>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.Target.0</variable>
++  <valuemap type="QVariantMap">
++   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop</value>
++   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Desktop</value>
++   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{7a6826a5-1cc3-4f1a-a2f0-7c499b37d398}</value>
++   <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
++   <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
++   <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">2</value>
++   <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
++    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/nikos/Workspace/src/2.9.2</value>
++    <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
++     <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
++      <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
++      <value type="QString" key="ProjectExplorer.ProcessStep.Arguments"></value>
++      <value type="QString" key="ProjectExplorer.ProcessStep.Command">/home/nikos/Workspace/src/2.9.2/make_all.sh</value>
++      <value type="QString" key="ProjectExplorer.ProcessStep.WorkingDirectory">%{buildDir}</value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Custom Process Step</value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.ProcessStep</value>
++     </valuemap>
++     <value type="int" key="ProjectExplorer.BuildStepList.StepsCount">1</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Build</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.BuildSteps.Build</value>
++    </valuemap>
++    <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.1">
++     <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
++      <valuelist type="QVariantList" key="GenericProjectManager.GenericMakeStep.BuildTargets">
++       <value type="QString">all</value>
++      </valuelist>
++      <value type="bool" key="GenericProjectManager.GenericMakeStep.Clean">false</value>
++      <value type="QString" key="GenericProjectManager.GenericMakeStep.MakeArguments">-f simset.make</value>
++      <value type="QString" key="GenericProjectManager.GenericMakeStep.MakeCommand"></value>
++      <value type="bool" key="GenericProjectManager.GenericMakeStep.OverrideMakeflags">false</value>
++      <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Make</value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">GenericProjectManager.GenericMakeStep</value>
++     </valuemap>
++     <value type="int" key="ProjectExplorer.BuildStepList.StepsCount">1</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Clean</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.BuildSteps.Clean</value>
++    </valuemap>
++    <value type="int" key="ProjectExplorer.BuildConfiguration.BuildStepListCount">2</value>
++    <value type="bool" key="ProjectExplorer.BuildConfiguration.ClearSystemEnvironment">false</value>
++    <valuelist type="QVariantList" key="ProjectExplorer.BuildConfiguration.UserEnvironmentChanges"/>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Default</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Default</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">GenericProjectManager.GenericBuildConfiguration</value>
++   </valuemap>
++   <value type="int" key="ProjectExplorer.Target.BuildConfigurationCount">1</value>
++   <valuemap type="QVariantMap" key="ProjectExplorer.Target.DeployConfiguration.0">
++    <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
++     <value type="int" key="ProjectExplorer.BuildStepList.StepsCount">0</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Deploy</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.BuildSteps.Deploy</value>
++    </valuemap>
++    <value type="int" key="ProjectExplorer.BuildConfiguration.BuildStepListCount">1</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Deploy Configuration</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.DefaultDeployConfiguration</value>
++   </valuemap>
++   <value type="int" key="ProjectExplorer.Target.DeployConfigurationCount">1</value>
++   <valuemap type="QVariantMap" key="ProjectExplorer.Target.PluginSettings"/>
++   <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.0">
++    <value type="QString" key="Analyzer.Perf.CallgraphMode">dwarf</value>
++    <valuelist type="QVariantList" key="Analyzer.Perf.Events">
++     <value type="QString">cpu-cycles</value>
++    </valuelist>
++    <valuelist type="QVariantList" key="Analyzer.Perf.ExtraArguments"/>
++    <value type="int" key="Analyzer.Perf.Frequency">250</value>
++    <value type="QString" key="Analyzer.Perf.SampleMode">-F</value>
++    <value type="bool" key="Analyzer.Perf.Settings.UseGlobalSettings">true</value>
++    <value type="int" key="Analyzer.Perf.StackSize">4096</value>
++    <value type="bool" key="Analyzer.QmlProfiler.AggregateTraces">false</value>
++    <value type="bool" key="Analyzer.QmlProfiler.FlushEnabled">false</value>
++    <value type="uint" key="Analyzer.QmlProfiler.FlushInterval">1000</value>
++    <value type="QString" key="Analyzer.QmlProfiler.LastTraceFile"></value>
++    <value type="bool" key="Analyzer.QmlProfiler.Settings.UseGlobalSettings">true</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.AddedSuppressionFiles"/>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.CollectBusEvents">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.CollectSystime">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableBranchSim">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableCacheSim">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableEventToolTips">true</value>
++    <value type="double" key="Analyzer.Valgrind.Callgrind.MinimumCostRatio">0.01</value>
++    <value type="double" key="Analyzer.Valgrind.Callgrind.VisualisationMinimumCostRatio">10</value>
++    <value type="bool" key="Analyzer.Valgrind.FilterExternalIssues">true</value>
++    <value type="QString" key="Analyzer.Valgrind.KCachegrindExecutable">kcachegrind</value>
++    <value type="int" key="Analyzer.Valgrind.LeakCheckOnFinish">1</value>
++    <value type="int" key="Analyzer.Valgrind.NumCallers">25</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.RemovedSuppressionFiles"/>
++    <value type="int" key="Analyzer.Valgrind.SelfModifyingCodeDetection">1</value>
++    <value type="bool" key="Analyzer.Valgrind.Settings.UseGlobalSettings">true</value>
++    <value type="bool" key="Analyzer.Valgrind.ShowReachable">false</value>
++    <value type="bool" key="Analyzer.Valgrind.TrackOrigins">true</value>
++    <value type="QString" key="Analyzer.Valgrind.ValgrindExecutable">valgrind</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.VisibleErrorKinds">
++     <value type="int">0</value>
++     <value type="int">1</value>
++     <value type="int">2</value>
++     <value type="int">3</value>
++     <value type="int">4</value>
++     <value type="int">5</value>
++     <value type="int">6</value>
++     <value type="int">7</value>
++     <value type="int">8</value>
++     <value type="int">9</value>
++     <value type="int">10</value>
++     <value type="int">11</value>
++     <value type="int">12</value>
++     <value type="int">13</value>
++     <value type="int">14</value>
++    </valuelist>
++    <value type="int" key="PE.EnvironmentAspect.Base">2</value>
++    <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
++    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable">/home/nikos/Workspace/src/2.9.2/bin/printheader</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Custom Executable</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">PrintHeader</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.CustomExecutableRunConfiguration</value>
++    <value type="QString" key="RunConfiguration.Arguments">phg_hf.hist</value>
++    <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
++    <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
++    <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
++    <value type="bool" key="RunConfiguration.UseMultiProcess">false</value>
++    <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
++    <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
++    <value type="bool" key="RunConfiguration.UseTerminal">true</value>
++    <value type="QString" key="RunConfiguration.WorkingDirectory">/home/nikos/Desktop/tmp/brainVismCT/hist_problem/2historyfiles-selected/</value>
++    <value type="QString" key="RunConfiguration.WorkingDirectory.default"></value>
++   </valuemap>
++   <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.1">
++    <value type="QString" key="Analyzer.Perf.CallgraphMode">dwarf</value>
++    <valuelist type="QVariantList" key="Analyzer.Perf.Events">
++     <value type="QString">cpu-cycles</value>
++    </valuelist>
++    <valuelist type="QVariantList" key="Analyzer.Perf.ExtraArguments"/>
++    <value type="int" key="Analyzer.Perf.Frequency">250</value>
++    <value type="QString" key="Analyzer.Perf.SampleMode">-F</value>
++    <value type="bool" key="Analyzer.Perf.Settings.UseGlobalSettings">true</value>
++    <value type="int" key="Analyzer.Perf.StackSize">4096</value>
++    <value type="bool" key="Analyzer.QmlProfiler.AggregateTraces">false</value>
++    <value type="bool" key="Analyzer.QmlProfiler.FlushEnabled">false</value>
++    <value type="uint" key="Analyzer.QmlProfiler.FlushInterval">1000</value>
++    <value type="QString" key="Analyzer.QmlProfiler.LastTraceFile"></value>
++    <value type="bool" key="Analyzer.QmlProfiler.Settings.UseGlobalSettings">true</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.AddedSuppressionFiles"/>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.CollectBusEvents">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.CollectSystime">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableBranchSim">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableCacheSim">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableEventToolTips">true</value>
++    <value type="double" key="Analyzer.Valgrind.Callgrind.MinimumCostRatio">0.01</value>
++    <value type="double" key="Analyzer.Valgrind.Callgrind.VisualisationMinimumCostRatio">10</value>
++    <value type="bool" key="Analyzer.Valgrind.FilterExternalIssues">true</value>
++    <value type="QString" key="Analyzer.Valgrind.KCachegrindExecutable">kcachegrind</value>
++    <value type="int" key="Analyzer.Valgrind.LeakCheckOnFinish">1</value>
++    <value type="int" key="Analyzer.Valgrind.NumCallers">25</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.RemovedSuppressionFiles"/>
++    <value type="int" key="Analyzer.Valgrind.SelfModifyingCodeDetection">1</value>
++    <value type="bool" key="Analyzer.Valgrind.Settings.UseGlobalSettings">true</value>
++    <value type="bool" key="Analyzer.Valgrind.ShowReachable">false</value>
++    <value type="bool" key="Analyzer.Valgrind.TrackOrigins">true</value>
++    <value type="QString" key="Analyzer.Valgrind.ValgrindExecutable">valgrind</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.VisibleErrorKinds">
++     <value type="int">0</value>
++     <value type="int">1</value>
++     <value type="int">2</value>
++     <value type="int">3</value>
++     <value type="int">4</value>
++     <value type="int">5</value>
++     <value type="int">6</value>
++     <value type="int">7</value>
++     <value type="int">8</value>
++     <value type="int">9</value>
++     <value type="int">10</value>
++     <value type="int">11</value>
++     <value type="int">12</value>
++     <value type="int">13</value>
++     <value type="int">14</value>
++    </valuelist>
++    <value type="int" key="PE.EnvironmentAspect.Base">2</value>
++    <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
++    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable">/home/nikos/Workspace/src/2.9.2/bin/phgbin</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Custom Executable</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">BinHistoryFile</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.CustomExecutableRunConfiguration</value>
++    <value type="QString" key="RunConfiguration.Arguments">-p phginitialParams_Nikos.rec</value>
++    <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
++    <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
++    <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
++    <value type="bool" key="RunConfiguration.UseMultiProcess">false</value>
++    <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
++    <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
++    <value type="bool" key="RunConfiguration.UseTerminal">true</value>
++    <value type="QString" key="RunConfiguration.WorkingDirectory">/home/nikos/Workspace/brainviset_simset/Results/fast_Test/Siemens_mCT/Projections/Iteration1/initialParams_Nikos1/</value>
++    <value type="QString" key="RunConfiguration.WorkingDirectory.default"></value>
++   </valuemap>
++   <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.2">
++    <value type="QString" key="Analyzer.Perf.CallgraphMode">dwarf</value>
++    <valuelist type="QVariantList" key="Analyzer.Perf.Events">
++     <value type="QString">cpu-cycles</value>
++    </valuelist>
++    <valuelist type="QVariantList" key="Analyzer.Perf.ExtraArguments"/>
++    <value type="int" key="Analyzer.Perf.Frequency">250</value>
++    <value type="QString" key="Analyzer.Perf.SampleMode">-F</value>
++    <value type="bool" key="Analyzer.Perf.Settings.UseGlobalSettings">true</value>
++    <value type="int" key="Analyzer.Perf.StackSize">4096</value>
++    <value type="bool" key="Analyzer.QmlProfiler.AggregateTraces">false</value>
++    <value type="bool" key="Analyzer.QmlProfiler.FlushEnabled">false</value>
++    <value type="uint" key="Analyzer.QmlProfiler.FlushInterval">1000</value>
++    <value type="QString" key="Analyzer.QmlProfiler.LastTraceFile"></value>
++    <value type="bool" key="Analyzer.QmlProfiler.Settings.UseGlobalSettings">true</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.AddedSuppressionFiles"/>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.CollectBusEvents">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.CollectSystime">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableBranchSim">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableCacheSim">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableEventToolTips">true</value>
++    <value type="double" key="Analyzer.Valgrind.Callgrind.MinimumCostRatio">0.01</value>
++    <value type="double" key="Analyzer.Valgrind.Callgrind.VisualisationMinimumCostRatio">10</value>
++    <value type="bool" key="Analyzer.Valgrind.FilterExternalIssues">true</value>
++    <value type="QString" key="Analyzer.Valgrind.KCachegrindExecutable">kcachegrind</value>
++    <value type="int" key="Analyzer.Valgrind.LeakCheckOnFinish">1</value>
++    <value type="int" key="Analyzer.Valgrind.NumCallers">25</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.RemovedSuppressionFiles"/>
++    <value type="int" key="Analyzer.Valgrind.SelfModifyingCodeDetection">1</value>
++    <value type="bool" key="Analyzer.Valgrind.Settings.UseGlobalSettings">true</value>
++    <value type="bool" key="Analyzer.Valgrind.ShowReachable">false</value>
++    <value type="bool" key="Analyzer.Valgrind.TrackOrigins">true</value>
++    <value type="QString" key="Analyzer.Valgrind.ValgrindExecutable">valgrind</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.VisibleErrorKinds">
++     <value type="int">0</value>
++     <value type="int">1</value>
++     <value type="int">2</value>
++     <value type="int">3</value>
++     <value type="int">4</value>
++     <value type="int">5</value>
++     <value type="int">6</value>
++     <value type="int">7</value>
++     <value type="int">8</value>
++     <value type="int">9</value>
++     <value type="int">10</value>
++     <value type="int">11</value>
++     <value type="int">12</value>
++     <value type="int">13</value>
++     <value type="int">14</value>
++    </valuelist>
++    <value type="int" key="PE.EnvironmentAspect.Base">2</value>
++    <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
++    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable">/home/nikos/Workspace/src/2.9.2/bin/combinehist</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Custom Executable</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">combinehist</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.CustomExecutableRunConfiguration</value>
++    <value type="QString" key="RunConfiguration.Arguments">phg_hf.hist phg_hf1.hist output</value>
++    <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
++    <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
++    <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
++    <value type="bool" key="RunConfiguration.UseMultiProcess">false</value>
++    <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
++    <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
++    <value type="bool" key="RunConfiguration.UseTerminal">true</value>
++    <value type="QString" key="RunConfiguration.WorkingDirectory">/home/nikos/Desktop/tmp/brainVismCT/hist_problem/2historyfiles-selected/</value>
++    <value type="QString" key="RunConfiguration.WorkingDirectory.default"></value>
++   </valuemap>
++   <value type="int" key="ProjectExplorer.Target.RunConfigurationCount">3</value>
++  </valuemap>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.TargetCount</variable>
++  <value type="int">1</value>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.Updater.FileVersion</variable>
++  <value type="int">21</value>
++ </data>
++ <data>
++  <variable>Version</variable>
++  <value type="int">21</value>
++ </data>
++</qtcreator>
+diff -ruN 2.9.2_orig/src/SimSET.creator.user.4.9-pre1 2.9.2/src/SimSET.creator.user.4.9-pre1
+--- 2.9.2_orig/src/SimSET.creator.user.4.9-pre1	1970-01-01 01:00:00.000000000 +0100
++++ 2.9.2/src/SimSET.creator.user.4.9-pre1	2019-06-02 23:56:57.523463142 +0100
+@@ -0,0 +1,258 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<!DOCTYPE QtCreatorProject>
++<!-- Written by QtCreator 4.8.2, 2019-04-03T13:59:50. -->
++<qtcreator>
++ <data>
++  <variable>EnvironmentId</variable>
++  <value type="QByteArray">{c62e0ab5-e250-4d63-8bd6-413f8f0df425}</value>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.ActiveTarget</variable>
++  <value type="int">0</value>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.EditorSettings</variable>
++  <valuemap type="QVariantMap">
++   <value type="bool" key="EditorConfiguration.AutoIndent">true</value>
++   <value type="bool" key="EditorConfiguration.AutoSpacesForTabs">false</value>
++   <value type="bool" key="EditorConfiguration.CamelCaseNavigation">true</value>
++   <valuemap type="QVariantMap" key="EditorConfiguration.CodeStyle.0">
++    <value type="QString" key="language">Cpp</value>
++    <valuemap type="QVariantMap" key="value">
++     <value type="QByteArray" key="CurrentPreferences">CppGlobal</value>
++    </valuemap>
++   </valuemap>
++   <valuemap type="QVariantMap" key="EditorConfiguration.CodeStyle.1">
++    <value type="QString" key="language">QmlJS</value>
++    <valuemap type="QVariantMap" key="value">
++     <value type="QByteArray" key="CurrentPreferences">QmlJSGlobal</value>
++    </valuemap>
++   </valuemap>
++   <value type="int" key="EditorConfiguration.CodeStyle.Count">2</value>
++   <value type="QByteArray" key="EditorConfiguration.Codec">UTF-8</value>
++   <value type="bool" key="EditorConfiguration.ConstrainTooltips">false</value>
++   <value type="int" key="EditorConfiguration.IndentSize">4</value>
++   <value type="bool" key="EditorConfiguration.KeyboardTooltips">false</value>
++   <value type="int" key="EditorConfiguration.MarginColumn">80</value>
++   <value type="bool" key="EditorConfiguration.MouseHiding">true</value>
++   <value type="bool" key="EditorConfiguration.MouseNavigation">true</value>
++   <value type="int" key="EditorConfiguration.PaddingMode">1</value>
++   <value type="bool" key="EditorConfiguration.ScrollWheelZooming">true</value>
++   <value type="bool" key="EditorConfiguration.ShowMargin">false</value>
++   <value type="int" key="EditorConfiguration.SmartBackspaceBehavior">0</value>
++   <value type="bool" key="EditorConfiguration.SmartSelectionChanging">true</value>
++   <value type="bool" key="EditorConfiguration.SpacesForTabs">true</value>
++   <value type="int" key="EditorConfiguration.TabKeyBehavior">0</value>
++   <value type="int" key="EditorConfiguration.TabSize">8</value>
++   <value type="bool" key="EditorConfiguration.UseGlobal">true</value>
++   <value type="int" key="EditorConfiguration.Utf8BomBehavior">1</value>
++   <value type="bool" key="EditorConfiguration.addFinalNewLine">true</value>
++   <value type="bool" key="EditorConfiguration.cleanIndentation">true</value>
++   <value type="bool" key="EditorConfiguration.cleanWhitespace">true</value>
++   <value type="bool" key="EditorConfiguration.inEntireDocument">false</value>
++  </valuemap>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.PluginSettings</variable>
++  <valuemap type="QVariantMap">
++   <valuelist type="QVariantList" key="ClangCodeModel.CustomCommandLineKey"/>
++   <value type="bool" key="ClangCodeModel.UseGlobalConfig">true</value>
++  </valuemap>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.Target.0</variable>
++  <valuemap type="QVariantMap">
++   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Desktop</value>
++   <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Desktop</value>
++   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{7a6826a5-1cc3-4f1a-a2f0-7c499b37d398}</value>
++   <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
++   <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
++   <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">1</value>
++   <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
++    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">/home/nikos/Workspace/src/2.9.2</value>
++    <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
++     <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
++      <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
++      <value type="QString" key="ProjectExplorer.ProcessStep.Arguments"></value>
++      <value type="QString" key="ProjectExplorer.ProcessStep.Command">/home/nikos/Workspace/src/2.9.2/make_all.sh</value>
++      <value type="QString" key="ProjectExplorer.ProcessStep.WorkingDirectory">%{buildDir}</value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Custom Process Step</value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.ProcessStep</value>
++     </valuemap>
++     <value type="int" key="ProjectExplorer.BuildStepList.StepsCount">1</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Build</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.BuildSteps.Build</value>
++    </valuemap>
++    <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.1">
++     <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
++      <valuelist type="QVariantList" key="GenericProjectManager.GenericMakeStep.BuildTargets">
++       <value type="QString">all</value>
++      </valuelist>
++      <value type="bool" key="GenericProjectManager.GenericMakeStep.Clean">false</value>
++      <value type="QString" key="GenericProjectManager.GenericMakeStep.MakeArguments">-f simset.make</value>
++      <value type="QString" key="GenericProjectManager.GenericMakeStep.MakeCommand"></value>
++      <value type="bool" key="GenericProjectManager.GenericMakeStep.OverrideMakeflags">false</value>
++      <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Make</value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++      <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">GenericProjectManager.GenericMakeStep</value>
++     </valuemap>
++     <value type="int" key="ProjectExplorer.BuildStepList.StepsCount">1</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Clean</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.BuildSteps.Clean</value>
++    </valuemap>
++    <value type="int" key="ProjectExplorer.BuildConfiguration.BuildStepListCount">2</value>
++    <value type="bool" key="ProjectExplorer.BuildConfiguration.ClearSystemEnvironment">false</value>
++    <valuelist type="QVariantList" key="ProjectExplorer.BuildConfiguration.UserEnvironmentChanges"/>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Default</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Default</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">GenericProjectManager.GenericBuildConfiguration</value>
++   </valuemap>
++   <value type="int" key="ProjectExplorer.Target.BuildConfigurationCount">1</value>
++   <valuemap type="QVariantMap" key="ProjectExplorer.Target.DeployConfiguration.0">
++    <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
++     <value type="int" key="ProjectExplorer.BuildStepList.StepsCount">0</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Deploy</value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.BuildSteps.Deploy</value>
++    </valuemap>
++    <value type="int" key="ProjectExplorer.BuildConfiguration.BuildStepListCount">1</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Deploy Configuration</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.DefaultDeployConfiguration</value>
++   </valuemap>
++   <value type="int" key="ProjectExplorer.Target.DeployConfigurationCount">1</value>
++   <valuemap type="QVariantMap" key="ProjectExplorer.Target.PluginSettings"/>
++   <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.0">
++    <value type="bool" key="Analyzer.QmlProfiler.AggregateTraces">false</value>
++    <value type="bool" key="Analyzer.QmlProfiler.FlushEnabled">false</value>
++    <value type="uint" key="Analyzer.QmlProfiler.FlushInterval">1000</value>
++    <value type="QString" key="Analyzer.QmlProfiler.LastTraceFile"></value>
++    <value type="bool" key="Analyzer.QmlProfiler.Settings.UseGlobalSettings">true</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.AddedSuppressionFiles"/>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.CollectBusEvents">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.CollectSystime">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableBranchSim">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableCacheSim">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableEventToolTips">true</value>
++    <value type="double" key="Analyzer.Valgrind.Callgrind.MinimumCostRatio">0.01</value>
++    <value type="double" key="Analyzer.Valgrind.Callgrind.VisualisationMinimumCostRatio">10</value>
++    <value type="bool" key="Analyzer.Valgrind.FilterExternalIssues">true</value>
++    <value type="int" key="Analyzer.Valgrind.LeakCheckOnFinish">1</value>
++    <value type="int" key="Analyzer.Valgrind.NumCallers">25</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.RemovedSuppressionFiles"/>
++    <value type="int" key="Analyzer.Valgrind.SelfModifyingCodeDetection">1</value>
++    <value type="bool" key="Analyzer.Valgrind.Settings.UseGlobalSettings">true</value>
++    <value type="bool" key="Analyzer.Valgrind.ShowReachable">false</value>
++    <value type="bool" key="Analyzer.Valgrind.TrackOrigins">true</value>
++    <value type="QString" key="Analyzer.Valgrind.ValgrindExecutable">valgrind</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.VisibleErrorKinds">
++     <value type="int">0</value>
++     <value type="int">1</value>
++     <value type="int">2</value>
++     <value type="int">3</value>
++     <value type="int">4</value>
++     <value type="int">5</value>
++     <value type="int">6</value>
++     <value type="int">7</value>
++     <value type="int">8</value>
++     <value type="int">9</value>
++     <value type="int">10</value>
++     <value type="int">11</value>
++     <value type="int">12</value>
++     <value type="int">13</value>
++     <value type="int">14</value>
++    </valuelist>
++    <value type="int" key="PE.EnvironmentAspect.Base">2</value>
++    <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
++    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable">/home/nikos/Workspace/src/2.9.2/bin/printheader</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Custom Executable</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">PrintHeader</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.CustomExecutableRunConfiguration</value>
++    <value type="QString" key="RunConfiguration.Arguments">my_history.lm</value>
++    <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
++    <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
++    <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
++    <value type="bool" key="RunConfiguration.UseMultiProcess">false</value>
++    <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
++    <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
++    <value type="bool" key="RunConfiguration.UseTerminal">true</value>
++    <value type="QString" key="RunConfiguration.WorkingDirectory">/home/nikos/Workspace/brainviset_simset/Results/fast_Test/Siemens_mCT/Projections/Iteration1/initialParams_Nikos1/</value>
++    <value type="QString" key="RunConfiguration.WorkingDirectory.default"></value>
++   </valuemap>
++   <valuemap type="QVariantMap" key="ProjectExplorer.Target.RunConfiguration.1">
++    <value type="bool" key="Analyzer.QmlProfiler.AggregateTraces">false</value>
++    <value type="bool" key="Analyzer.QmlProfiler.FlushEnabled">false</value>
++    <value type="uint" key="Analyzer.QmlProfiler.FlushInterval">1000</value>
++    <value type="QString" key="Analyzer.QmlProfiler.LastTraceFile"></value>
++    <value type="bool" key="Analyzer.QmlProfiler.Settings.UseGlobalSettings">true</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.AddedSuppressionFiles"/>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.CollectBusEvents">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.CollectSystime">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableBranchSim">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableCacheSim">false</value>
++    <value type="bool" key="Analyzer.Valgrind.Callgrind.EnableEventToolTips">true</value>
++    <value type="double" key="Analyzer.Valgrind.Callgrind.MinimumCostRatio">0.01</value>
++    <value type="double" key="Analyzer.Valgrind.Callgrind.VisualisationMinimumCostRatio">10</value>
++    <value type="bool" key="Analyzer.Valgrind.FilterExternalIssues">true</value>
++    <value type="int" key="Analyzer.Valgrind.LeakCheckOnFinish">1</value>
++    <value type="int" key="Analyzer.Valgrind.NumCallers">25</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.RemovedSuppressionFiles"/>
++    <value type="int" key="Analyzer.Valgrind.SelfModifyingCodeDetection">1</value>
++    <value type="bool" key="Analyzer.Valgrind.Settings.UseGlobalSettings">true</value>
++    <value type="bool" key="Analyzer.Valgrind.ShowReachable">false</value>
++    <value type="bool" key="Analyzer.Valgrind.TrackOrigins">true</value>
++    <value type="QString" key="Analyzer.Valgrind.ValgrindExecutable">valgrind</value>
++    <valuelist type="QVariantList" key="Analyzer.Valgrind.VisibleErrorKinds">
++     <value type="int">0</value>
++     <value type="int">1</value>
++     <value type="int">2</value>
++     <value type="int">3</value>
++     <value type="int">4</value>
++     <value type="int">5</value>
++     <value type="int">6</value>
++     <value type="int">7</value>
++     <value type="int">8</value>
++     <value type="int">9</value>
++     <value type="int">10</value>
++     <value type="int">11</value>
++     <value type="int">12</value>
++     <value type="int">13</value>
++     <value type="int">14</value>
++    </valuelist>
++    <value type="int" key="PE.EnvironmentAspect.Base">2</value>
++    <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
++    <value type="QString" key="ProjectExplorer.CustomExecutableRunConfiguration.Executable">/home/nikos/Workspace/src/2.9.2/bin/phgbin</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Custom Executable</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">BinHistoryFile</value>
++    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">ProjectExplorer.CustomExecutableRunConfiguration</value>
++    <value type="QString" key="RunConfiguration.Arguments">-p phginitialParams_Nikos.rec</value>
++    <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
++    <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
++    <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
++    <value type="bool" key="RunConfiguration.UseMultiProcess">false</value>
++    <value type="bool" key="RunConfiguration.UseQmlDebugger">false</value>
++    <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
++    <value type="bool" key="RunConfiguration.UseTerminal">true</value>
++    <value type="QString" key="RunConfiguration.WorkingDirectory">/home/nikos/Workspace/brainviset_simset/Results/fast_Test/Siemens_mCT/Projections/Iteration1/initialParams_Nikos1/</value>
++    <value type="QString" key="RunConfiguration.WorkingDirectory.default"></value>
++   </valuemap>
++   <value type="int" key="ProjectExplorer.Target.RunConfigurationCount">2</value>
++  </valuemap>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.TargetCount</variable>
++  <value type="int">1</value>
++ </data>
++ <data>
++  <variable>ProjectExplorer.Project.Updater.FileVersion</variable>
++  <value type="int">20</value>
++ </data>
++ <data>
++  <variable>Version</variable>
++  <value type="int">20</value>
++ </data>
++</qtcreator>
+diff -ruN 2.9.2_orig/src/SimSET.cxxflags 2.9.2/src/SimSET.cxxflags
+--- 2.9.2_orig/src/SimSET.cxxflags	1970-01-01 01:00:00.000000000 +0100
++++ 2.9.2/src/SimSET.cxxflags	2019-06-02 23:53:31.531319263 +0100
+@@ -0,0 +1 @@
++-std=c++17
+\ No newline at end of file
+diff -ruN 2.9.2_orig/src/SimSET.files 2.9.2/src/SimSET.files
+--- 2.9.2_orig/src/SimSET.files	1970-01-01 01:00:00.000000000 +0100
++++ 2.9.2/src/SimSET.files	2019-04-03 13:04:47.733966960 +0100
+@@ -0,0 +1,122 @@
++ColParams.c
++ColParams.h
++ColSlat.c
++ColSlat.h
++ColTypes.h
++ColUsr.c
++ColUsr.h
++Collimator.c
++Collimator.h
++CylPos.c
++CylPos.h
++DetBlock.c
++DetBlock.h
++DetCylinder.c
++DetCylinder.h
++DetGeometric.c
++DetGeometric.h
++DetParams.c
++DetParams.h
++DetPlanar.c
++DetPlanar.h
++DetTypes.h
++DetUsr.c
++DetUsr.h
++Detector.c
++Detector.h
++EmisList.c
++EmisList.h
++Lb2DGeometry.c
++Lb2DGeometry.h
++LbConvert.c
++LbConvert.h
++LbDebug.c
++LbDebug.h
++LbEnvironment.c
++LbEnvironment.h
++LbError.c
++LbError.h
++LbFile.c
++LbFile.h
++LbHeader.c
++LbHeader.h
++LbInterface.c
++LbInterface.h
++LbMacros.h
++LbMath.h
++LbMemory.c
++LbMemory.h
++LbParamFile.c
++LbParamFile.h
++LbSort.c
++LbSort.h
++LbTiming.c
++LbTiming.h
++LbTypes.h
++MT19937.c
++MT19937.h
++PhgBin.c
++PhgBin.h
++PhgHdr.c
++PhgHdr.h
++PhgIsotopes.c
++PhgIsotopes.h
++PhgMath.c
++PhgMath.h
++PhgParams.c
++PhgParams.h
++PhgUsrBin.c
++PhgUsrBin.h
++PhoHFile.c
++PhoHFile.h
++PhoHStat.c
++PhoHStat.h
++PhoTrk.c
++PhoTrk.h
++Photon.h
++ProdTbl.c
++ProdTbl.h
++SubObj.c
++SubObj.h
++SystemDependent.h
++UNCCollimator.c
++UNCCollimator.h
++addrandUsr.c
++addrandUsr.h
++addrandoms.c
++addrandoms.h
++atten.correct.c
++bcomp.c
++bin.phg.c
++bin.phg.h
++breakpoint.swap.c
++build_att.c
++build_coh.c
++calc.attenuation.c
++calc.attenuation.h
++collapse.c
++collapse3d.c
++combine.bin.c
++combine.hist.c
++convert.c
++convert.coh.c
++convert.header.c
++display.header.c
++extract.c
++extract.lines.c
++line3d.c
++makeindexfile.c
++migrate.c
++phg.c
++phg.h
++phg.swap.c
++print.header.c
++print.header.h
++reorder.c
++resampledecaytime.c
++reverse.bytes.c
++scale.c
++simset.c
++strip.header.c
++timesort.c
++ttest.c
+diff -ruN 2.9.2_orig/src/SimSET.includes 2.9.2/src/SimSET.includes
+--- 2.9.2_orig/src/SimSET.includes	1970-01-01 01:00:00.000000000 +0100
++++ 2.9.2/src/SimSET.includes	2019-04-03 13:04:47.737300316 +0100
+@@ -0,0 +1 @@
++.

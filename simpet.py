@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from os.path import join,dirname,abspath,isdir,exists
+from os.path import join, dirname, abspath, isdir, exists
 import os, sys
 import shutil
 import datetime

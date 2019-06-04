@@ -62,43 +62,7 @@ diff -ruN 2.9.2_orig/make.files/simset.make 2.9.2/make.files/simset.make
 +	
  
  # Compiling instructions
- 
-diff -ruN 2.9.2_orig/.prepDistribution.sh 2.9.2/.prepDistribution.sh
---- 2.9.2_orig/.prepDistribution.sh	1970-01-01 01:00:00.000000000 +0100
-+++ 2.9.2/.prepDistribution.sh	2013-10-26 22:12:39.000000000 +0100
-@@ -0,0 +1,32 @@
-+##################################################
-+#
-+#
-+#       This script clears the bin and obj
-+#		directories.  It also clears results
-+#		out of the samples directory.  This
-+#       reduces the size of the distribution
-+#       package and insures that users will
-+#       not accidentally run the results script
-+#       and compare the base results with
-+#       UW results instead of their own.
-+#
-+#
-+##################################################
-+
-+cd bin
-+rm *
-+cd ..
-+
-+cd obj
-+rm *
-+cd ..
-+
-+cd samples/fastTest
-+.clearResults.sh
-+cd ../..
-+
-+cd samples/userFuncExamples
-+.clearBinaries.sh
-+.clearResults.sh
-+cd ../..
-+
+
 diff -ruN 2.9.2_orig/src/bin.phg.c 2.9.2/src/bin.phg.c
 --- 2.9.2_orig/src/bin.phg.c	2013-07-15 10:53:34.000000000 +0100
 +++ 2.9.2/src/bin.phg.c	2019-03-30 16:57:08.522896562 +0000

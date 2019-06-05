@@ -33,12 +33,12 @@ class SimSET_Simulation(object):
         self.photons = params.get("photons")
         self.sim_time = params.get("simulation_time")
         self.divisions = params.get("divisions")
-        
+
         self.detlistmode = params.get("detlistmode")
         self.phglistmode = params.get("phglistmode")
         self.add_randoms = params.get("add_randoms")
 
-    def run(self): 
+    def run(self):
 
         processes = []
 
@@ -50,53 +50,19 @@ class SimSET_Simulation(object):
             processes.append(p)
             p.start()
             time.sleep(5)
-        
+
         for process in processes:
             process.join()
 
-    def prepare_simset_files(self, sim_dir, act_table_factor, act, sim_photons, sim_time, sampling):
-
-        log_file = join(sim_dir, "simpet.log")
-        # Establishing necessary parameters
-        scanner_radius = self.scanner.get("scanner_radius")
-
-        # We activate det_listmode if demanded by user or if add_randoms is on
-        if self.add_randoms==1 or self.detlistmode==1:
-            det_listmode = 1
-            add_randoms = True
-        elif self.add_randoms==0 and self.detlistmode==1: 
-            det_listmode = 1
-            add_randoms = False
-        else:
-            det_listmode = 0
-            add_randoms = False
-
-        # Creating the act table for the simulation....
-        my_act_table = join(sim_dir,"phg_act_table")
-        simset_tools.make_simset_act_table(act_table_factor, my_act_table, log_file=log_file)
-
-        # Creating the phg for the simulation...
-        my_phg_file = join(sim_dir,"phg.rec")
-        simset_tools.make_simset_phg(self.config, my_phg_file, sim_dir, act, scanner_radius, self.center_slice,
-                                     sim_photons, sim_time, add_randoms, self.phglistmode, sampling, log_file=log_file)
-
-        my_det_file = join(sim_dir,"det.rec")
-        simset_tools.make_simset_cyl_det(self.scanner, my_det_file, sim_dir, det_listmode, log_file=log_file)
-
-        my_bin_file = join(sim_dir,"bin.rec")
-        simset_tools.make_simset_bin(self.config, my_bin_file, sim_dir, self.scanner, add_randoms, log_file=log_file)
-
-        simset_tools.make_index_file(sim_dir, self.simset_dir, log_file=log_file)
-
-        return my_phg_file
+        self.simulation_postprocessing()
 
     def run_simset_simulation(self,sim_dir):
-        
+
         log_file = join(sim_dir, "simpet.log")
 
         print("Starting simulation for %s" % os.path.basename(sim_dir))
 
-        act, act_data = tools.nib_load(self.act_map) 
+        act, act_data = tools.nib_load(self.act_map)
 
         # It generates a new act_table for the simulation
         if self.sim_dose !=0:
@@ -123,7 +89,7 @@ class SimSET_Simulation(object):
 
         elif self.s_photons == 0 and self.photons !=0:
             sim_photons = self.photons/self.divisions
-        
+
         else:
             sim_photons = self.s_photons
 
@@ -142,15 +108,15 @@ class SimSET_Simulation(object):
                 sim_photons = self.photons/self.divisions
             else:
                 sim_photons = self.photons
-            
+
             os.remove(rec_weight)
-            
+
             my_phg = self.prepare_simset_files(sim_dir, act_table_factor, act, sim_photons, sim_time, 1)
             my_log = join(sim_dir,"simset_s1.log")
 
             print("Running the sencond simulation with importance sampling...")
             print("\n")
-            
+
             command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
             tools.osrun(command, log_file)
 
@@ -161,6 +127,42 @@ class SimSET_Simulation(object):
             simset_tools.add_randoms(sim_dir, self.simset_dir, coincidence_window, log_file=log_file)
 
         simset_tools.process_weights(rec_weight,sim_dir,self.scanner,self.add_randoms)
+
+    def prepare_simset_files(self, sim_dir, act_table_factor, act, sim_photons, sim_time, sampling):
+
+        log_file = join(sim_dir, "simpet.log")
+        # Establishing necessary parameters
+        scanner_radius = self.scanner.get("scanner_radius")
+
+        # We activate det_listmode if demanded by user or if add_randoms is on
+        if self.add_randoms==1:
+            det_listmode = 1
+            add_randoms = True
+        elif self.detlistmode==1:
+            det_listmode = 1
+            add_randoms = False
+        else:
+            det_listmode = 0
+            add_randoms = False
+
+        # Creating the act table for the simulation....
+        my_act_table = join(sim_dir,"phg_act_table")
+        simset_tools.make_simset_act_table(act_table_factor, my_act_table, log_file=log_file)
+
+        # Creating the phg for the simulation...
+        my_phg_file = join(sim_dir,"phg.rec")
+        simset_tools.make_simset_phg(self.config, my_phg_file, sim_dir, act, scanner_radius, self.center_slice,
+                                     sim_photons, sim_time, add_randoms, self.phglistmode, sampling, log_file=log_file)
+
+        my_det_file = join(sim_dir,"det.rec")
+        simset_tools.make_simset_cyl_det(self.scanner, my_det_file, sim_dir, det_listmode, log_file=log_file)
+
+        my_bin_file = join(sim_dir,"bin.rec")
+        simset_tools.make_simset_bin(self.config, my_bin_file, sim_dir, self.scanner, add_randoms, log_file=log_file)
+
+        simset_tools.make_index_file(sim_dir, self.simset_dir, log_file=log_file)
+
+        return my_phg_file
 
     def simulation_postprocessing(self):
 
@@ -179,7 +181,6 @@ class SimSET_Simulation(object):
                     division_dir = join(self.output_dir, "division_" + str(division))
                     division_image = join(division_dir, image + ".hdr")
                     tools.operate_images_analyze(added_image,division_image,added_image,'sum')
-                    #os.remove(division_image)
 
 class SimSET_Reconstruction(object):
     """This class provides functions to reconstruct a SimSET simulation."""
@@ -197,7 +198,7 @@ class SimSET_Reconstruction(object):
         self.scatt_corr_factor = scanner.get("analytic_scatt_corr_factor")
         self.add_randoms = params.get("add_randoms")
         self.random_corr_factor = scanner.get("analytic_randoms_corr_factor")
-        
+
         self.att_map = att_map
         self.input_dir = projections_dir
         self.output_dir = reconstructions_dir
@@ -215,14 +216,14 @@ class SimSET_Reconstruction(object):
         my_simset_sino = join(self.input_dir, "my_sinogram.hdr")
 
         tools.operate_single_image(scatter_sino, "mult", self.scatt_corr_factor, corr_scatter_sino, self.log_file)
-        tools.operate_images_analyze(trues_sino,corr_scatter_sino,my_simset_sino,operation="mult")
+        tools.operate_images_analyze(trues_sino,corr_scatter_sino,my_simset_sino,operation='sum')
 
         if self.add_randoms == 1:
 
             tools.operate_single_image(randoms_sino, "mult", self.random_corr_factor, corr_randoms_sino, self.log_file)
-            tools.operate_images_analyze(my_simset_sino,corr_randoms_sino,my_simset_sino,operation="mult")
+            tools.operate_images_analyze(my_simset_sino,corr_randoms_sino,my_simset_sino,operation='sum')
 
-        
+
         shutil.copy(my_simset_sino [0:-3] + "img",my_simset_sino [0:-3] + "s")
 
 
@@ -233,10 +234,3 @@ class SimSET_Reconstruction(object):
 
         if not exists(self.output_dir):
             os.makedirs(self.output_dir)
-        
-
-
-
-
-
-

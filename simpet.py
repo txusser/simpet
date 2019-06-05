@@ -12,18 +12,9 @@ import yaml
 class SimPET(object):
     """
     This class provides main SimPET functions.
-    You have to initialize the class with a simulation_name.
+    You have to initialize the class with a params file.
+    Before using SimPET, check out the README.
 
-    A directory structure will be created under Data/simulation_name including:
-    Data/simulation_name/Patient: If your process starts with PET and MR images, they will be copied here
-    Data/simulation_name/Maps: If your process starts with act and att maps, they will be copied here
-    Data/simulation_name/Results: Your sim results and brainviset results will be stored here
-
-    This class is meant to work out of the box.
-    You need Matlab MCR v901 in order to run this. It is possible that you need to modify the self.matlab_mcr_path.
-    MCR Paths working out of the box are:
-    /opt/MATLAB/MATLAB_Compiler_Runtime/v901/
-    /usr/local/MATLAB/MATLAB_Runtime/v901/
     """
 
     def __init__(self,param_file,config_file="config.yml"):
@@ -77,31 +68,41 @@ class SimPET(object):
                     shutil.rmtree(projections_dir)
 
             os.makedirs(projections_dir)
-            
+
             my_simulation = sim.SimSET_Simulation(self.params,self.config,act_map,att_map, self.scanner,projections_dir)
             my_simulation.run()
 
         # If it is a new simulation or if the trues.hdr were not added previously, it makes the postprocessing
-        ### WARNING my_simulation will not be defined...
-        
-        if self.params.get("do_simulation")==1 or not exists (join(projections_dir, "trues.hdr")):
+        if not exists (join(projections_dir, "trues.hdr")):
+
+            my_simulation = sim.SimSET_Simulation(self.params,self.config,act_map,att_map, self.scanner,projections_dir)
             my_simulation.simulation_postprocessing()
 
         if self.params.get("do_reconstruction")==1:
+
+            if not exists (projections_dir):
+                raise Exception('The projections directory does not exist. Run your simulation first.')
+                ## Place some logging here
+                sys.exit(1)
+
+            if not exists (join(projections_dir, "trues.hdr")) and exists (join(projections_dir, "division_0")):
+                print("Your simulation SimSET outputs were not processed previously. We will try it now...")
+                my_simulation = sim.SimSET_Simulation(self.params,self.config,act_map,att_map, self.scanner,projections_dir)
+                my_simulation.simulation_postprocessing()
 
             reconstruction_dir = join(output_dir, "SimSET_STIR_Recons")
 
             if not exists(reconstruction_dir):
                 os.makedirs(reconstruction_dir)
-            
+
             my_reconstruction = sim.SimSET_Reconstruction(self.params,self.config)
             my_reconstruction.run()
 
     def stir_simulation(self,param_file):
 
-        from src.simset import simset_sim as sim
+        from src.stir import stir_sim as sim
 
-    def run_simulation(self):
+    def run(self):
 
         from utils import tools
         sim_type = self.params.get("sim_type")
@@ -120,7 +121,7 @@ class SimPET(object):
         log_file = join(output_dir,"logfile.log")
 
         act_map, att_map = tools.convert_map_values(act_map,att_map,maps_dir,log_file,mode=sim_type)
-        
+
         if sim_type=="SimSET":
 
             self.simset_simulation(act_map,att_map,output_dir)
@@ -128,26 +129,3 @@ class SimPET(object):
         if sim_type=="STIR":
 
             self.stir_simulation(self.params, self.config, act_map,att_map,self.scanner,output_dir)
-
-        
-
-        
-
-        
-
-        
-            
-
-            
-
-
-
-
-        
-
-        
-
-
-
-        
-

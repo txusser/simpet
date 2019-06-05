@@ -6,20 +6,17 @@ import os
 from os.path import join, basename, exists
 import shutil
 
-simpet_dir = os.getcwd()
-dest_dir = join(os.getcwd(), 'include')
-log_file = join(dest_dir, 'log_setup.txt')
 
 def rsystem(command):
     """
     Executes command, raise an error if it fails and send status to logfile
     :param command: (string) command to be executed
-    :return: 
+    :return:
     """
 
     message = "\nEXE: %s" % command
     print(message)
-    
+
     if os.system(command) != 0:
         message = "ERROR executing: %s " % command
         with open(log_file, 'a') as w_file:
@@ -32,8 +29,9 @@ def rsystem(command):
 
 def install_simset(simset_dir):
 
-    if not exists(simset_dir):
-        os.makedirs(simset_dir)
+    if exists(simset_dir):
+        shutil.rmtree(simpet_dir)
+    os.makedirs(simset_dir)
 
     # Download, patch and compile SimSET
     icom = 'wget http://depts.washington.edu/simset/downloads/phg.2.9.2.tar.Z'
@@ -72,12 +70,27 @@ def install_simset(simset_dir):
 
 def install_stir(stir_dir):
 
-    print ("To be done....")
+    if exists(stir_dir):
+        shutil.rmtree(stir_dir)
+    os.makedirs(stir_dir)
+    os.chdir(stir_dir)
+
+    print("Cloning the SimSET input branch from STIR repo...")
+    icom = 'git clone --single-branch --branch simset_input https://github.com/txusser/STIR.git'
+    rsystem(icom)
+
+    os.makedirs(join(stir_dir,'build'))
+    os.makedirs(join(stir_dir,'install'))
+
+
+
+
+
 
 def install_soap():
     """
     Execute installation of all dependencies
-    :return: 
+    :return:
     """
     # Install SOAP
 
@@ -111,16 +124,22 @@ def install_soap():
     icom = 'sudo pip install pandas'
     rsystem(icom)
 
-# Extract Resources
-# command = 'tar -xvf resources.tar.xz'
-# rsystem(command)
+    icom = 'sudo apt install libboost-dev libboost-all-dev'
+    rsystem(icom)
 
-# # Add fruitcake paths to bashrc...
-# fruitcake_binpath = 'echo PATH=%s/fruitcake/bin:$PATH" >> ~/.bashrc'
-# rsystem(fruitcake_binpath)
+
+# Extract Resources
+command = 'tar -xvf resources.tar.xz'
+rsystem(command)
+
+# # Add fruitcake paths to bashrc... This can be a problem...
+#fruitcake_binpath = 'echo PATH=%s/fruitcake/bin:$PATH" >> ~/.bashrc'
+#rsystem(fruitcake_binpath)
 
 # fruitcake_ldpath = 'echo LD_LIBRARY_PATH=%s/fruitcake/book/lib:$LD_LIBRARY_PATH" >> ~/.bashrc'
 # rsystem(fruitcake_ldpath)
+
+install_soap()
 
 simpet_dir = os.getcwd()
 dest_dir = join(os.getcwd(), 'include')
@@ -129,3 +148,6 @@ os.chdir(dest_dir)
 
 simset_dir = join(dest_dir,"SimSET")
 install_simset(simset_dir)
+
+stir_dir = join(dest_dir,"STIR")
+install_stir(stir_dir)

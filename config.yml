@@ -1,6 +1,6 @@
 # Directories to the necesary binaries
-dir_stir:  "/home/jesus/Work/Software/STIR-github/install"
-dir_simset:  "/home/jesus/Work/Software/SIMSET/2.9.2"
+dir_stir:  "/home/jesus/Work/repositories/stir_dev/install"
+dir_simset:  "/home/jesus/Work/repositories/simpet/include/SimSET/2.9.2"
 matlab_mcr_path:  "/opt/MATLAB/MATLAB_Compiler_Runtime/v901/"
 spm_path:  "/home/jesus/Work/repositories/simpet/include/spm12"
 

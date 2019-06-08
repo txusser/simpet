@@ -6,6 +6,8 @@ import os
 from os.path import join, basename, exists
 import shutil
 
+dest_dir = join(os.getcwd(), 'include')
+log_file = join(dest_dir, 'log_setup.txt')
 
 def rsystem(command):
     """
@@ -30,7 +32,7 @@ def rsystem(command):
 def install_simset(simset_dir):
 
     if exists(simset_dir):
-        shutil.rmtree(simpet_dir)
+        shutil.rmtree(simset_dir)
     os.makedirs(simset_dir)
 
     # Download, patch and compile SimSET
@@ -68,7 +70,7 @@ def install_simset(simset_dir):
     icom = './make_all.sh'
     rsystem(icom)
 
-def install_stir(stir_dir):
+def install_stir(stir_dir,simset_dir):
 
     if exists(stir_dir):
         shutil.rmtree(stir_dir)
@@ -82,10 +84,56 @@ def install_stir(stir_dir):
     os.makedirs(join(stir_dir,'build'))
     os.makedirs(join(stir_dir,'install'))
 
+    os.chdir(join(stir_dir,'build'))
 
+    os.system('cmake ../STIR/')
 
+    makefile = join(stir_dir, 'build','CMakeCache.txt')
+    newmakefile = join(stir_dir, 'build','new_CMakeCache.txt')
 
+    # Replacing the current directory into the makefile
+    f_old = open(makefile,'r')
+    f_new = open(newmakefile,'w')
 
+    lines = f_old.readlines()
+    for line in lines:
+        line = line.replace('BUILD_SWIG_PYTHON:BOOL=OFF', 'BUILD_SWIG_PYTHON:BOOL=ON')
+        line = line.replace('CMAKE_INSTALL_PREFIX:PATH=/usr/local', 
+                            'CMAKE_INSTALL_PREFIX:PATH=%s' % join(stir_dir,'install'))
+        line = line.replace('SIMSET_INCLUDE_DIRS:PATH=SIMSET_INCLUDE_DIRS-NOTFOUND', 
+                            'SIMSET_INCLUDE_DIRS:PATH=%s' % join(simset_dir, '2.9.2', 'src'))
+        line = line.replace('SIMSET_LIBRARY:FILEPATH=SIMSET_LIBRARY-NOTFOUND', 
+                            'SIMSET_LIBRARY:FILEPATH=%s' % join(simset_dir, '2.9.2', 'lib', 'libsimset.so'))
+        line = line.replace('STIR_OPENMP:BOOL=OFF', 'STIR_OPENMP:BOOL=ON')
+        f_new.write(line)
+    f_old.close()
+    f_new.close()
+
+    shutil.move(newmakefile,makefile)
+
+    os.system('cmake ../STIR/')
+    os.system('make -j4  & make install')
+
+def update_config(stir_dir,simset_dir):
+
+    configfile = 'config.yml'
+    newconfigfile = 'newconfig.yml'
+
+    # Replacing the current directory into the makefile
+    f_old = open(configfile,'r')
+    f_new = open(newconfigfile,'w')
+
+    lines = f_old.readlines()
+    for line in lines:
+        if line.startswith('dir_stir'):
+            line = ('dir_stir:  "%s"' % stir_dir)
+        if line.startswith('dir_simset'):
+            line = ('dir_simset:  "%s"' % simset_dir)
+        f_new.write(line)
+    f_old.close()
+    f_new.close()
+
+    shutil.move(newconfigfile,configfile)
 
 def install_soap():
     """
@@ -94,44 +142,41 @@ def install_soap():
     """
     # Install SOAP
 
-    # Install and upgrade PIP
-    icom = 'sudo apt -y install python-pip'
-    rsystem(icom)
-    icom = 'pip install --upgrade pip'
-    rsystem(icom)
-
-    # Install numpy
-    icom = 'sudo pip install numpy'
-    rsystem(icom)
-
-    # Install Scipy
-    icom = 'sudo pip install scipy'
-    rsystem(icom)
-
-    # Install Nibabel
-    icom = 'sudo pip install nibabel'
-    rsystem(icom)
-
-    # Install Nilearn
-    icom = 'sudo pip install nilearn'
-    rsystem(icom)
-
-    # Install matplotlib
-    icom = 'sudo python -mpip install matplotlib'
-    rsystem(icom)
-
-    # Install Pandas
-    icom = 'sudo pip install pandas'
-    rsystem(icom)
-
     icom = 'sudo apt install libboost-dev libboost-all-dev'
     rsystem(icom)
 
+    icom = 'sudo apt install libpcre3 libpcre3-dev'
+    rsystem(icom)
+
+    # Install and upgrade PIP
+    icom = 'sudo apt install python-yaml'
+    rsystem(icom)
+
+    # Install numpy
+    icom = 'sudo apt install python-numpy'
+    rsystem(icom)
+
+    # Install Scipy
+    icom = 'sudo apt install python-scipy'
+    rsystem(icom)
+
+    # Install Nibabel
+    icom = 'sudo apt install python-nibabel'
+    rsystem(icom)
+
+    # Install matplotlib
+    icom = 'sudo apt install python-matplotlib'
+    rsystem(icom)
+
+    # Install Pandas
+    icom = 'sudo apt install python-pandas'
+    rsystem(icom)
 
 # Extract Resources
 command = 'tar -xvf resources.tar.xz'
 rsystem(command)
 
+# Fruitcake is not needed right now
 # # Add fruitcake paths to bashrc... This can be a problem...
 #fruitcake_binpath = 'echo PATH=%s/fruitcake/bin:$PATH" >> ~/.bashrc'
 #rsystem(fruitcake_binpath)
@@ -142,12 +187,17 @@ rsystem(command)
 install_soap()
 
 simpet_dir = os.getcwd()
-dest_dir = join(os.getcwd(), 'include')
-log_file = join(dest_dir, 'log_setup.txt')
 os.chdir(dest_dir)
 
 simset_dir = join(dest_dir,"SimSET")
 install_simset(simset_dir)
 
 stir_dir = join(dest_dir,"STIR")
-install_stir(stir_dir)
+install_stir(stir_dir, simset_dir)
+
+os.chdir(simpet_dir)
+update_config
+
+
+
+

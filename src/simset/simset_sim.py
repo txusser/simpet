@@ -58,7 +58,7 @@ class SimSET_Simulation(object):
 
     def run_simset_simulation(self,sim_dir):
 
-        log_file = join(sim_dir, "simpet.log")
+        log_file = join(sim_dir, "logging.log")
 
         print("Starting simulation for %s" % os.path.basename(sim_dir))
 
@@ -130,7 +130,7 @@ class SimSET_Simulation(object):
 
     def prepare_simset_files(self, sim_dir, act_table_factor, act, sim_photons, sim_time, sampling):
 
-        log_file = join(sim_dir, "simpet.log")
+        log_file = join(sim_dir, "logging.log")
         # Establishing necessary parameters
         scanner_radius = self.scanner.get("scanner_radius")
 
@@ -168,9 +168,12 @@ class SimSET_Simulation(object):
 
         print "Postprocessing simulation..."
 
+        log_file = join(self.output_dir, "postprocessing.log")
+
+        division_zero = join(self.output_dir, "division_0")
+
         for image in ["trues", "scatter", "randoms"]:
 
-            division_zero = join(self.output_dir, "division_0")
             zero_image = join(division_zero, image + ".hdr")
 
             if exists(zero_image):
@@ -180,7 +183,61 @@ class SimSET_Simulation(object):
                 for division in range(1,self.divisions):
                     division_dir = join(self.output_dir, "division_" + str(division))
                     division_image = join(division_dir, image + ".hdr")
+                    message = 'Adding %s from simulation %s' % (image,division)
+                    tools.log_message(log_file, message)
                     tools.operate_images_analyze(added_image,division_image,added_image,'sum')
+
+        for hist in ["phg_hf.hist", "det_hf.hist"]:
+
+            zero_hist = join(division_zero, hist)
+
+            if exists(zero_hist):
+
+                filelist = ''
+                output = join(self.output_dir, hist)
+
+                for division in range(self.divisions):
+                    division_dir = join(self.output_dir, "division_" + str(division))
+                    division_hist = join(division_dir, hist)
+                    filelist = filelist + division_hist
+
+                rcommand = 'echo "No" | %s/bin/combinehist %s %s' % (self.simset_dir, filelist, output)
+                tools.osrun(rcommand, log_file)
+
+        if self.add_randoms ==1:
+
+            # To have randoms in the final history file, we need to add randoms to the final det_hf.hist
+
+            coincidence_window = self.scanner.get("coincidence_window")
+
+            simset_tools.add_randoms(self.output_dir, self.simset_dir, coincidence_window, log_file=log_file)
+
+
+        # We need to generate a new phg file that points to the added history files...
+
+        for i in ["phg", "det"]:
+
+            orig_file = join(division_zero, i + ".rec")
+            shutil.copy(orig_file, self.output_dir)
+        
+            myfile = join(self.output_dir, i + ".rec")
+            newfile = join(self.output_dir, "new" + i + ".rec")
+
+            # Replacing the current directory into the makefile
+            f_old = open(myfile,'r')
+            f_new = open(newfile,'w')
+
+            lines = f_old.readlines()
+            for line in lines:
+                if 'history_file' or 'detector_params_file' in line:
+                    line = line.replace(division_zero, self.output_dir)
+                f_new.write(line)
+            f_old.close()
+            f_new.close()
+
+        shutil.move(newfile,myfile)   
+
+
 
 class SimSET_Reconstruction(object):
     """This class provides functions to reconstruct a SimSET simulation."""

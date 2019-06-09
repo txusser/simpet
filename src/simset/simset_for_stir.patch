@@ -21,7 +21,7 @@ diff -ruN 2.9.2_orig/make.files/simset.make 2.9.2/make.files/simset.make
  # LINUX
  # Suggested compiler flags for LINUX
 -# OS_CFLAGS = -DGEN_UNIX -DLINUX
-+OS_CFLAGS = -DGEN_UNIX -DLINUX -Wall -fPIC -g
++OS_CFLAGS = -DGEN_UNIX -DLINUX -Wall -fPIC
  
  
  COMPILER = cc

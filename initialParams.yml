@@ -13,17 +13,17 @@ scanner: "Vereos"
 patient_dirname: "Calidade_Imaxe"
 act_map: "IEC_NEMA_ACT_contrast4_4spheres.hdr"
 att_map: "IEC_NEMA_ATT.hdr"
-output_dir: "Test1"         #Name of the Results Dir
+output_dir: "Test_CI_fixedTC"         #Name of the Results Dir
 
 #Config your phantom
-center_slice: 87           # The slice number to be placed on the center of the scanner
-total_dose: 1            # mCi
-simulation_time: 2       # secods
+center_slice:  87         # The slice number to be placed on the center of the scanner
+total_dose: 2            # mCi
+simulation_time: 300     # secods
 
 #SimSET Parameters (not used by STIR sim)
-sampling_photons: 0  # Set to 0 to avoid importance sampling
-photons: 0                  # Set to 0 to do a realistic noise simulation
-add_randoms: 1              # 1 activate Randoms simulation (Will force sampling_photons=0 and photons=0)
+sampling_photons: 1000000   # Set to 0 to avoid importance sampling
+photons: 100000000          # Set to 0 to do a realistic noise simulation
+add_randoms: 0              # 1 activate Randoms simulation (Will force sampling_photons=0 and photons=0)
 phglistmode: 0              # History Files from the phg module (Needed for LM reconstruction. Potentially very big)
 detlistmode: 1              # History Files from the detector module (You need this for adding randoms. If add_randoms=1 will be forced)
 

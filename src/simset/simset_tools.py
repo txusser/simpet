@@ -20,7 +20,7 @@ def make_simset_act_table (act_table_factor, my_act_table, log_file=False):
         tools.log_message(log_file,message,'info')
 
 def make_simset_phg(config, output_file, simulation_dir, act,
-                    scanner_radius, center_slice,
+                    scanner_radius, scanner_axial_fov, center_slice,
                     photons, sim_time, 
                     add_randoms=False, phg_hf=False, S=0, log_file=False):
 
@@ -74,13 +74,16 @@ def make_simset_phg(config, output_file, simulation_dir, act,
     ybins = act.shape[1]
 
     act_fov = abs(act.shape*act.affine)
-    xMin, xMax = -act_fov[0,0]/20, act_fov[0,0]/20 # 20 is because it must be cm
-    yMin, yMax = -act_fov[1,1]/20, act_fov[1,1]/20
+    xMin, xMax = round(-act_fov[0,0]/20,3), round(act_fov[0,0]/20,3) # 20 is because it must be cm
+    yMin, yMax = round(-act_fov[1,1]/20,3), round(act_fov[1,1]/20,3)
 
     z_offset = abs(act.affine[2,2]*center_slice/10) #cm
-    zMin, zMax = round(-z_offset,4), round(act_fov[2,2]/10 - z_offset,4)
+    zMin, zMax = round(-z_offset,2), round(act_fov[2,2]/10 - z_offset,2)
 
-    dz = round((zMax-zMin)/nslices,4)
+    dz = round((zMax-zMin)/nslices,2)
+
+    max_z_target = scanner_axial_fov/2
+    min_z_target = -scanner_axial_fov/2
 
     # Directory variables
     simset_dir = config.get("dir_simset")
@@ -134,8 +137,8 @@ def make_simset_phg(config, output_file, simulation_dir, act,
 
         f.write("\n\n# TARGET CYLINDER INFORMATION")
         f.write("\nNUM_ELEMENTS_IN_LIST    target_cylinder = 3")
-        f.write("\n	REAL	target_zMin = %s" % str(zMin))
-        f.write("\n	REAL	target_zMax = %s" % str(zMax))
+        f.write("\n	REAL	target_zMin = %s" % str(min_z_target))
+        f.write("\n	REAL	target_zMax = %s" % str(max_z_target))
         f.write("\n	REAL	radius =      %s\n\n" % str(scanner_radius))
         
         
@@ -381,7 +384,7 @@ def process_weights(weights_file, output_dir, scanner, add_randoms = 0):
         tools.create_analyze_from_imgdata(randoms_file,output,nbins,nangles,nslices,1,1,1,"fl")
         os.remove(randoms_file)
 
-def add_randoms(sim_dir, simset_dir, coincidence_window, log_file=False):
+def add_randoms(sim_dir, simset_dir, coincidence_window, rebin=True, log_file=False):
 
     string  = "STR      "
     integer = "INT      "
@@ -423,20 +426,23 @@ def add_randoms(sim_dir, simset_dir, coincidence_window, log_file=False):
     tools.osrun(command, log_file)
 
     # The following will replace the existing det-hist file with the new including randoms
-    det_file = join(sim_dir, "det.rec")
 
-    with open (det_file, 'r') as f:
-        lines = f.readlines()
-    with open(det_file, 'w') as f:
-        for line in lines:
-            line = line.replace("det_hf.hist", "randoms.hist")
-            f.write(line)
+    if rebin:
 
-    binfile = join(sim_dir, "phg.rec")
-    phgbin = join(simset_dir, "bin", "bin -d")
+        det_file = join(sim_dir, "det.rec")
 
-    command = command = "%s %s >> %s" % (phgbin, binfile, log_file)
-    tools.osrun(command, log_file)
+        with open (det_file, 'r') as f:
+            lines = f.readlines()
+        with open(det_file, 'w') as f:
+            for line in lines:
+                line = line.replace("det_hf.hist", "randoms.hist")
+                f.write(line)
+
+        binfile = join(sim_dir, "phg.rec")
+        phgbin = join(simset_dir, "bin", "bin -d")
+
+        command = command = "%s %s >> %s" % (phgbin, binfile, log_file)
+        tools.osrun(command, log_file)
 
 def convert_simset_to_stir(input, output=False):
 

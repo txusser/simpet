@@ -157,9 +157,9 @@ def update_config(stir_dir,simset_dir):
     lines = f_old.readlines()
     for line in lines:
         if line.startswith('dir_stir'):
-            line = ('dir_stir:  "%s"\n' % stir_dir)
+            line = ('dir_stir:  "%s"\n' % join(stir_dir,'install'))
         if line.startswith('dir_simset'):
-            line = ('dir_simset:  "%s"\n' % simset_dir)
+            line = ('dir_simset:  "%s"\n' % join(simset_dir,'2.9.2'))
         f_new.write(line)
     f_old.close()
     f_new.close()
@@ -172,6 +172,9 @@ def install_soap():
     :return:
     """
     # Install SOAP
+
+    icom = 'sudo apt install python -y -q'
+    rsystem(icom)
 
     icom = 'sudo apt install libboost-dev libboost-all-dev -y -q'
     rsystem(icom)
@@ -205,7 +208,7 @@ def install_soap():
 
 # Extract Resources
 print('Extracting resources...')
-command = 'tar -xvf resources.tar.xz > %s' % log_file
+command = 'tar -xvf resources.tar.xz'
 rsystem(command)
 
 # Fruitcake is not needed right now

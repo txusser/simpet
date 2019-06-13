@@ -102,6 +102,8 @@ class SimSET_Simulation(object):
         tools.osrun(command, log_file)
 
         rec_weight = join(sim_dir,"rec.weight")
+        det_hf = join(sim_dir, 'det_hf.hist')
+        phg_hf = join(sim_dir, 'phg_hf.hist')
 
         if self.s_photons != 0 and self.params.get("add_randoms") != 1:
             if self.photons!=0:
@@ -109,7 +111,12 @@ class SimSET_Simulation(object):
             else:
                 sim_photons = self.photons
 
+            # Removes counts for preparing for the next simulation
             os.remove(rec_weight)
+            if exists(det_hf):
+                os.remove(det_hf)
+            if exists(phg_hf):
+                os.remove(phg_hf)
 
             my_phg = self.prepare_simset_files(sim_dir, act_table_factor, act, sim_photons, sim_time, 1)
             my_log = join(sim_dir,"simset_s1.log")
@@ -124,7 +131,7 @@ class SimSET_Simulation(object):
 
             coincidence_window = self.scanner.get("coincidence_window")
 
-            simset_tools.add_randoms(sim_dir, self.simset_dir, coincidence_window, log_file=log_file)
+            simset_tools.add_randoms(sim_dir, self.simset_dir, coincidence_window, rebin=True, log_file=log_file)
 
         simset_tools.process_weights(rec_weight,sim_dir,self.scanner,self.add_randoms)
 
@@ -133,6 +140,7 @@ class SimSET_Simulation(object):
         log_file = join(sim_dir, "logging.log")
         # Establishing necessary parameters
         scanner_radius = self.scanner.get("scanner_radius")
+        scanner_axial_fov = self.scanner.get("axial_fov")
 
         # We activate det_listmode if demanded by user or if add_randoms is on
         if self.add_randoms==1:
@@ -151,7 +159,7 @@ class SimSET_Simulation(object):
 
         # Creating the phg for the simulation...
         my_phg_file = join(sim_dir,"phg.rec")
-        simset_tools.make_simset_phg(self.config, my_phg_file, sim_dir, act, scanner_radius, self.center_slice,
+        simset_tools.make_simset_phg(self.config, my_phg_file, sim_dir, act, scanner_radius, scanner_axial_fov, self.center_slice,
                                      sim_photons, sim_time, add_randoms, self.phglistmode, sampling, log_file=log_file)
 
         my_det_file = join(sim_dir,"det.rec")
@@ -199,10 +207,30 @@ class SimSET_Simulation(object):
                 for division in range(self.divisions):
                     division_dir = join(self.output_dir, "division_" + str(division))
                     division_hist = join(division_dir, hist)
-                    filelist = filelist + division_hist
+                    filelist = filelist + division_hist + ' '
 
                 rcommand = 'echo "No" | %s/bin/combinehist %s %s' % (self.simset_dir, filelist, output)
                 tools.osrun(rcommand, log_file)
+
+        for i in ["phg", "det"]:
+
+            orig_file = join(division_zero, i + ".rec")
+            print(orig_file)
+            shutil.copy(orig_file, self.output_dir)
+        
+            myfile = join(self.output_dir, i + ".rec")
+            # Replacing the current directory into the makefile
+            f_old = open(orig_file,'r')
+            f_new = open(myfile,'w')
+
+            lines = f_old.readlines()
+            for line in lines:
+                if 'history_file' or 'detector_params_file' in line:
+                    print line
+                    line = line.replace(division_zero, self.output_dir)
+                f_new.write(line)
+            f_old.close()
+            f_new.close() 
 
         if self.add_randoms ==1:
 
@@ -210,34 +238,16 @@ class SimSET_Simulation(object):
 
             coincidence_window = self.scanner.get("coincidence_window")
 
-            simset_tools.add_randoms(self.output_dir, self.simset_dir, coincidence_window, log_file=log_file)
+            simset_tools.add_randoms(self.output_dir, self.simset_dir, coincidence_window, 
+                                     rebin=False, log_file=log_file)
+            
+            det_hist = join(self.output_dir, 'det_hf.hist')
+            randoms_hist = join(self.output_dir, 'randoms.hist')
+            output = join(self.output_dir, 'fulldet_hf.hist')
+            
+            rcommand = 'echo "No No" | %s/bin/combinehist %s %s %s' % (self.simset_dir, det_hist, randoms_hist, output)
 
-
-        # We need to generate a new phg file that points to the added history files...
-
-        for i in ["phg", "det"]:
-
-            orig_file = join(division_zero, i + ".rec")
-            shutil.copy(orig_file, self.output_dir)
         
-            myfile = join(self.output_dir, i + ".rec")
-            newfile = join(self.output_dir, "new" + i + ".rec")
-
-            # Replacing the current directory into the makefile
-            f_old = open(myfile,'r')
-            f_new = open(newfile,'w')
-
-            lines = f_old.readlines()
-            for line in lines:
-                if 'history_file' or 'detector_params_file' in line:
-                    line = line.replace(division_zero, self.output_dir)
-                f_new.write(line)
-            f_old.close()
-            f_new.close()
-
-        shutil.move(newfile,myfile)   
-
-
 
 class SimSET_Reconstruction(object):
     """This class provides functions to reconstruct a SimSET simulation."""
@@ -249,19 +259,34 @@ class SimSET_Reconstruction(object):
         self.simset_dir = config.get("dir_simset")
         self.dir_stir = config.get("dir_stir")
 
+        self.input_dir = projections_dir
+        self.output_dir = reconstructions_dir
+
         self.params = params
         self.config = config
         self.scanner = scanner
+
         self.scatt_corr_factor = scanner.get("analytic_scatt_corr_factor")
         self.add_randoms = params.get("add_randoms")
         self.random_corr_factor = scanner.get("analytic_randoms_corr_factor")
 
+        self.do_pre_att_correction = scanner.get('analytical_att_correction')
+        self.do_recons_att_correction = scanner.get('stir_recons_att_corr')
+
+        if self.do_pre_att_correction == 1 and self.do_recons_att_correction == 1:
+            self.do_pre_att_correction == 0
+            raise Warning ('WARNING: both pre and recons att corrections are both active...Ignoring pre-correction')
+
         self.att_map = att_map
         self.input_dir = projections_dir
         self.output_dir = reconstructions_dir
-        self.center_slice = params.get("center_slice")
 
         self.log_file = join(self.output_dir, "recons.log")
+
+    def run(self):
+
+        if not exists(self.output_dir):
+            os.makedirs(self.output_dir)
 
     def prepare_sinograms(self):
 
@@ -280,14 +305,12 @@ class SimSET_Reconstruction(object):
             tools.operate_single_image(randoms_sino, "mult", self.random_corr_factor, corr_randoms_sino, self.log_file)
             tools.operate_images_analyze(my_simset_sino,corr_randoms_sino,my_simset_sino,operation='sum')
 
+        #if self.scanner.get('analytical_att_correction') == 1:
+
+            # Perform the precorrection using SimSET calc_attenuation
+
+
+
 
         shutil.copy(my_simset_sino [0:-3] + "img",my_simset_sino [0:-3] + "s")
 
-
-
-
-
-    def run(self):
-
-        if not exists(self.output_dir):
-            os.makedirs(self.output_dir)

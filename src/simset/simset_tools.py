@@ -1,5 +1,6 @@
 import random
 import os
+import subprocess as sp
 from os.path import join
 import nibabel as nib
 import numpy as np
@@ -444,6 +445,15 @@ def add_randoms(sim_dir, simset_dir, coincidence_window, rebin=True, log_file=Fa
         command = command = "%s %s >> %s" % (phgbin, binfile, log_file)
         tools.osrun(command, log_file)
 
+def combine_history_files(simset_dir, history_files, output):
+
+    combinehist = join(simset_dir, "bin", "combinehist")
+
+    rcommand = '%s %s %s' % (combinehist, filelist,output)
+
+    p = sp.Popen(rcommand,stdin=sp.PIPE,stdout=sp.PIPE,stderr=sp.PIPE)
+    p.communicate()
+
 def convert_simset_to_stir(input, output=False):
 
     simset_img = nib.load(input)
@@ -457,6 +467,10 @@ def convert_simset_to_stir(input, output=False):
     for i in n_slices:
 
         slice1 = simset_img_data[:,:,i]
+
+def simset_calcattenuation(simulation_dir,simset_dir,nrays=1):
+
+    print("To be done")
     
 
 

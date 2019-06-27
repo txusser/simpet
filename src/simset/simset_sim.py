@@ -8,6 +8,7 @@ from utils import tools
 import yaml
 import numpy as np
 import simset_tools
+import subprocess
 
 class SimSET_Simulation(object):
     """This class provides functions to run a SimSET simulation."""
@@ -51,8 +52,12 @@ class SimSET_Simulation(object):
             p.start()
             time.sleep(5)
 
+        print(" ")
+
         for process in processes:
             process.join()
+
+        print(" ")
 
         self.simulation_postprocessing()
 
@@ -135,6 +140,8 @@ class SimSET_Simulation(object):
 
         simset_tools.process_weights(rec_weight,sim_dir,self.scanner,self.add_randoms)
 
+        print("Finished simulation for %s" % os.path.basename(sim_dir))
+
     def prepare_simset_files(self, sim_dir, act_table_factor, act, sim_photons, sim_time, sampling):
 
         log_file = join(sim_dir, "logging.log")
@@ -176,6 +183,8 @@ class SimSET_Simulation(object):
 
         print "Postprocessing simulation..."
 
+        #All the parallel simulations are combined in division 0
+
         log_file = join(self.output_dir, "postprocessing.log")
 
         division_zero = join(self.output_dir, "division_0")
@@ -185,15 +194,15 @@ class SimSET_Simulation(object):
             zero_image = join(division_zero, image + ".hdr")
 
             if exists(zero_image):
-                added_image = join(self.output_dir, image + ".hdr")
-                tools.copy_analyze(zero_image, dest_dir=self.output_dir)
-
+                
                 for division in range(1,self.divisions):
                     division_dir = join(self.output_dir, "division_" + str(division))
                     division_image = join(division_dir, image + ".hdr")
                     message = 'Adding %s from simulation %s' % (image,division)
                     tools.log_message(log_file, message)
-                    tools.operate_images_analyze(added_image,division_image,added_image,'sum')
+                    tools.operate_images_analyze(zero_image,division_image,zero_image,'sum')
+
+        combinehist = join(self.simset_dir, "bin", "combinehist")
 
         for hist in ["phg_hf.hist", "det_hf.hist"]:
 
@@ -202,35 +211,16 @@ class SimSET_Simulation(object):
             if exists(zero_hist):
 
                 filelist = ''
-                output = join(self.output_dir, hist)
+                output = join(division_zero, "full_" + hist)
 
                 for division in range(self.divisions):
                     division_dir = join(self.output_dir, "division_" + str(division))
                     division_hist = join(division_dir, hist)
                     filelist = filelist + division_hist + ' '
 
-                rcommand = 'echo "No" | %s/bin/combinehist %s %s' % (self.simset_dir, filelist, output)
-                tools.osrun(rcommand, log_file)
+                simset_tools.combine_history_files(self.simset_dir,filelist, output)
 
-        for i in ["phg", "det"]:
-
-            orig_file = join(division_zero, i + ".rec")
-            print(orig_file)
-            shutil.copy(orig_file, self.output_dir)
-        
-            myfile = join(self.output_dir, i + ".rec")
-            # Replacing the current directory into the makefile
-            f_old = open(orig_file,'r')
-            f_new = open(myfile,'w')
-
-            lines = f_old.readlines()
-            for line in lines:
-                if 'history_file' or 'detector_params_file' in line:
-                    print line
-                    line = line.replace(division_zero, self.output_dir)
-                f_new.write(line)
-            f_old.close()
-            f_new.close() 
+                shutil.move(output,zero_hist)
 
         if self.add_randoms ==1:
 
@@ -238,21 +228,27 @@ class SimSET_Simulation(object):
 
             coincidence_window = self.scanner.get("coincidence_window")
 
-            simset_tools.add_randoms(self.output_dir, self.simset_dir, coincidence_window, 
+            simset_tools.add_randoms(division_zero, self.simset_dir, coincidence_window, 
                                      rebin=False, log_file=log_file)
             
-            det_hist = join(self.output_dir, 'det_hf.hist')
-            randoms_hist = join(self.output_dir, 'randoms.hist')
-            output = join(self.output_dir, 'fulldet_hf.hist')
+            det_hist = join(division_zero, 'det_hf.hist')
+            randoms_hist = join(division_zero, 'randoms.hist')
+            output = join(division_zero, 'fulldet_hf.hist')
             
-            rcommand = 'echo "No No" | %s/bin/combinehist %s %s %s' % (self.simset_dir, det_hist, randoms_hist, output)
+            simset_tools.combine_history_files(self.simset_dir,filelist, output)
 
-        
+            shutil.move(output,det_hist)
+            os.remove(randoms_hist)
+
+        # Once everything is combined in division_0, remove the other divisions
+        # for division in range(1,self.divisions):
+        #             division_dir = join(self.output_dir, "division_" + str(division))
+        #             shutil.rmtree(division_dir)
 
 class SimSET_Reconstruction(object):
     """This class provides functions to reconstruct a SimSET simulation."""
 
-    def __init__(self,params,config,att_map,scanner,projections_dir,reconstructions_dir):
+    def __init__(self,params,config,att_map,scanner,projections_dir,reconstructions_dir,recons_type):
 
         #Initialization
         self.simpet_dir = dirname(abspath(__file__))
@@ -260,7 +256,7 @@ class SimSET_Reconstruction(object):
         self.dir_stir = config.get("dir_stir")
 
         self.input_dir = projections_dir
-        self.output_dir = reconstructions_dir
+        self.output_dir = join(reconstructions_dir,"recons_type")
 
         self.params = params
         self.config = config
@@ -307,10 +303,8 @@ class SimSET_Reconstruction(object):
 
         #if self.scanner.get('analytical_att_correction') == 1:
 
-            # Perform the precorrection using SimSET calc_attenuation
+            #Perform the precorrection using SimSET calc_attenuation
 
 
 
-
-        shutil.copy(my_simset_sino [0:-3] + "img",my_simset_sino [0:-3] + "s")
 

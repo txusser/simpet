@@ -31,8 +31,8 @@ class SimPET(object):
             self.params = yaml.load(f.read(), Loader=yaml.FullLoader)
 
         # This will load the scanner params for the selected scanner
-        scanner_model = self.params.get("scanner")
-        scanner_parfile = join(self.simpet_dir,"scanners",scanner_model + ".yml")
+        self.scanner_model = self.params.get("scanner")
+        scanner_parfile = join(self.simpet_dir,"scanners",self.scanner_model + ".yml")
         with open(scanner_parfile, 'rb') as f:
             self.scanner = yaml.load(f.read(), Loader=yaml.FullLoader)
 
@@ -47,7 +47,7 @@ class SimPET(object):
 
     def simset_simulation(self,act_map,att_map,output_dir):
 
-        projections_dir = join(output_dir, "SimSET_Sim")
+        projections_dir = join(output_dir, "SimSET_Sim_" + self.scanner_model)
 
         if self.params.get("do_simulation")==1:
 

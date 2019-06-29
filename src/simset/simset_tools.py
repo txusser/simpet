@@ -449,10 +449,11 @@ def combine_history_files(simset_dir, history_files, output):
 
     combinehist = join(simset_dir, "bin", "combinehist")
 
-    rcommand = '%s %s %s' % (combinehist, filelist,output)
+    rcommand = '%s %s %s' % (combinehist, history_files,output)
 
     p = sp.Popen(rcommand,stdin=sp.PIPE,stdout=sp.PIPE,stderr=sp.PIPE)
-    p.communicate()
+    p.communicate("Yes")
+    p.communicate("Yes")
 
 def convert_simset_to_stir(input, output=False):
 

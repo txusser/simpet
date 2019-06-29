@@ -202,8 +202,6 @@ class SimSET_Simulation(object):
                     tools.log_message(log_file, message)
                     tools.operate_images_analyze(zero_image,division_image,zero_image,'sum')
 
-        combinehist = join(self.simset_dir, "bin", "combinehist")
-
         for hist in ["phg_hf.hist", "det_hf.hist"]:
 
             zero_hist = join(division_zero, hist)

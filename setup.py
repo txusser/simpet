@@ -7,6 +7,8 @@ from os.path import join, basename, exists
 import shutil
 from multiprocessing import cpu_count
 
+simpet_dir = os.getcwd()
+
 dest_dir = join(os.getcwd(), 'include')
 log_file = join(dest_dir, 'log_setup.txt')
 
@@ -48,7 +50,7 @@ def install_simset(simset_dir, log_file):
 
     #Let's Apply the SimSET patch for SimPET
     print('Applying modification patch for SimSET-STIR interface...')
-    icom = 'patch -s -p0 < ~/Work/repositories/simpet/src/simset/simset_for_stir.patch'
+    icom = 'patch -s -p0 < %s/src/simset/simset_for_stir.patch' % simpet_dir
     rsystem(icom)
 
     makefile = join(simset_dir, '2.9.2','make.files','simset.make')
@@ -204,6 +206,14 @@ def install_soap():
 
     # Install Pandas
     icom = 'sudo apt install python-pandas -y -q'
+    rsystem(icom)
+
+    # Install cmake (needed for STIR)
+    icom = 'sudo apt install cmake -y -q'
+    rsystem(icom)
+
+    # Install swig (needed for STIR)
+    icom = 'sudo apt install swig -y -q'
     rsystem(icom)
 
 # Extract Resources

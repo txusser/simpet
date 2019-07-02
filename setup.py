@@ -104,7 +104,7 @@ def install_stir(stir_dir, simset_dir, log_file):
 
     if exists(stir_dir):
         shutil.rmtree(stir_dir)
-    
+
     os.makedirs(stir_dir)
     os.makedirs(build_dir)
     os.makedirs(install_dir)
@@ -136,7 +136,7 @@ def install_stir(stir_dir, simset_dir, log_file):
         if line.startswith('STIR_OPENMP'):
             line = 'STIR_OPENMP:BOOL=ON'
         f_new.write(line)
-    
+
     f_old.close()
     f_new.close()
 
@@ -178,6 +178,9 @@ def install_soap():
     icom = 'sudo apt install python -y -q'
     rsystem(icom)
 
+    icom = 'sudo apt install python-pip -y -q'
+    rsystem(icom)
+
     icom = 'sudo apt install libboost-dev libboost-all-dev -y -q'
     rsystem(icom)
 
@@ -186,6 +189,10 @@ def install_soap():
 
     # Install and upgrade PIP
     icom = 'sudo apt install python-yaml -y -q'
+    rsystem(icom)
+
+    # Update yaml to use FullLoader
+    icom = 'sudo pip install -U pyYAML'
     rsystem(icom)
 
     # Install numpy
@@ -223,11 +230,13 @@ rsystem(command)
 
 # Fruitcake is not needed right now
 # # Add fruitcake paths to bashrc... This can be a problem...
-#fruitcake_binpath = 'echo PATH=%s/fruitcake/bin:$PATH" >> ~/.bashrc'
-#rsystem(fruitcake_binpath)
+fruitcake_binpath = 'echo "export PATH=%s/fruitcake/bin:$PATH" >> ~/.bashrc' % dest_dir
+rsystem(fruitcake_binpath)
 
-# fruitcake_ldpath = 'echo LD_LIBRARY_PATH=%s/fruitcake/book/lib:$LD_LIBRARY_PATH" >> ~/.bashrc'
-# rsystem(fruitcake_ldpath)
+fruitcake_ldpath = 'echo "export LD_LIBRARY_PATH=%s/fruitcake/book/lib:$LD_LIBRARY_PATH" >> ~/.bashrc' % dest_dir
+rsystem(fruitcake_ldpath)
+
+rsystem('source ~/.bashrc')
 
 install_soap()
 
@@ -242,7 +251,3 @@ install_stir(stir_dir, simset_dir, log_file)
 
 os.chdir(simpet_dir)
 update_config(stir_dir,simset_dir)
-
-
-
-

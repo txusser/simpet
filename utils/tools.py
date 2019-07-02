@@ -102,7 +102,7 @@ def create_analyze_from_imgdata(data, out, pix_x, pix_y, pix_z, tx, ty, tz, data
         dtype=np.float64
     else:
         dtype=np.float32
-   
+
     hdr1 = nib.AnalyzeHeader()
     hdr1.set_data_dtype(dtype)
     hdr1.set_data_shape((pix_x,pix_y,pix_z))
@@ -127,9 +127,7 @@ def read_analyze_header(header_file,logfile):
 
     return zpix, zsize, xpix, xsize, ypix, ysize
 
-def write_interfile_header(header_file,matrix_size_x,pixel_size_x,
-                matrix_size_y,pixel_size_y,
-                matrix_size_z,pixel_size_z):
+def write_interfile_header(header_file,matrix_size_x,pixel_size_x, matrix_size_y,pixel_size_y, matrix_size_z,pixel_size_z):
 
     image_v = os.path.basename(header_file)[0:-2] + "v"
     fheader_hv = open(header_file, "w")
@@ -401,7 +399,7 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     hdr1.set_data_dtype(img.get_data_dtype())
     hdr1.set_data_shape(img.get_shape())
     hdr1.set_zooms(abs(np.diag(img.affine))[0:3])
-        
+
     analyze_img = nib.AnalyzeImage(data, hdr1.get_base_affine(), hdr1)
 
     nib.save(analyze_img,out_image)
@@ -413,7 +411,7 @@ def operate_images_analyze(image1, image2, out_image, operation='mult'):
     :param image2: string, path to the second image
     :param operation: string, multi (default) for multiplication divid for division
     :param out_image: string (optional), path to the output image
-    :return: 
+    :return:
     """
     img1, data1 = nib_load(image1)
     img2, data2 = nib_load(image2)
@@ -439,10 +437,18 @@ def operate_images_analyze(image1, image2, out_image, operation='mult'):
     hdr1.set_data_dtype(img1.get_data_dtype())
     hdr1.set_data_shape(img1.get_shape())
     hdr1.set_zooms(abs(np.diag(img1.affine))[0:3])
-        
+
     analyze_img = nib.AnalyzeImage(res_data, hdr1.get_base_affine(), hdr1)
 
     nib.save(analyze_img,out_image)
+
+def smooth_analyze(image,fwhm, output):
+
+    from nibabel import processing as nibproc
+
+    img =nib.load(image)
+    smoothed=nibproc.smooth_image(img,fwhm,out_class=nib.AnalyzeImage)
+    nib.save(smoothed,output)
 
 def log_message(logfile, message, mode='info'):
     """"
@@ -552,4 +558,3 @@ def ncounts(image_hdr):
     img, data = nib_load(image_hdr)
     ncounts = np.sum(data)
     return ncounts
-

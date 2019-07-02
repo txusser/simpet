@@ -4,6 +4,7 @@ import subprocess as sp
 from os.path import join
 import nibabel as nib
 import numpy as np
+from fsplit.filesplit import FileSplit
 
 from utils import tools
 
@@ -22,7 +23,7 @@ def make_simset_act_table (act_table_factor, my_act_table, log_file=False):
 
 def make_simset_phg(config, output_file, simulation_dir, act,
                     scanner_radius, scanner_axial_fov, center_slice,
-                    photons, sim_time, 
+                    photons, sim_time,
                     add_randoms=False, phg_hf=False, S=0, log_file=False):
 
     stir_identifier = "# Hello, I am a SimSET PHG file!\n"
@@ -52,9 +53,9 @@ def make_simset_phg(config, output_file, simulation_dir, act,
 
     # Configuration of photons an simulation time
 
-    num_to_simulate = str(photons)    
+    num_to_simulate = str(photons)
     length_of_scan = str(sim_time)
-    
+
     # Import other configurations form config.yml
     acceptance_angle = str(config.get("acceptance_angle"))
     positron_range = config.get("positron_range")
@@ -92,7 +93,7 @@ def make_simset_phg(config, output_file, simulation_dir, act,
 
     # Now we write the phg file
     with open (output_file, 'w') as f:
-        
+
         # First we write the configuration stuff for the simulation
         f.write(stir_identifier)
         f.write("\n\n# Runtime options\n")
@@ -110,12 +111,12 @@ def make_simset_phg(config, output_file, simulation_dir, act,
         f.write(real + "minimum_energy = " + minimum_energy + "\n")
         f.write(real + "photon_energy = 511.0\n")
         f.write(real + "weight_window_ratio = " + weight_window_ratio + "\n")
-        f.write(boolean + "point_source_voxels = " + point_source_voxels + "\n") 
+        f.write(boolean + "point_source_voxels = " + point_source_voxels + "\n")
         f.write(integer + "random_seed = " + random_seed + "\n")
         f.write(boolean + "model_coherent_scatter_in_obj = " + coherent_scatter_object + "\n")
         f.write(boolean + "model_coherent_scatter_in_tomo = " + coherent_scatter_detector + "\n")
         f.write(enum + "isotope = " + simulated_isotope + "\n")
-        
+
         # Now comes the object stuff (old make_phg_simset from fruitcake)
         f.write("\n\n# OBJECT GEOMETRY VALUES\n")
         f.write("\nNUM_ELEMENTS_IN_LIST   object = %s" % str(nslices+1))
@@ -141,8 +142,8 @@ def make_simset_phg(config, output_file, simulation_dir, act,
         f.write("\n	REAL	target_zMin = %s" % str(min_z_target))
         f.write("\n	REAL	target_zMax = %s" % str(max_z_target))
         f.write("\n	REAL	radius =      %s\n\n" % str(scanner_radius))
-        
-        
+
+
         # Now we need the directory stuff
         f.write(string + 'coherent_scatter_table = "' + join(simset_phgdata_dir,"coh.tables") + '"\n')
         f.write(string + 'activity_indexes = "' + join(simulation_dir,"rec.act_indexes") + '"\n')
@@ -153,7 +154,7 @@ def make_simset_phg(config, output_file, simulation_dir, act,
         f.write(string + 'attenuation_table = "' + join(simset_phgdata_dir,"phg_att_table") + '"\n')
         f.write(string + 'attenuation_index_trans = "' + join(simset_phgdata_dir,"phg_att_index_trans") + '"\n')
         f.write(string + 'attenuation_image = "' + join(simulation_dir,"rec.attenuation_image") + '"\n')
-        
+
         # This part changes productivity tables between S=0 and S=1 adq
         if S==1:
             f.write(string + 'productivity_input_table = "' + join(simulation_dir,"sampling_rec") + '"\n')
@@ -161,7 +162,7 @@ def make_simset_phg(config, output_file, simulation_dir, act,
         else:
             f.write(string + 'productivity_input_table = ""\n')
             f.write(string + 'productivity_output_table = "' + join(simulation_dir,"sampling_rec") + '"\n')
-        
+
         f.write(string + 'statistics_file = "' + join(simulation_dir,"rec.stat") + '"\n')
         f.write(string + 'isotope_data_file = "' + join(simset_phgdata_dir,"isotope_positron_energy_data") + '"\n')
         f.write(string + 'detector_params_file = "' + join(simulation_dir,"det.rec") + '"\n')
@@ -193,10 +194,10 @@ def make_simset_bin(config, output_file, simulation_dir, scanner, add_randoms=Fa
     else:
         accept_randoms = "false"
         scatter_param = "1"
-        
+
     min_s = "0"
     max_s = "9"
-    
+
     # Here we get the parameters from the parameter files.
     num_z_bins = str(scanner.get("num_rings"))
     axial_fov = scanner.get("axial_fov")
@@ -238,7 +239,7 @@ def make_simset_bin(config, output_file, simulation_dir, scanner, add_randoms=Fa
         tools.log_message(log_file,message,'info')
 
 def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0, log_file=False):
-    
+
     num_rings = scanner_params.get("num_rings")
     z_crystal_size = scanner_params.get("z_crystal_size")
     axial_fov = scanner_params.get("axial_fov")
@@ -298,7 +299,7 @@ def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0, log_file=Fals
 
     new_file.write(
         "REAL    reference_energy_keV = 511.0 \n" +
-        "REAL    energy_resolution_percentage = %s \n" % energy_resolution + 
+        "REAL    energy_resolution_percentage = %s \n" % energy_resolution +
         "REAL 	photon_time_fwhm_ns = %s \n" % timing_resolution
         )
     if det_hf==1:
@@ -348,7 +349,7 @@ def process_weights(weights_file, output_dir, scanner, add_randoms = 0):
     trues_start = Simset_offset
     trues_end = Simset_offset + block_size
     trues_file = join(output_dir,"w1")
-    
+
 
     with open(weights_file, 'rb') as in_file:
         with open(trues_file, 'wb') as out_file:
@@ -361,7 +362,7 @@ def process_weights(weights_file, output_dir, scanner, add_randoms = 0):
     scatter_start = trues_end
     scatter_end = trues_end + block_size
     scatter_file = join(output_dir,"w2")
-    
+
 
     with open(weights_file, 'rb') as in_file:
         with open(scatter_file, 'wb') as out_file:
@@ -451,9 +452,9 @@ def combine_history_files(simset_dir, history_files, output):
 
     rcommand = '%s %s %s' % (combinehist, history_files,output)
 
-    p = sp.Popen(rcommand,stdin=sp.PIPE,stdout=sp.PIPE,stderr=sp.PIPE)
+    p = sp.Popen(rcommand,stdin=sp.PIPE,stdout=sp.PIPE, universal_newlines=True, shell=True)
     p.communicate("Yes")
-    p.communicate("Yes")
+    #p.communicate("Yes")
 
 def convert_simset_to_stir(input, output=False):
 
@@ -469,17 +470,19 @@ def convert_simset_to_stir(input, output=False):
 
         slice1 = simset_img_data[:,:,i]
 
-def simset_calcattenuation(simulation_dir,simset_dir,nrays=1):
+def simset_calcattenuation(simset_dir,phg_file,output,hdr_to_copy,nrays=1):
+
+    calcattenuation = join(simset_dir, "bin", "calc_attenuation")
+
+    p = sp.Popen(calcattenuation,stdin=sp.PIPE,stdout=sp.PIPE, universal_newlines=True, shell=True)
+    p.communicate(phg_file)
+    p.communicate(str(nrays))
+    p.communicate(output[0:-3])
+
+    size = os.path.getsize(output)
+    fs = FileSplit(file=output, splitsize=size, output_dir=os.path.dirname(output))
+    fs.split()
+
+
 
     print("To be done")
-    
-
-
-
-
-
-
-
-
-
-

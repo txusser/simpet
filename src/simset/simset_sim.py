@@ -90,7 +90,6 @@ class SimSET_Simulation(object):
             print("WARNING: add_randoms=0, so simulation is forced to realistic noise")
             print("Importance sampling is also being deactivated")
             print("All these means the simulation can take very long...")
-            print("\n")
 
         elif self.s_photons == 0 and self.photons !=0:
             sim_photons = self.photons/self.divisions
@@ -181,8 +180,8 @@ class SimSET_Simulation(object):
 
     def simulation_postprocessing(self):
 
-        print "Postprocessing simulation..."
-
+        print("Postprocessing simulation...")
+        print(" ")
         #All the parallel simulations are combined in division 0
 
         log_file = join(self.output_dir, "postprocessing.log")
@@ -194,7 +193,9 @@ class SimSET_Simulation(object):
             zero_image = join(division_zero, image + ".hdr")
 
             if exists(zero_image):
-                
+
+                print('Adding sinograms for %s' % image)
+
                 for division in range(1,self.divisions):
                     division_dir = join(self.output_dir, "division_" + str(division))
                     division_image = join(division_dir, image + ".hdr")
@@ -207,6 +208,9 @@ class SimSET_Simulation(object):
             zero_hist = join(division_zero, hist)
 
             if exists(zero_hist):
+
+                print(" ")
+                print('Adding History Files for %s' % hist)
 
                 filelist = ''
                 output = join(division_zero, "full_" + hist)
@@ -223,30 +227,31 @@ class SimSET_Simulation(object):
         if self.add_randoms ==1:
 
             # To have randoms in the final history file, we need to add randoms to the final det_hf.hist
+            print('Adding randoms to the the history file...')
 
             coincidence_window = self.scanner.get("coincidence_window")
 
-            simset_tools.add_randoms(division_zero, self.simset_dir, coincidence_window, 
+            simset_tools.add_randoms(division_zero, self.simset_dir, coincidence_window,
                                      rebin=False, log_file=log_file)
-            
+
             det_hist = join(division_zero, 'det_hf.hist')
             randoms_hist = join(division_zero, 'randoms.hist')
             output = join(division_zero, 'fulldet_hf.hist')
-            
+
             simset_tools.combine_history_files(self.simset_dir,filelist, output)
 
             shutil.move(output,det_hist)
             os.remove(randoms_hist)
 
-        # Once everything is combined in division_0, remove the other divisions
-        # for division in range(1,self.divisions):
-        #             division_dir = join(self.output_dir, "division_" + str(division))
-        #             shutil.rmtree(division_dir)
+        #Once everything is combined in division_0, remove the other divisions
+        for division in range(1,self.divisions):
+            division_dir = join(self.output_dir, "division_" + str(division))
+            shutil.rmtree(division_dir)
 
 class SimSET_Reconstruction(object):
     """This class provides functions to reconstruct a SimSET simulation."""
 
-    def __init__(self,params,config,att_map,scanner,projections_dir,reconstructions_dir,recons_type):
+    def __init__(self,params,config,att_map,scanner,reconstructions_dir,recons_type):
 
         #Initialization
         self.simpet_dir = dirname(abspath(__file__))
@@ -282,6 +287,8 @@ class SimSET_Reconstruction(object):
         if not exists(self.output_dir):
             os.makedirs(self.output_dir)
 
+        prepare_sinograms()
+
     def prepare_sinograms(self):
 
         trues_sino = join(self.input_dir, "trues.hdr")
@@ -290,19 +297,25 @@ class SimSET_Reconstruction(object):
         corr_scatter_sino = join(self.input_dir, "corr_scatter.hdr")
         corr_randoms_sino = join(self.input_dir, "corr_randoms.hdr")
         my_simset_sino = join(self.input_dir, "my_sinogram.hdr")
+        additive_sinogram = join(self.input_dir, "additive_sinogram.hdr")
 
         tools.operate_single_image(scatter_sino, "mult", self.scatt_corr_factor, corr_scatter_sino, self.log_file)
         tools.operate_images_analyze(trues_sino,corr_scatter_sino,my_simset_sino,operation='sum')
+        tools.smooth_analyze(corr_scatter_sino,20,corr_scatter_sino)
 
         if self.add_randoms == 1:
 
             tools.operate_single_image(randoms_sino, "mult", self.random_corr_factor, corr_randoms_sino, self.log_file)
             tools.operate_images_analyze(my_simset_sino,corr_randoms_sino,my_simset_sino,operation='sum')
+            tools.smooth_analyze(corr_randoms_sino,20,corr_randoms_sino)
+            tools.operate_images_analyze(corr_scatter_sino,corr_scatter_sino,additive_sinogram,operation='sum')
 
-        #if self.scanner.get('analytical_att_correction') == 1:
+        else:
 
-            #Perform the precorrection using SimSET calc_attenuation
+            tools.copy_analyze(corr_scatter_sino,additive_sinogram)
 
+        if self.scanner.get('analytical_att_correction') == 1:
 
-
-
+            phg_file = join(self.input_dir,"phg.rec")
+            output = join(self.input_dir, "attenuation.hdr")
+            simset_tools.simset_calcattenuation(self.simset_dir,phg_file,output,trues_sino,nrays=1)

@@ -3,26 +3,26 @@ simulation_environment: 0 # Set to 0 for local computer, 1 for Cesga
 #Define the simulation type and the environment
 sim_type: "SimSET"        # SimSET, STIR or GATE (only SimSET working)
 do_simulation: 1          # Set to 0 to reconstruction previous simulation
-do_reconstruction: 0      # Set to 0 to generate adq data only
-divisions: 5              # Number os subprocesses for parallel simulation
+do_reconstruction: 1      # Set to 0 to generate adq data only
+divisions: 4              # Number os subprocesses for parallel simulation
 
 # PET system (Vereos, Siemens_mCT, Discovery_ST, Discovery_STE, GE_Advance)
 scanner: "Vereos"
 
 #Patient Variables
-patient_dirname: "Calidade_Imaxe"
-act_map: "IEC_NEMA_ACT_contrast4_4spheres.hdr"
-att_map: "IEC_NEMA_ATT.hdr"
-output_dir: "Test_Short"         #Name of the Results Dir
+patient_dirname: "XCAT_Phantom"
+act_map: "TestMan_v3_act.hdr"
+att_map: "TestMan_v3_att.hdr"
+output_dir: "XCAT_Test"         #Name of the Results Dir
 
 #Config your phantom
-center_slice:  87         # The slice number to be placed on the center of the scanner
-total_dose: 1            # mCi
-simulation_time: 0.1     # secods
+center_slice:  235       # The slice number to be placed on the center of the scanner
+total_dose: 6            # mCi
+simulation_time: 300     # secods
 
 #SimSET Parameters (not used by STIR sim)
-sampling_photons: 0 # Set to 0 to avoid importance sampling
-photons: 0                  # Set to 0 to do a realistic noise simulation
+sampling_photons: 20000000 # Set to 0 to avoid importance sampling
+photons: 1500000000                  # Set to 0 to do a realistic noise simulation
 add_randoms: 0              # 1 activate Randoms simulation (Will force sampling_photons=0 and photons=0)
 phglistmode: 0              # History Files from the phg module (Needed for LM reconstruction. Potentially very big)
 detlistmode: 1              # History Files from the detector module (You need this for adding randoms. If add_randoms=1 will be forced)

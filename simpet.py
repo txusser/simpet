@@ -29,6 +29,7 @@ class SimPET(object):
         # The following lines will read the general, scanner and config parameters
         with open(param_file, 'rb') as f:
             self.params = yaml.load(f.read(), Loader=yaml.FullLoader)
+            self.sim_type = self.params.get("sim_type")
 
         # This will load the scanner params for the selected scanner
         self.scanner_model = self.params.get("scanner")
@@ -49,9 +50,9 @@ class SimPET(object):
 
         projections_dir = join(output_dir, "SimSET_Sim_" + self.scanner_model)
 
-        if self.params.get("do_simulation")==1:
+        from src.simset import simset_sim as sim
 
-            from src.simset import simset_sim as sim
+        if self.params.get("do_simulation")==1:
 
             if exists(projections_dir):
                 if self.config.get("interactive_mode")==1:
@@ -72,30 +73,40 @@ class SimPET(object):
             my_simulation = sim.SimSET_Simulation(self.params,self.config,act_map,att_map, self.scanner,projections_dir)
             my_simulation.run()
 
-        # If it is a new simulation or if the trues.hdr were not added previously, it makes the postprocessing
-        if not exists (join(projections_dir, "trues.hdr")):
-
-            my_simulation = sim.SimSET_Simulation(self.params,self.config,act_map,att_map, self.scanner,projections_dir)
-            my_simulation.simulation_postprocessing()
-
         if self.params.get("do_reconstruction")==1:
 
-            if not exists (projections_dir):
-                raise Exception('The projections directory does not exist. Run your simulation first.')
-                ## Place some logging here
-                sys.exit(1)
+            reconstruction_type = self.scanner.get("recons_type")
 
-            if not exists (join(projections_dir, "trues.hdr")) and exists (join(projections_dir, "division_0")):
+            if not exists (projections_dir):
+                    raise Exception('The projections directory does not exist. Run your simulation first.')
+                    ## Place some logging here
+                    sys.exit(1)
+
+            postprocess_log = join(projections_dir,"postprocessing.log")
+
+            # If it is a new simulation or if the trues.hdr were not added previously, it makes the postprocessing
+            if not exists (postprocess_log):
                 print("Your simulation SimSET outputs were not processed previously. We will try it now...")
                 my_simulation = sim.SimSET_Simulation(self.params,self.config,act_map,att_map, self.scanner,projections_dir)
                 my_simulation.simulation_postprocessing()
 
-            reconstruction_dir = join(output_dir, "SimSET_STIR_Recons")
+            reconstruction_dir = join(output_dir, "SimSET_STIR_" + reconstruction_type)
 
-            if not exists(reconstruction_dir):
-                os.makedirs(reconstruction_dir)
+            if exists(reconstruction_dir):
+                if self.config.get("interactive_mode")==1:
+                    print("The introduced output dir already has a %s reconstruction.Proceeding will delete it." % reconstruction_type)
+                    remove = raw_input(" Write 'Y' to delete it: ")
+                    print("You can disable this prompt by deactivating interactive mode in the config file.")
+                    if remove == "Y":
+                        shutil.rmtree(reconstruction_dir)
+                    else:
+                        raise Exception('The simulation was aborted.')
+                        ## Place some logging here
+                        sys.exit(1)
+                else:
+                    shutil.rmtree(reconstruction_dir)
 
-            my_reconstruction = sim.SimSET_Reconstruction(self.params,self.config)
+            my_reconstruction = sim.SimSET_Reconstruction(self.params,self.config,projections_dir,self.scanner,reconstruction_dir,reconstruction_type)
             my_reconstruction.run()
 
     def stir_simulation(self,param_file):
@@ -105,7 +116,6 @@ class SimPET(object):
     def run(self):
 
         from utils import tools
-        sim_type = self.params.get("sim_type")
 
         patient_dir = self.params.get("patient_dirname")
         act_map = join(self.dir_data, patient_dir, self.params.get("act_map"))
@@ -120,12 +130,12 @@ class SimPET(object):
 
         log_file = join(output_dir,"logfile.log")
 
-        act_map, att_map = tools.convert_map_values(act_map,att_map,maps_dir,log_file,mode=sim_type)
+        act_map, att_map = tools.convert_map_values(act_map,att_map,maps_dir,log_file,mode=self.sim_type)
 
-        if sim_type=="SimSET":
+        if self.sim_type=="SimSET":
 
             self.simset_simulation(act_map,att_map,output_dir)
 
-        if sim_type=="STIR":
+        if self.sim_type=="STIR":
 
             self.stir_simulation(self.params, self.config, act_map,att_map,self.scanner,output_dir)

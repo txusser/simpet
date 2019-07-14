@@ -446,15 +446,13 @@ def add_randoms(sim_dir, simset_dir, coincidence_window, rebin=True, log_file=Fa
         command = command = "%s %s >> %s" % (phgbin, binfile, log_file)
         tools.osrun(command, log_file)
 
-def combine_history_files(simset_dir, history_files, output):
+def combine_history_files(simset_dir, history_files, output, log_file):
 
     combinehist = join(simset_dir, "bin", "combinehist")
 
-    rcommand = '%s %s %s' % (combinehist, history_files,output)
+    rcommand = 'echo No | %s %s %s' % (combinehist, history_files, output)
 
-    p = sp.Popen(rcommand,stdin=sp.PIPE,stdout=sp.PIPE, universal_newlines=True, shell=True)
-    p.communicate("Yes")
-    #p.communicate("Yes")
+    tools.osrun(rcommand, log_file)
 
 def convert_simset_to_stir(input, output=False):
 
@@ -471,6 +469,8 @@ def convert_simset_to_stir(input, output=False):
         slice1 = simset_img_data[:,:,i]
 
 def simset_calcattenuation(simset_dir,phg_file,output,hdr_to_copy,nrays=1):
+
+    # Review because the pipes are not working ###
 
     calcattenuation = join(simset_dir, "bin", "calc_attenuation")
 

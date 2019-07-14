@@ -126,7 +126,6 @@ class SimSET_Simulation(object):
             my_log = join(sim_dir,"simset_s1.log")
 
             print("Running the sencond simulation with importance sampling...")
-            print("\n")
 
             command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
             tools.osrun(command, log_file)
@@ -212,17 +211,14 @@ class SimSET_Simulation(object):
                 print(" ")
                 print('Adding History Files for %s' % hist)
 
-                filelist = ''
-                output = join(division_zero, "full_" + hist)
+                output = join(division_zero, "tmp_" + hist)
 
-                for division in range(self.divisions):
+                for division in range(1,self.divisions):
                     division_dir = join(self.output_dir, "division_" + str(division))
                     division_hist = join(division_dir, hist)
-                    filelist = filelist + division_hist + ' '
-
-                simset_tools.combine_history_files(self.simset_dir,filelist, output)
-
-                shutil.move(output,zero_hist)
+                    file_list = zero_hist + " " + division_hist
+                    simset_tools.combine_history_files(self.simset_dir,file_list, output, log_file)
+                    shutil.move(output,zero_hist)
 
         if self.add_randoms ==1:
 
@@ -238,28 +234,30 @@ class SimSET_Simulation(object):
             randoms_hist = join(division_zero, 'randoms.hist')
             output = join(division_zero, 'fulldet_hf.hist')
 
-            simset_tools.combine_history_files(self.simset_dir,filelist, output)
+            file_list = det_hist + ' ' + randoms_hist
+
+            simset_tools.combine_history_files(self.simset_dir,file_list, output, log_file)
 
             shutil.move(output,det_hist)
-            os.remove(randoms_hist)
+            #os.remove(randoms_hist)
 
         #Once everything is combined in division_0, remove the other divisions
-        for division in range(1,self.divisions):
-            division_dir = join(self.output_dir, "division_" + str(division))
-            shutil.rmtree(division_dir)
+        # for division in range(1,self.divisions):
+        #     division_dir = join(self.output_dir, "division_" + str(division))
+        #     shutil.rmtree(division_dir)
 
 class SimSET_Reconstruction(object):
     """This class provides functions to reconstruct a SimSET simulation."""
 
-    def __init__(self,params,config,att_map,scanner,reconstructions_dir,recons_type):
+    def __init__(self,params,config,projections_dir,scanner,reconstructions_dir,recons_type):
 
         #Initialization
         self.simpet_dir = dirname(abspath(__file__))
         self.simset_dir = config.get("dir_simset")
         self.dir_stir = config.get("dir_stir")
 
-        self.input_dir = projections_dir
-        self.output_dir = join(reconstructions_dir,"recons_type")
+        self.input_dir = join(projections_dir,"division_0")
+        self.output_dir = reconstructions_dir
 
         self.params = params
         self.config = config
@@ -271,14 +269,9 @@ class SimSET_Reconstruction(object):
 
         self.do_pre_att_correction = scanner.get('analytical_att_correction')
         self.do_recons_att_correction = scanner.get('stir_recons_att_corr')
-
         if self.do_pre_att_correction == 1 and self.do_recons_att_correction == 1:
             self.do_pre_att_correction == 0
             raise Warning ('WARNING: both pre and recons att corrections are both active...Ignoring pre-correction')
-
-        self.att_map = att_map
-        self.input_dir = projections_dir
-        self.output_dir = reconstructions_dir
 
         self.log_file = join(self.output_dir, "recons.log")
 
@@ -287,7 +280,7 @@ class SimSET_Reconstruction(object):
         if not exists(self.output_dir):
             os.makedirs(self.output_dir)
 
-        prepare_sinograms()
+        self.prepare_sinograms()
 
     def prepare_sinograms(self):
 

@@ -36,7 +36,8 @@ stir_recons_att_corr:  1        # Performed in STIR by entering the att image as
 # Scatter Correction
 analytic_scatt_corr_factor:  1      # 0.15 WILL REMOVE 85% of scatter.0 will remove scatter
 stir_scatt_corr_smoothing:   1      # Will use smoothed SimSET scatter as additive_sinogram.
-stirr_scatt_simulation:      0      # Will calculate scatter with STIR scatter simulation
+stir_scatt_simulation:      0      # Will calculate scatter with STIR scatter simulation
 # Randoms Correction
 analytic_randoms_corr_factor: 1     # 0.15 WILL REMOVE 85% of scatter.0 will remove randoms
+recons_type: "OSEM_LM_TOF"
 

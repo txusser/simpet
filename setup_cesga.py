@@ -28,7 +28,7 @@ def rsystem(command):
             w_file.write(message)
         raise TypeError(command)
     else:
-        print "OK executing: %s" % command
+        print("OK executing: %s" % command)
         with open(log_file, 'a') as w_file:
             w_file.write(message)
 
@@ -168,80 +168,11 @@ def update_config(stir_dir,simset_dir):
 
     shutil.move(newconfigfile,configfile)
 
-def install_soap():
-    """
-    Execute installation of all dependencies
-    :return:
-    """
-    # Install SOAP
-
-    icom = 'sudo apt install python -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install python-pip -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install libboost-dev libboost-all-dev -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install libpcre3 libpcre3-dev -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install libncurses-dev -y -q'
-    rsystem(icom)
-
-    # Install and upgrade PIP
-    icom = 'sudo apt install python-yaml -y -q'
-    rsystem(icom)
-
-    # Update yaml to use FullLoader
-    #icom = 'sudo pip install -U pyYAML'
-    #rsystem(icom)
-
-    # Install numpy
-    icom = 'sudo apt install python-numpy -y -q'
-    rsystem(icom)
-
-    # Install Scipy
-    icom = 'sudo apt install python-scipy -y -q'
-    rsystem(icom)
-
-    # Install Nibabel
-    icom = 'sudo apt install python-nibabel -y -q'
-    rsystem(icom)
-
-    # Install matplotlib
-    icom = 'sudo apt install python-matplotlib -y -q'
-    rsystem(icom)
-
-    # Install Pandas
-    icom = 'sudo apt install python-pandas -y -q'
-    rsystem(icom)
-
-    # Install cmake (needed for STIR)
-    icom = 'sudo apt install cmake -y -q'
-    rsystem(icom)
-
-    # Install swig (needed for STIR)
-    icom = 'sudo apt install swig -y -q'
-    rsystem(icom)
 
 # Extract Resources
 print('Extracting resources...')
 command = 'tar -xvf resources.tar.xz'
 rsystem(command)
-
-# Fruitcake is not needed right now
-# # Add fruitcake paths to bashrc... This can be a problem...
-# fruitcake_binpath = 'echo "export PATH=%s/fruitcake/bin:$PATH" >> ~/.bashrc' % dest_dir
-# rsystem(fruitcake_binpath)
-
-# fruitcake_ldpath = 'echo "export LD_LIBRARY_PATH=%s/fruitcake/book/lib:$LD_LIBRARY_PATH" >> ~/.bashrc' % dest_dir
-# rsystem(fruitcake_ldpath)
-
-# rsystem('source ~/.bashrc')
-
-install_soap()
 
 simpet_dir = os.getcwd()
 os.chdir(dest_dir)

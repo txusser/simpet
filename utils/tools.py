@@ -44,7 +44,7 @@ def nib_load(image, logfile=False):
         if logfile:
             log_message(logfile, message, 'error')
         else:
-            print message
+            print(message)
 
 def copy_analyze(image1, image2=False, dest_dir=False, logfile=False):
     """
@@ -392,7 +392,7 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
         data = data / float(factor)
     else:
         message = "Error! Invalid operation: " +str(operation)
-        print message
+        print(message)
         log_message(logfile, message, 'error')
 
     hdr1 = nib.AnalyzeHeader()

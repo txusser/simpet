@@ -28,7 +28,7 @@ def rsystem(command):
             w_file.write(message)
         raise TypeError(command)
     else:
-        print "OK executing: %s" % command
+        print("OK executing: %s" % command)
         with open(log_file, 'a') as w_file:
             w_file.write(message)
 
@@ -191,7 +191,7 @@ def install_soap():
     rsystem(icom)
 
     # Install and upgrade PIP
-    icom = 'sudo apt install python-yaml -y -q'
+    icom = 'sudo pip install --ignore-installed PyYAML==5.1 '
     rsystem(icom)
 
     # Update yaml to use FullLoader

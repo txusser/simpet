@@ -3,8 +3,8 @@ from os.path import abspath, join, dirname
 
 # Ablotue paths to folders with resources used
 RESOURCES = abspath(join(dirname(dirname(abspath(__file__))), 'resources'))
-FRUTICAKE = abspath(join(dirname(dirname(abspath(__file__))),'include', 'fruitcake', 'bin'))
-BIN = abspath(join(dirname(dirname(abspath(__file__))), 'include', 'bin'))
+FRUTICAKE = abspath(join(dirname(dirname(abspath(__file__))),'resources', 'fruitcake', 'bin'))
+BIN = abspath(join(dirname(dirname(abspath(__file__))), 'resources', 'bin'))
 STIR = abspath(join(dirname(dirname(abspath(__file__))), 'include', 'stir','bin'))
 SIMSET = abspath(join(dirname(dirname(abspath(__file__))), 'include', 'simset','2.9.2','bin'))
 

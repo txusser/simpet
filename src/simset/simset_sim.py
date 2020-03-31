@@ -7,7 +7,7 @@ from utils import resources as rsc
 from utils import tools
 import yaml
 import numpy as np
-import src.simset.simset_tools
+import src.simset.simset_tools as simset_tools
 import subprocess
 
 class SimSET_Simulation(object):

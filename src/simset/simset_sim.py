@@ -23,7 +23,7 @@ class SimSET_Simulation(object):
         self.scanner = scanner
 
         self.simset_dir = self.config.get("dir_simset")
-        self.cesga = bool(self.config.get("cesga"))
+        self.cesga = self.config.get("cesga")
         self.cesga_max_time = self.config.get("cesga_max_time")
 
         self.act_map = act_map
@@ -131,7 +131,7 @@ class SimSET_Simulation(object):
 
             command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
             
-            if self.cesga:
+            if self.cesga == 1:
                 print("Launching cesga job...")
                 tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 16)
             else: 

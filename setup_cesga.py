@@ -181,8 +181,8 @@ def download_resources():
 
 
 simpet_dir = os.getcwd()
-
-os.makedirs(dest_dir)
+if not exists(dest_dir)
+    os.makedirs(dest_dir)
 os.chdir(dest_dir)
 
 simset_dir = join(dest_dir,"SimSET")

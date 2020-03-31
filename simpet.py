@@ -40,7 +40,7 @@ class SimPET(object):
         self.dir_data = join(self.simpet_dir, "Data")
 
         self.cesga = self.config.get("cesga")
-        if self.cesga == 1:
+        if self.cesga:
             self.dir_results =  self.config.get("cesga_results_path")
         else:
             self.dir_results = join(self.simpet_dir, "Results")

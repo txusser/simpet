@@ -107,10 +107,10 @@ class SimSET_Simulation(object):
         command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
         
         if self.cesga:
-                print("Launching cesga job...")
-                tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 16)
-            else: 
-                tools.osrun(command, log_file)
+            print("Launching cesga job...")
+            tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 16)
+        else: 
+            tools.osrun(command, log_file)
 
         rec_weight = join(sim_dir,"rec.weight")
         det_hf = join(sim_dir, 'det_hf.hist')

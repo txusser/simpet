@@ -414,7 +414,7 @@ def launch_cesga_job(command, sim_folder, cesga_max_time, cesga_cores, cesga_mem
     my_script.write(command)
     
     os.system("sbatch -t %s -c %s --mem=%s --get-user-env --output=%s/job.out %s" % (
-			  cesga_max_time, cesga_cores, cesga_mem, sim_dir, my_script_name))
+			  cesga_max_time, cesga_cores, cesga_mem, sim_folder, my_script_name))
 
 def operate_images_analyze(image1, image2, out_image, operation='mult'):
     """

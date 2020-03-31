@@ -108,7 +108,9 @@ def create_analyze_from_imgdata(data, out, pix_x, pix_y, pix_z, tx, ty, tz, data
     hdr1.set_data_shape((pix_x,pix_y,pix_z))
     hdr1.set_zooms((tx,ty,tz))
 
-    img_data = hdr1.raw_data_from_fileobj(data)
+    f = open(data,'rb')
+
+    img_data = hdr1.raw_data_from_fileobj(f)
 
     analyze_img = nib.AnalyzeImage(img_data, hdr1.get_base_affine(), hdr1)
 

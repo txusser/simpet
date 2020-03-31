@@ -1,6 +1,6 @@
 import os,shutil, datetime
 from os.path import join, exists, isfile, isdir, dirname, basename, splitext
-from commands import getstatusoutput as getoutput
+from subprocess import getstatusoutput as getoutput
 import nibabel as nib
 from utils import resources as rsc
 import numpy as np

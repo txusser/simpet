@@ -176,23 +176,23 @@ def download_resources():
     print('Moving and extracting resources...')
     icom = 'mv download\?cid\=82E5E66193A2F2B1\&resid\=82E5E66193A2F2B1\!145313\&authkey\=AD790Ox5lhx16g4 resources.tar.gz'
     rsystem(icom)
-    icom = 'tar -xvf resources.tar.xz'
+    icom = 'tar -xvf resources.tar.gz'
     rsystem(icom)
 
 
 simpet_dir = os.getcwd()
-if not exists(dest_dir)
+if not exists(dest_dir):
     os.makedirs(dest_dir)
 os.chdir(dest_dir)
 
 simset_dir = join(dest_dir,"SimSET")
-install_simset(simset_dir, log_file)
+#install_simset(simset_dir, log_file)
 
 stir_dir = join(dest_dir,"STIR")
-install_stir(stir_dir, simset_dir, log_file)
+#install_stir(stir_dir, simset_dir, log_file)
 
 os.chdir(simpet_dir)
-update_config(stir_dir,simset_dir)
+#update_config(stir_dir,simset_dir)
 
 download_resources()
 

@@ -168,82 +168,32 @@ def update_config(stir_dir,simset_dir):
 
     shutil.move(newconfigfile,configfile)
 
-def install_soap():
-    """
-    Execute installation of all dependencies
-    :return:
-    """
-    # Install SOAP
+def download_resources():
 
-    icom = 'sudo apt install python -y -q'
+    print('Downloading resources from Onedrive...')
+    icom = 'wget "https://onedrive.live.com/download?cid=82E5E66193A2F2B1&resid=82E5E66193A2F2B1%21145313&authkey=AD790Ox5lhx16g4"'
+    rsystem(icom)
+    print('Moving and extracting resources...')
+    icom = 'mv download\?cid\=82E5E66193A2F2B1\&resid\=82E5E66193A2F2B1\!145313\&authkey\=AD790Ox5lhx16g4 resources.tar.gz'
+    rsystem(icom)
+    icom = 'tar -xvf resources.tar.xz'
     rsystem(icom)
 
-    icom = 'sudo apt install python-pip -y -q'
-    rsystem(icom)
 
-    icom = 'sudo apt install libboost-dev libboost-all-dev -y -q'
-    rsystem(icom)
 
-    icom = 'sudo apt install libpcre3 libpcre3-dev -y -q'
-    rsystem(icom)
 
-    icom = 'sudo apt install libncurses-dev -y -q'
-    rsystem(icom)
-
-    # Install and upgrade PIP
-    icom = 'sudo apt install python-yaml -y -q'
-    rsystem(icom)
-
-    # Update yaml to use FullLoader
-    #icom = 'sudo pip install -U pyYAML'
-    #rsystem(icom)
-
-    # Install numpy
-    icom = 'sudo apt install python-numpy -y -q'
-    rsystem(icom)
-
-    # Install Scipy
-    icom = 'sudo apt install python-scipy -y -q'
-    rsystem(icom)
-
-    # Install Nibabel
-    icom = 'sudo apt install python-nibabel -y -q'
-    rsystem(icom)
-
-    # Install matplotlib
-    icom = 'sudo apt install python-matplotlib -y -q'
-    rsystem(icom)
-
-    # Install Pandas
-    icom = 'sudo apt install python-pandas -y -q'
-    rsystem(icom)
-
-    # Install cmake (needed for STIR)
-    icom = 'sudo apt install cmake -y -q'
-    rsystem(icom)
-
-    # Install swig (needed for STIR)
-    icom = 'sudo apt install swig -y -q'
-    rsystem(icom)
-
-# Extract Resources
-print('Extracting resources...')
-command = 'tar -xvf resources.tar.xz'
-rsystem(command)
-
-# Fruitcake is not needed right now
-# # Add fruitcake paths to bashrc... This can be a problem...
-# fruitcake_binpath = 'echo "export PATH=%s/fruitcake/bin:$PATH" >> ~/.bashrc' % dest_dir
-# rsystem(fruitcake_binpath)
-
-# fruitcake_ldpath = 'echo "export LD_LIBRARY_PATH=%s/fruitcake/book/lib:$LD_LIBRARY_PATH" >> ~/.bashrc' % dest_dir
-# rsystem(fruitcake_ldpath)
-
-# rsystem('source ~/.bashrc')
-
-install_soap()
 
 simpet_dir = os.getcwd()
+download_resources()
+
+fruitcake_binpath = 'echo "export PATH=%s/resources/fruitcake/bin:$PATH" >> ~/.bashrc' % simpet_dir
+rsystem(fruitcake_binpath)
+
+fruitcake_ldpath = 'echo "export LD_LIBRARY_PATH=%s/resources/fruitcake/book/lib:$LD_LIBRARY_PATH" >> ~/.bashrc' % simpet_dir
+rsystem(fruitcake_ldpath)
+
+rsystem('source ~/.bashrc')
+
 os.chdir(dest_dir)
 
 simset_dir = join(dest_dir,"SimSET")

@@ -181,14 +181,6 @@ def download_resources():
 
 
 simpet_dir = os.getcwd()
-download_resources()
-
-fruitcake_binpath = 'echo "export PATH=%s/resources/fruitcake/bin:$PATH" >> ~/.bashrc' % simpet_dir
-rsystem(fruitcake_binpath)
-fruitcake_ldpath = 'echo "export LD_LIBRARY_PATH=%s/resources/fruitcake/book/lib:$LD_LIBRARY_PATH" >> ~/.bashrc' % simpet_dir
-rsystem(fruitcake_ldpath)
-
-rsystem('source ~/.bashrc')
 
 os.chdir(dest_dir)
 
@@ -200,3 +192,15 @@ install_stir(stir_dir, simset_dir, log_file)
 
 os.chdir(simpet_dir)
 update_config(stir_dir,simset_dir)
+
+download_resources()
+
+fruitcake_binpath = 'echo "export PATH=%s/resources/fruitcake/bin:$PATH" >> ~/.bashrc' % simpet_dir
+rsystem(fruitcake_binpath)
+fruitcake_ldpath = 'echo "export LD_LIBRARY_PATH=%s/resources/fruitcake/book/lib:$LD_LIBRARY_PATH" >> ~/.bashrc' % simpet_dir
+rsystem(fruitcake_ldpath)
+
+rsystem('source ~/.bashrc')
+
+
+

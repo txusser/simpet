@@ -28,7 +28,7 @@ def rsystem(command):
             w_file.write(message)
         raise TypeError(command)
     else:
-        print "OK executing: %s" % command
+        print("OK executing: %s" % command)
         with open(log_file, 'a') as w_file:
             w_file.write(message)
 
@@ -180,15 +180,11 @@ def download_resources():
     rsystem(icom)
 
 
-
-
-
 simpet_dir = os.getcwd()
 download_resources()
 
 fruitcake_binpath = 'echo "export PATH=%s/resources/fruitcake/bin:$PATH" >> ~/.bashrc' % simpet_dir
 rsystem(fruitcake_binpath)
-
 fruitcake_ldpath = 'echo "export LD_LIBRARY_PATH=%s/resources/fruitcake/book/lib:$LD_LIBRARY_PATH" >> ~/.bashrc' % simpet_dir
 rsystem(fruitcake_ldpath)
 

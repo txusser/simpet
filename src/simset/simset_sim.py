@@ -23,6 +23,8 @@ class SimSET_Simulation(object):
         self.scanner = scanner
 
         self.simset_dir = self.config.get("dir_simset")
+        self.cesga = self.config.get("cesga")
+        self.cesga_max_time = self.config.get("cesga_max_time")
 
         self.act_map = act_map
         self.att_map = att_map
@@ -128,7 +130,12 @@ class SimSET_Simulation(object):
             print("Running the sencond simulation with importance sampling...")
 
             command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
-            tools.osrun(command, log_file)
+            
+            if self.cesga:
+                tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 16)
+            else: 
+                tools.osrun(command, log_file)
+            
 
         if self.add_randoms == 1:
 

@@ -8,6 +8,7 @@ spm_path:  "/home/jesus/Work/repositories/simpet/include/spm12"
 interactive_mode: 0
 
 # Cesga Configuration
+cesga: True
 cesga_results_path:  "$LUSTRE/SimPET/brainviset_simset"
 cesga_max_time:  "02:00:00" # Cesga Jobs need to configure a max running time
 

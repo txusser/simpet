@@ -406,6 +406,16 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
 
     nib.save(analyze_img,out_image)
 
+def launch_cesga_job(command, sim_folder, cesga_max_time, cesga_cores, cesga_mem):
+
+    my_script_name = join(sim_folder, "job_script.sh")
+    my_script = open(my_script_name,"w")
+    my_script.write("#!/usr/bin/env bash" + "\n")
+    my_script.write(command)
+    
+    os.system("sbatch -t %s -c %s --mem=%s --get-user-env --output=%s/job.out %s" % (
+			  cesga_max_time, cesga_cores, cesga_mem, sim_dir, my_script_name))
+
 def operate_images_analyze(image1, image2, out_image, operation='mult'):
     """
     Given the input images, calculate the multiplication image or the ratio between them

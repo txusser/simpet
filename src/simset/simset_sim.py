@@ -7,7 +7,7 @@ from utils import resources as rsc
 from utils import tools
 import yaml
 import numpy as np
-import simset_tools
+import src.simset.simset_tools as simset_tools
 import subprocess
 
 class SimSET_Simulation(object):
@@ -23,6 +23,8 @@ class SimSET_Simulation(object):
         self.scanner = scanner
 
         self.simset_dir = self.config.get("dir_simset")
+        self.cesga = self.config.get("cesga")
+        self.cesga_max_time = self.config.get("cesga_max_time")
 
         self.act_map = act_map
         self.att_map = att_map
@@ -103,7 +105,12 @@ class SimSET_Simulation(object):
         my_log = join(sim_dir,"simset_s0.log")
 
         command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
-        tools.osrun(command, log_file)
+        
+        if self.cesga:
+            print("Launching cesga job...")
+            tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 16)
+        else: 
+            tools.osrun(command, log_file)
 
         rec_weight = join(sim_dir,"rec.weight")
         det_hf = join(sim_dir, 'det_hf.hist')
@@ -128,7 +135,13 @@ class SimSET_Simulation(object):
             print("Running the sencond simulation with importance sampling...")
 
             command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
-            tools.osrun(command, log_file)
+            
+            if self.cesga:
+                print("Launching cesga job...")
+                tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 16)
+            else: 
+                tools.osrun(command, log_file)
+            
 
         if self.add_randoms == 1:
 

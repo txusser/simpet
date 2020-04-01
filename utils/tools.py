@@ -1,6 +1,6 @@
 import os,shutil, datetime
 from os.path import join, exists, isfile, isdir, dirname, basename, splitext
-from commands import getstatusoutput as getoutput
+from subprocess import getstatusoutput as getoutput
 import nibabel as nib
 from utils import resources as rsc
 import numpy as np
@@ -44,7 +44,7 @@ def nib_load(image, logfile=False):
         if logfile:
             log_message(logfile, message, 'error')
         else:
-            print message
+            print(message)
 
 def copy_analyze(image1, image2=False, dest_dir=False, logfile=False):
     """
@@ -108,7 +108,9 @@ def create_analyze_from_imgdata(data, out, pix_x, pix_y, pix_z, tx, ty, tz, data
     hdr1.set_data_shape((pix_x,pix_y,pix_z))
     hdr1.set_zooms((tx,ty,tz))
 
-    img_data = hdr1.raw_data_from_fileobj(data)
+    f = open(data,'rb')
+
+    img_data = hdr1.raw_data_from_fileobj(f)
 
     analyze_img = nib.AnalyzeImage(img_data, hdr1.get_base_affine(), hdr1)
 
@@ -392,7 +394,7 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
         data = data / float(factor)
     else:
         message = "Error! Invalid operation: " +str(operation)
-        print message
+        print(message)
         log_message(logfile, message, 'error')
 
     hdr1 = nib.AnalyzeHeader()
@@ -403,6 +405,17 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     analyze_img = nib.AnalyzeImage(data, hdr1.get_base_affine(), hdr1)
 
     nib.save(analyze_img,out_image)
+
+def launch_cesga_job(command, sim_folder, cesga_max_time, cesga_cores, cesga_mem):
+
+    my_script_name = join(sim_folder, "job_script.sh")
+    my_script = open(my_script_name,"w")
+    my_script.write("#!/usr/bin/env bash" + "\n")
+    my_script.write(command)
+    my_script.close()
+    
+    os.system("sbatch -t %s -c %s --mem=%s --get-user-env --output=%s/job.out %s" % (
+			  cesga_max_time, cesga_cores, cesga_mem, sim_folder, my_script_name))
 
 def operate_images_analyze(image1, image2, out_image, operation='mult'):
     """

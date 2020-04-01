@@ -1,6 +1,6 @@
 # Directories to the necesary binaries
-dir_stir:  "/home/jesus/Work/my_repos/simpet/include/STIR/install"
-dir_simset:  "/home/jesus/Work/my_repos/simpet/include/SimSET/2.9.2"
+dir_stir:  "/mnt/netapp2/Home_FT2/home/usc/mp/paf/simpet/include/STIR/install"
+dir_simset:  "/mnt/netapp2/Home_FT2/home/usc/mp/paf/simpet/include/SimSET/2.9.2"
 matlab_mcr_path:  "/opt/MATLAB/MATLAB_Compiler_Runtime/v901/"
 spm_path:  "/home/jesus/Work/repositories/simpet/include/spm12"
 
@@ -8,7 +8,8 @@ spm_path:  "/home/jesus/Work/repositories/simpet/include/spm12"
 interactive_mode: 0
 
 # Cesga Configuration
-cesga_results_path:  "$LUSTRE/SimPET/brainviset_simset"
+cesga: True
+cesga_results_path:  "/mnt/lustre/scratch//home/usc/mp/paf/SimPET/brainviset_simset"
 cesga_max_time:  "02:00:00" # Cesga Jobs need to configure a max running time
 
 # SimSET base configuration. Don't change if you don't know what you are doing

@@ -21,10 +21,6 @@ class SimPET(object):
 
         #Initialization
         self.simpet_dir = dirname(abspath(__file__))
-        self.dir_data = join(self.simpet_dir, "Data")
-        self.dir_results = join(self.simpet_dir, "Results")
-        if not exists(self.dir_results):
-            os.makedirs(self.dir_results)
 
         # The following lines will read the general, scanner and config parameters
         with open(param_file, 'rb') as f:
@@ -40,6 +36,16 @@ class SimPET(object):
         # This will load the environment config
         with open(config_file, 'rb') as f:
             self.config = yaml.load(f.read(), Loader=yaml.FullLoader)
+
+        self.dir_data = join(self.simpet_dir, "Data")
+
+        self.cesga = self.config.get("cesga")
+        if self.cesga:
+            self.dir_results =  self.config.get("cesga_results_path")
+        else:
+            self.dir_results = join(self.simpet_dir, "Results")
+        if not exists(self.dir_results):
+            os.makedirs(self.dir_results)
 
         #SPM variables (Only used to create initial maps from patient data)
         self.matlab_mcr_path = self.config.get("matlab_mcr_path")

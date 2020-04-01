@@ -1,10 +1,9 @@
 import random
-import os
+import os, shutil
 import subprocess as sp
-from os.path import join
+from os.path import join, exists
 import nibabel as nib
 import numpy as np
-from fsplit.filesplit import FileSplit
 
 from utils import tools
 
@@ -479,10 +478,12 @@ def simset_calcattenuation(simset_dir,phg_file,output,hdr_to_copy,nrays=1):
     p.communicate(str(nrays))
     p.communicate(output[0:-3])
 
-    size = os.path.getsize(output)
-    fs = FileSplit(file=output, splitsize=size, output_dir=os.path.dirname(output))
-    fs.split()
+    CHUNK_SIZE = os.path.getsize(output[0:-3])
+    with open(output[0:-3]) as f:
+        chunk = f.read(CHUNK_SIZE)
+    with open(output[0:-3] + 'img') as chunk_file:
+        chunk_file.write(chunk)
 
-
-
+    shutil.copy(hdr_to_copy, output[0:-3] + 'hdr')
+    
     print("To be done")

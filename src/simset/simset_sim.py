@@ -108,7 +108,7 @@ class SimSET_Simulation(object):
         
         if self.cesga:
             print("Launching cesga job...")
-            tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 16)
+            tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 8)
         else: 
             tools.osrun(command, log_file)
 

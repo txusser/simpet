@@ -1,9 +1,10 @@
 import random
-import os, shutil
+import os, shutil, time, sys
 import subprocess as sp
 from os.path import join, exists
 import nibabel as nib
 import numpy as np
+import pexpect
 
 from utils import tools
 
@@ -78,7 +79,7 @@ def make_simset_phg(config, output_file, simulation_dir, act,
     xMin, xMax = round(-act_fov[0,0]/20,3), round(act_fov[0,0]/20,3) # 20 is because it must be cm
     yMin, yMax = round(-act_fov[1,1]/20,3), round(act_fov[1,1]/20,3)
 
-    z_offset = abs(act.affine[2,2]*center_slice/10) #cm
+    z_offset = abs(act.affine[2,2]*center_slice/10 + 0.5*act.affine[2,2]/10) #cm
     zMin, zMax = round(-z_offset,2), round(act_fov[2,2]/10 - z_offset,2)
 
     dz = round((zMax-zMin)/nslices,2)
@@ -203,8 +204,8 @@ def make_simset_bin(config, output_file, simulation_dir, scanner, add_randoms=Fa
     min_z, max_z = -axial_fov/2, axial_fov/2
     num_aa_bins = str(scanner.get("num_aa_bins"))
     num_td_bins = str(scanner.get("num_td_bins"))
-    min_td = str(scanner.get("min_td"))
-    max_td = str(scanner.get("max_td"))
+    min_td = str(-scanner.get("scanner_radius"))
+    max_td = str(scanner.get("scanner_radius"))
     min_e = str(scanner.get("min_energy_window"))
     max_e = str(scanner.get("max_energy_window"))
     rec_weight_file = join(simulation_dir,"rec.weight")
@@ -317,6 +318,23 @@ def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0, log_file=Fals
 
         tools.log_message(log_file,message,'info')
 
+def make_simset_simplepet_det(scanner_params, output):
+    
+    with open(scanner_params, 'rb') as f:
+        params = yaml.load(f.read(), Loader=yaml.FullLoader)
+
+    energy_resolution = params.get("energy_resolution")
+
+    new_file = open(output, "w")
+    
+    new_file.write(
+        "ENUM detector_type = simple_pet \n\n" +
+        "REAL    reference_energy_keV = 511.0 \n" +
+        "REAL    energy_resolution_percentage = %s \n" % energy_resolution
+        )
+
+    new_file.close()
+
 def make_index_file(simulation_dir, simset_dir, log_file=False):
 
     output = join(simulation_dir,"index_file.log")
@@ -423,7 +441,7 @@ def add_randoms(sim_dir, simset_dir, coincidence_window, rebin=True, log_file=Fa
 
     addrand_bin = join(simset_dir, "bin", "addrandoms")
 
-    command = command = "%s %s >> %s" % (addrand_bin, template, log_file)
+    command = "%s %s >> %s" % (addrand_bin, template, log_file)
     tools.osrun(command, log_file)
 
     # The following will replace the existing det-hist file with the new including randoms
@@ -449,41 +467,38 @@ def combine_history_files(simset_dir, history_files, output, log_file):
 
     combinehist = join(simset_dir, "bin", "combinehist")
 
-    rcommand = 'echo No | %s %s %s' % (combinehist, history_files, output)
+    rcommand = '%s %s %s' % (combinehist, history_files, output)
 
-    tools.osrun(rcommand, log_file)
+    proc  = sp.Popen(rcommand, universal_newlines=True, shell=True, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE).communicate("No\n")
 
-def convert_simset_to_stir(input, output=False):
+    #tools.osrun(rcommand, log_file)
 
-    simset_img = nib.load(input)
-    simset_img_data = simset_img.get_fdata()
-    shape = simset_img_data.shape
+def simset_calcattenuation(simset_dir,sim_dir,output,hdr_to_copy,nrays=1,timeout=36000):
 
-    n_slices = shape[2]
-    nrings = np.sqrt(n_slices)
-    max_segment = nrings-1
+    calcattenuation = join(simset_dir, "bin", "calcattenuation")
 
-    for i in n_slices:
+    current_dir = os.getcwd()
+    os.chdir(sim_dir)
 
-        slice1 = simset_img_data[:,:,i]
+    child = pexpect.spawn(calcattenuation,timeout=timeout)
+    child.logfile = sys.stdout.buffer
+    child.expect('Enter name of param file: ')
+    child.sendline('phg.rec')
+    child.expect('Enter name of output file: ')
+    child.sendline(output)
+    child.expect('Enter the number of sub-samples*')
+    child.sendline(str(nrays))
+    child.wait()
 
-def simset_calcattenuation(simset_dir,phg_file,output,hdr_to_copy,nrays=1):
-
-    # Review because the pipes are not working ###
-
-    calcattenuation = join(simset_dir, "bin", "calc_attenuation")
-
-    p = sp.Popen(calcattenuation,stdin=sp.PIPE,stdout=sp.PIPE, universal_newlines=True, shell=True)
-    p.communicate(phg_file)
-    p.communicate(str(nrays))
-    p.communicate(output[0:-3])
-
-    CHUNK_SIZE = os.path.getsize(output[0:-3])
-    with open(output[0:-3]) as f:
+    CHUNK_SIZE = os.path.getsize(hdr_to_copy[0:-3] + 'img')
+    print(CHUNK_SIZE)
+    with open(output, 'rb') as f:
         chunk = f.read(CHUNK_SIZE)
-    with open(output[0:-3] + 'img') as chunk_file:
+    with open(output + '.img', 'wb') as chunk_file:
         chunk_file.write(chunk)
+        chunk_file.close()
 
-    shutil.copy(hdr_to_copy, output[0:-3] + 'hdr')
+    shutil.copy(hdr_to_copy, output + '.hdr')
+
+    os.chdir(current_dir)
     
-    print("To be done")

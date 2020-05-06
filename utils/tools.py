@@ -4,6 +4,7 @@ from subprocess import getstatusoutput as getoutput
 import nibabel as nib
 from utils import resources as rsc
 import numpy as np
+from operator import itemgetter
 
 def osrun(command, logfile, catch_out=False):
     """
@@ -129,13 +130,13 @@ def read_analyze_header(header_file,logfile):
 
     return zpix, zsize, xpix, xsize, ypix, ysize
 
-def write_interfile_header(header_file,matrix_size_x,pixel_size_x, matrix_size_y,pixel_size_y, matrix_size_z,pixel_size_z):
+def write_interfile_header(header_file,matrix_size_x,pixel_size_x, matrix_size_y,pixel_size_y, matrix_size_z,pixel_size_z, offset_z=0):
 
     image_v = os.path.basename(header_file)[0:-2] + "v"
     fheader_hv = open(header_file, "w")
 
-    offset_x = matrix_size_x/2*pixel_size_x
-    offset_y = matrix_size_y/2*pixel_size_y
+    offset_x = matrix_size_x/2*pixel_size_x + 0.5*pixel_size_x
+    offset_y = matrix_size_y/2*pixel_size_y + 0.5*pixel_size_y
 
     fheader_hv.write("!INTERFILE  :=\n")
     fheader_hv.write("name of data file := %s\n" % image_v)
@@ -229,22 +230,17 @@ def anything_to_hdr_convert(image, logfile=False, outfile=False ):
             raise TypeError ("nifti-analyze conversion failed....")
 
     elif image[-6:]=="nii.gz":
-        rcommand= 'gunzip %s' % image
-        nii = image[-6:-3]
-        if exists(nii):
-            hdr = ap.nii_analyze_convert(nii,logfile=logfile)
-            os.remove(nii)
-            if exists(hdr):
-                return hdr
-            else:
-                raise TypeError ("nifti-analyze conversion failed....")
+        hdr = image[0:-6] + 'hdr'
+        nii_analyze_convert(image,logfile=logfile, outfile=hdr)
+        if exists(hdr):
+            return hdr
         else:
-            raise TypeError ("dicom-nifti conversion failed....")
+            raise TypeError ("nifti-analyze conversion failed....")
 
     elif isdir(image):
         print("I think the provided image:\n %s \n is a dicom directory. I will try to convert it...")
         dicom2nii = rsc.get_rsc("dicom2nii","exe")
-        nii = join(self.patient_dir,"image.nii")
+        nii = join(dirname(image),"image.nii")
         rcommand = '%s %s %s' % (dicom2nii, image, nii)
         osrun(rcommand,logfile)
         if exists(nii):
@@ -404,7 +400,7 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
 
     analyze_img = nib.AnalyzeImage(data, hdr1.get_base_affine(), hdr1)
 
-    nib.save(analyze_img,out_image)
+    nib.save(analyze_img,output_image)
 
 def launch_cesga_job(command, sim_folder, cesga_max_time, cesga_cores, cesga_mem):
 
@@ -571,3 +567,39 @@ def ncounts(image_hdr):
     img, data = nib_load(image_hdr)
     ncounts = np.sum(data)
     return ncounts
+
+def convert_simset_sino_to_stir(input_img, output=False):
+
+    ## To be continued....
+
+    simset_img = nib.load(input_img)
+    simset_img_data = simset_img.get_fdata()
+    shape = simset_img_data.shape
+
+    n_slices = shape[2]
+    nrings = np.sqrt(n_slices)
+
+    input_definition = []
+
+    for i in range(n_slices):
+        
+        ring1,ring2 = divmod(i,nrings)
+        segment = ring1 - ring2
+        slice_def = [i, ring1, ring2, segment]
+        input_definition.append(slice_def)
+
+    output_definition = sorted(input_definition, key=itemgetter(3))
+    stir_img_data = np.empty(shape, dtype=float, order='C')
+
+    for i in range(n_slices):
+
+        output_index = output_definition[i][0]
+        input_slice = simset_img_data[:,:,output_index]
+        stir_img_data[:,:,i] = input_slice
+
+    stir_img = nib.AnalyzeImage(stir_img_data, simset_img.affine, simset_img.header)
+
+    if not output:
+        output = input_img [0:-4] + '_stir.hdr'
+  
+    nib.save(stir_img,output)

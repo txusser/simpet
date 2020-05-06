@@ -13,7 +13,7 @@ import subprocess
 class SimSET_Simulation(object):
     """This class provides functions to run a SimSET simulation."""
 
-    def __init__(self,params,config,act_map,att_map,scanner,projections_dir):
+    def __init__(self,params,config,act_map,att_map,scanner,projections_dir, debug = False): ##Debug True must be implemented....
 
         #Initialization
         self.simpet_dir = dirname(abspath(__file__))
@@ -89,7 +89,7 @@ class SimSET_Simulation(object):
         # If Sampling Photons is 0, importance sampling is deactivated, so we use photons as the input.
         if self.add_randoms ==1:
             sim_photons = 0
-            print("WARNING: add_randoms=0, so simulation is forced to realistic noise")
+            print("WARNING: add_randoms=1, so simulation is forced to realistic noise")
             print("Importance sampling is also being deactivated")
             print("All these means the simulation can take very long...")
 
@@ -245,13 +245,13 @@ class SimSET_Simulation(object):
 
             det_hist = join(division_zero, 'det_hf.hist')
             randoms_hist = join(division_zero, 'randoms.hist')
-            output = join(division_zero, 'fulldet_hf.hist')
-
+            output = join(division_zero, 'full_det_hf.hist')
+            
             file_list = det_hist + ' ' + randoms_hist
 
             simset_tools.combine_history_files(self.simset_dir,file_list, output, log_file)
 
-            shutil.move(output,det_hist)
+            #shutil.move(output,det_hist)
             #os.remove(randoms_hist)
 
         #Once everything is combined in division_0, remove the other divisions
@@ -259,6 +259,15 @@ class SimSET_Simulation(object):
         #     division_dir = join(self.output_dir, "division_" + str(division))
         #     shutil.rmtree(division_dir)
 
+        print("Calculating attenuation map...")
+        print(" ")
+
+        output_atten = "attenuationsino"
+        hdr_to_copy = join("trues.hdr")
+
+        simset_tools.simset_calcattenuation(self.simset_dir,division_zero,output_atten,hdr_to_copy,nrays=1)
+
+    
 class SimSET_Reconstruction(object):
     """This class provides functions to reconstruct a SimSET simulation."""
 
@@ -266,7 +275,6 @@ class SimSET_Reconstruction(object):
 
         #Initialization
         self.simpet_dir = dirname(abspath(__file__))
-        self.simset_dir = config.get("dir_simset")
         self.dir_stir = config.get("dir_stir")
 
         self.input_dir = join(projections_dir,"division_0")
@@ -275,13 +283,14 @@ class SimSET_Reconstruction(object):
         self.params = params
         self.config = config
         self.scanner = scanner
+        self.add_randoms = params.get("add_randoms")
 
         self.scatt_corr_factor = scanner.get("analytic_scatt_corr_factor")
-        self.add_randoms = params.get("add_randoms")
         self.random_corr_factor = scanner.get("analytic_randoms_corr_factor")
 
         self.do_pre_att_correction = scanner.get('analytical_att_correction')
         self.do_recons_att_correction = scanner.get('stir_recons_att_corr')
+
         if self.do_pre_att_correction == 1 and self.do_recons_att_correction == 1:
             self.do_pre_att_correction == 0
             raise Warning ('WARNING: both pre and recons att corrections are both active...Ignoring pre-correction')
@@ -293,13 +302,16 @@ class SimSET_Reconstruction(object):
         if not exists(self.output_dir):
             os.makedirs(self.output_dir)
 
-        self.prepare_sinograms()
+        self.prepare_recons()
 
-    def prepare_sinograms(self):
+    def prepare_recons(self):
+
+        from src.stir import stir_tools
 
         trues_sino = join(self.input_dir, "trues.hdr")
         scatter_sino = join(self.input_dir, "scatter.hdr")
         randoms_sino = join(self.input_dir, "randoms.hdr")
+        
         corr_scatter_sino = join(self.input_dir, "corr_scatter.hdr")
         corr_randoms_sino = join(self.input_dir, "corr_randoms.hdr")
         my_simset_sino = join(self.input_dir, "my_sinogram.hdr")
@@ -307,21 +319,45 @@ class SimSET_Reconstruction(object):
 
         tools.operate_single_image(scatter_sino, "mult", self.scatt_corr_factor, corr_scatter_sino, self.log_file)
         tools.operate_images_analyze(trues_sino,corr_scatter_sino,my_simset_sino,operation='sum')
-        tools.smooth_analyze(corr_scatter_sino,20,corr_scatter_sino)
 
         if self.add_randoms == 1:
 
             tools.operate_single_image(randoms_sino, "mult", self.random_corr_factor, corr_randoms_sino, self.log_file)
             tools.operate_images_analyze(my_simset_sino,corr_randoms_sino,my_simset_sino,operation='sum')
-            tools.smooth_analyze(corr_randoms_sino,20,corr_randoms_sino)
-            tools.operate_images_analyze(corr_scatter_sino,corr_scatter_sino,additive_sinogram,operation='sum')
+            tools.operate_images_analyze(scatter_sino,randoms_sino,additive_sinogram,operation='sum')
 
         else:
+            tools.copy_analyze(scatter_sino, additive_sinogram)
+        
+        tools.smooth_analyze(additive_sinogram,10,corr_randoms_sino)
 
-            tools.copy_analyze(corr_scatter_sino,additive_sinogram)
+        sinogram_stir = join(self.output_dir, "stir_sinogram.hdr")
+        tools.convert_simset_sino_to_stir(my_simset_sino,sinogram_stir)
+        shutil.copy(sinogram_stir[0:-3] + 'img', sinogram_stir[0:-3] + 's')
+        stir_tools.create_stir_hs_from_detparams(self.scanner,sinogram_stir[0:-3] + 'hs')
+
+        additive_sino_stir = join(self.output_dir, "stir_additivesino.hdr")
+        tools.convert_simset_sino_to_stir(additive_sinogram,additive_sino_stir)
+        shutil.copy(additive_sino_stir[0:-3] + 'img', additive_sino_stir[0:-3] + 's')
+        stir_tools.create_stir_hs_from_detparams(self.scanner,additive_sino_stir[0:-3] + 'hs')
+        
+        att_sino = join(self.input_dir, "attenuationsino.hdr")
+        att_stir = join(self.output_dir, "stir_att.hdr")
+        tools.convert_simset_sino_to_stir(att_sino,att_stir)
+        shutil.copy(att_stir[0:-3] + 'img', att_stir[0:-3] + 's')
+        stir_tools.create_stir_hs_from_detparams(self.scanner,att_stir[0:-3] + 'hs')
 
         if self.scanner.get('analytical_att_correction') == 1:
 
-            phg_file = join(self.input_dir,"phg.rec")
-            output = join(self.input_dir, "attenuation.hdr")
-            simset_tools.simset_calcattenuation(self.simset_dir,phg_file,output,trues_sino,nrays=1)
+            catt_sino = join(self.output_dir, "catt_sinogram.hdr")
+            catt_add_sino = join(self.output_dir, "my_catt_additivesino.hdr")
+            tools.operate_images_analyze(sinogram_stir,att_stir,catt_sino,operation='mult')
+            tools.operate_images_analyze(additive_sino_stir,att_stir,catt_add_sino,operation='mult')
+            shutil.copy(catt_sino[0:-3] + 'img', catt_sino[0:-3] + 's')
+            stir_tools.create_stir_hs_from_detparams(self.scanner,catt_sino[0:-3] + 'hs')
+            shutil.copy(catt_add_sino[0:-3] + 'img', catt_add_sino[0:-3] + 's')
+            stir_tools.create_stir_hs_from_detparams(self.scanner,catt_add_sino[0:-3] + 'hs')
+
+    def run_recons(self):
+
+        reconstruction_type = self.scanner.get("recons_type")

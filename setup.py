@@ -10,7 +10,7 @@ from multiprocessing import cpu_count
 simpet_dir = os.getcwd()
 
 dest_dir = join(os.getcwd(), 'include')
-log_file = join(dest_dir, 'log_setup.txt')
+log_file = join('log_setup.txt')
 
 def rsystem(command):
     """
@@ -175,10 +175,10 @@ def install_soap():
     """
     # Install SOAP
 
-    icom = 'sudo apt install python -y -q'
+    icom = 'sudo apt install python3 -y -q'
     rsystem(icom)
 
-    icom = 'sudo apt install python-pip -y -q'
+    icom = 'sudo apt install python3-pip -y -q'
     rsystem(icom)
 
     icom = 'sudo apt install libboost-dev libboost-all-dev -y -q'
@@ -191,31 +191,28 @@ def install_soap():
     rsystem(icom)
 
     # Install and upgrade PIP
-    icom = 'sudo pip install --ignore-installed PyYAML==5.1 '
+    icom = 'sudo pip3 install PyYAML'
     rsystem(icom)
 
-    # Update yaml to use FullLoader
-    #icom = 'sudo pip install -U pyYAML'
-    #rsystem(icom)
 
     # Install numpy
-    icom = 'sudo apt install python-numpy -y -q'
+    icom = 'sudo apt install python3-numpy -y -q'
     rsystem(icom)
 
     # Install Scipy
-    icom = 'sudo apt install python-scipy -y -q'
+    icom = 'sudo apt install python3-scipy -y -q'
     rsystem(icom)
 
     # Install Nibabel
-    icom = 'sudo apt install python-nibabel -y -q'
+    icom = 'sudo apt install python3-nibabel -y -q'
     rsystem(icom)
 
     # Install matplotlib
-    icom = 'sudo apt install python-matplotlib -y -q'
+    icom = 'sudo apt install python3-matplotlib -y -q'
     rsystem(icom)
 
     # Install Pandas
-    icom = 'sudo apt install python-pandas -y -q'
+    icom = 'sudo apt install python3-pandas -y -q'
     rsystem(icom)
 
     # Install cmake (needed for STIR)
@@ -226,10 +223,16 @@ def install_soap():
     icom = 'sudo apt install swig -y -q'
     rsystem(icom)
 
-# Extract Resources
-print('Extracting resources...')
-command = 'tar -xvf resources.tar.xz'
-rsystem(command)
+def download_resources():
+
+    print('Downloading resources from Onedrive...')
+    icom = 'wget "https://onedrive.live.com/download?cid=82E5E66193A2F2B1&resid=82E5E66193A2F2B1%21145315&authkey=ABW_h9VIwqAO_f8"'
+    rsystem(icom)
+    print('Moving and extracting resources...')
+    icom = 'mv "download?cid=82E5E66193A2F2B1&resid=82E5E66193A2F2B1!145315&authkey=ABW_h9VIwqAO_f8" resources.tar.gz'
+    rsystem(icom)
+    icom = 'tar -xvf resources.tar.gz'
+    rsystem(icom)
 
 # Fruitcake is not needed right now
 # # Add fruitcake paths to bashrc... This can be a problem...
@@ -241,9 +244,11 @@ rsystem(command)
 
 # rsystem('source ~/.bashrc')
 
-install_soap()
-
 simpet_dir = os.getcwd()
+download_resources()
+
+if not exists(dest_dir):
+    os.makedirs(dest_dir)
 os.chdir(dest_dir)
 
 simset_dir = join(dest_dir,"SimSET")
@@ -254,3 +259,6 @@ install_stir(stir_dir, simset_dir, log_file)
 
 os.chdir(simpet_dir)
 update_config(stir_dir,simset_dir)
+
+
+install_soap()

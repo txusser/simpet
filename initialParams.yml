@@ -4,21 +4,21 @@ simulation_environment: 0 # Set to 0 for local computer, 1 for Cesga
 sim_type: "SimSET"        # SimSET, STIR or GATE (only SimSET working)
 do_simulation: 1          # Set to 0 to reconstruction previous simulation
 do_reconstruction: 1      # Set to 0 to generate adq data only
-divisions: 2              # Number os subprocesses for parallel simulation
+divisions: 4              # Number os subprocesses for parallel simulation
 
 # PET system (Vereos, Siemens_mCT, Discovery_ST, Discovery_STE, GE_Advance)
 scanner: "Vereos"
 
 #Patient Variables
-patient_dirname: "XCAT_Phantom"
-act_map: "TestMan_v3_act.hdr"
-att_map: "TestMan_v3_att.hdr"
-output_dir: "XCAT_Test_Short_noimpsamp"         #Name of the Results Dir
+patient_dirname: "C3_w413"
+act_map: "xnewMap_roi5_0.1_flipLR.hdr"
+att_map: "xCtrl_3_flipLR.att.hdr"
+output_dir: "C3_w413_roi5_01"         #Name of the Results Dir
 
 #Config your phantom
-center_slice:  235       # The slice number to be placed on the center of the scanner
+center_slice:  144       # The slice number to be placed on the center of the scanner
 total_dose: 6            # mCi
-simulation_time: 3     # secods
+simulation_time: 30     # secods
 
 #SimSET Parameters (not used by STIR sim)
 sampling_photons: 2000000 # Set to 0 to avoid importance sampling

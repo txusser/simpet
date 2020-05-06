@@ -10,7 +10,7 @@ from multiprocessing import cpu_count
 simpet_dir = os.getcwd()
 
 dest_dir = join(os.getcwd(), 'include')
-log_file = join(dest_dir, 'log_setup.txt')
+log_file = join('log_setup.txt')
 
 def rsystem(command):
     """
@@ -171,7 +171,7 @@ def update_config(stir_dir,simset_dir):
 def download_resources():
 
     print('Downloading resources from Onedrive...')
-    icom = 'wget "https://onedrive.live.com/download?cid=82E5E66193A2F2B1&resid=82E5E66193A2F2B1%21145313&authkey=AD790Ox5lhx16g4"'
+    icom = 'wget "https://onedrive.live.com/download?cid=82E5E66193A2F2B1&resid=82E5E66193A2F2B1%21145315&authkey=ABW_h9VIwqAO_f8"'
     rsystem(icom)
     print('Moving and extracting resources...')
     icom = 'mv download\?cid\=82E5E66193A2F2B1\&resid\=82E5E66193A2F2B1\!145313\&authkey\=AD790Ox5lhx16g4 resources.tar.gz'
@@ -202,6 +202,3 @@ fruitcake_ldpath = 'echo "export LD_LIBRARY_PATH=%s/resources/fruitcake/book/lib
 rsystem(fruitcake_ldpath)
 
 rsystem('source ~/.bashrc')
-
-
-

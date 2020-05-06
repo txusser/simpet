@@ -141,7 +141,10 @@ class SimSET_Simulation(object):
                 tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 16)
             else: 
                 tools.osrun(command, log_file)
-            
+
+            if self.cesga:
+                while not exists("%s/simended_file.log" %  sim_dir):
+                    time.sleep(60)
 
         if self.add_randoms == 1:
 

@@ -112,6 +112,10 @@ class SimSET_Simulation(object):
         else: 
             tools.osrun(command, log_file)
 
+        if self.cesga:
+            while not exists("%s/simended_file.log" %  sim_dir):
+                wait(60)
+
         rec_weight = join(sim_dir,"rec.weight")
         det_hf = join(sim_dir, 'det_hf.hist')
         phg_hf = join(sim_dir, 'phg_hf.hist')

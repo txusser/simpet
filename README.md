@@ -1,6 +1,6 @@
 # simpet
-# Developed by Jesús Silva-Rodríguez 2019
-# Qubiotech Health Intelligence SL
+Developed by Jesús Silva-Rodríguez 2019
+
 
 The SIMPET project is intended to allow to setup and launch MC simulation on a simple way. It provides functionalities to: 
 

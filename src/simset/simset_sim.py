@@ -108,13 +108,14 @@ class SimSET_Simulation(object):
         
         if self.cesga:
             print("Launching cesga job...")
-            tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 8)
+            tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 32)
         else: 
             tools.osrun(command, log_file)
 
         if self.cesga:
             while not exists("%s/simended_file.log" %  sim_dir):
-                wait(60)
+                time.sleep(60)
+            os.remove("%s/simended_file.log" %  sim_dir)
 
         rec_weight = join(sim_dir,"rec.weight")
         det_hf = join(sim_dir, 'det_hf.hist')
@@ -142,7 +143,7 @@ class SimSET_Simulation(object):
             
             if self.cesga:
                 print("Launching cesga job...")
-                tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 16)
+                tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 32)
             else: 
                 tools.osrun(command, log_file)
 

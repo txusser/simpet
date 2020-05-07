@@ -319,7 +319,7 @@ def recalculate_matrix(input_image, voxelsize, mode="downsampling"):
     image_load, data = nib_load(input_image)
     header = image_load.header
     sizes = header.get_zooms()
-    dimensions = image_load.get_shape()
+    dimensions = image_load.shape
     x_lenght = int(sizes[0]*dimensions[0]/voxelsize)
     y_lenght = int(sizes[1]*dimensions[1]/voxelsize)
     z_lenght = int(sizes[2]*dimensions[2]/voxelsize)
@@ -395,7 +395,7 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
 
     hdr1 = nib.AnalyzeHeader()
     hdr1.set_data_dtype(img.get_data_dtype())
-    hdr1.set_data_shape(img.get_shape())
+    hdr1.set_data_shape(img.shape)
     hdr1.set_zooms(abs(np.diag(img.affine))[0:3])
 
     analyze_img = nib.AnalyzeImage(data, hdr1.get_base_affine(), hdr1)
@@ -446,7 +446,7 @@ def operate_images_analyze(image1, image2, out_image, operation='mult'):
 
     hdr1 = nib.AnalyzeHeader()
     hdr1.set_data_dtype(img1.get_data_dtype())
-    hdr1.set_data_shape(img1.get_shape())
+    hdr1.set_data_shape(img1.shape)
     hdr1.set_zooms(abs(np.diag(img1.affine))[0:3])
 
     analyze_img = nib.AnalyzeImage(res_data, hdr1.get_base_affine(), hdr1)

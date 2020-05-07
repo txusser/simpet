@@ -4,7 +4,6 @@ import os
 from os.path import join, exists, isdir, dirname, basename, split
 import shutil
 from multiprocessing import Process
-import pandas as pd
 import nibabel as nib
 import numpy as np
 import yaml

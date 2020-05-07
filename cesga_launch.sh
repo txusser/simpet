@@ -1,9 +1,9 @@
 #!/bin/python3
 
 echo "Launching a simulation from cesga..."
-params_file = $1
-config_file = $2
-simnum = $3
+params_file=initialParams.yml
+config_file=config.yml 
+simnum=1
 
 cat << EOF > pyscript_$simnum.py
 #!/usr/bin/python3

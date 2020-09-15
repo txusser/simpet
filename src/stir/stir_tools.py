@@ -104,3 +104,83 @@ def generate_segments_lists_stir(nrings, max_segment):
     my_matrix_ring_difference = "{" + my_matrix_ring_difference [0:-1] + "}"
 
     return my_matrix_size, my_matrix_ring_difference
+
+
+def create_stir_parfile(scannerParams, recons_algorithm, output_dir):
+    
+    att_img_stir = join(output_dir,"stir_att.hs")
+    max_segment = scannerParams.get("max_segment")
+    zoom = scannerParams.get("zoomFactor")
+    xyOutputSize = scannerParams.get("xyOutputSize")
+    zOutputSize =scannerParams.get("zOutputSize")
+    numberOfSubsets = scannerParams.get("numberOfSubsets")
+    numberOfIterations = scannerParams.get("numberOfIterations")
+    savingInterval = scannerParams.get("savingInterval")
+    
+    if scannerParams.get("analytical_att_correction") == 1:
+        sinogram_stir = join(output_dir,"catt_sinogram.hs")
+        additive_sino_stir = join(output_dir, "my_catt_additivesino.hs")
+        att_corr_str = ""
+    else:
+        sinogram_stir = join(output_dir,"stir_sinogram.hs")
+        additive_sino_stir = join(output_dir, "stir_additivesino.hs")
+        att_corr_str = (
+        "Bin Normalisation type := From ProjData \n" + 
+        "Bin Normalisation From ProjData := \n" +
+        "normalisation projdata filename:= "+att_img_stir + "\n"+
+        "End Bin Normalisation From ProjData:= \n")        
+                        
+    if scannerParams.get("stir_scatt_corr_smoothing") ==1:# Will use smoothed SimSET scatter as additive_sinogram.
+        scatt_corr_str = ("additive sinogram := " + additive_sino_stir + "\n\n")
+    else:
+        scatt_corr_str = ""    
+    
+    new_file = open(join(output_dir,"Params.par"), "w")
+    
+    if recons_algorithm == 0: #OSEM
+        recFileName = join(output_dir,"rec_OSEM3D")
+        new_file.write(
+            "OSMAPOSLParameters  :=\n\n" + 
+            "objective function type := PoissonLogLikelihoodWithLinearModelForMeanAndProjData\n" +
+            "PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters := \n\n" +
+            "input file := " + sinogram_stir + "\n" +
+            "maximum absolute segment number to process := " + str(max_segment)+ "\n" +
+            "zero end planes of segment 0 := 0 \n" +
+            "sensitivity filename := sens.v \n" +
+            "recompute sensitivity := 1 \n" +
+            "use subset sensitivities := 0 \n\n" +
+            "projector pair type := Matrix \n" +
+            " Projector Pair Using Matrix Parameters := \n" +
+            " Matrix type := Ray Tracing \n" +
+            " Ray tracing matrix parameters := \n" +
+            " number of rays in tangential direction to trace for each bin:= 5 \n" +
+            " End Ray tracing matrix parameters := \n" +
+            " End Projector Pair Using Matrix Parameters := \n\n" +
+            att_corr_str +
+            "prior type := FilterRootPrior \n" +
+            "FilterRootPrior Parameters := \n" +
+            " penalisation factor := 0. \n" +
+            "  Filter type := Median \n" +
+            "   Median Filter Parameters := \n" +
+            "   mask radius x := 1 \n" +
+            "   mask radius y := 1 \n" +
+            "   mask radius z := 1 \n" +
+            "   End Median Filter Parameters:= \n" +
+            "END FilterRootPrior Parameters := \n\n" +
+            scatt_corr_str +
+            "zoom := " + str(zoom) + "\n" +
+            "xy output image size (in pixels) := " + str(xyOutputSize) + "\n" 
+            "Z output image size (in pixels) := " + str(zOutputSize) + "\n\n" +
+            "end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters := \n\n" +
+            "number of subsets := " + str(numberOfSubsets) + "\n" +
+            "number of subiterations := " + str(numberOfIterations) + "\n" +
+            "save estimates at subiteration intervals := " + str(savingInterval) + "\n\n" +
+            "enforce initial positivity condition:=0 \n\n" +
+            "output filename prefix := " + recFileName + "\n\n" +
+            "END := \n" 
+            )
+    elif recons_algorithm == 1: #FBP3D
+            
+    else: #FBP2D
+            
+    

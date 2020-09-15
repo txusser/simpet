@@ -368,4 +368,10 @@ class SimSET_Reconstruction(object):
 
     def run_recons(self):
 
+        from src.stir import stir_tools
+        
         reconstruction_type = self.scanner.get("recons_type")
+        recons_algorithm = self.params.get("recons_type")
+        
+        #paramsFile = join(self.output_dir, "Params.par")
+        stir_tools.create_stir_parfile(self.scanner, recons_algorithm, self.output_dir)

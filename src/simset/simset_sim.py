@@ -9,6 +9,7 @@ import yaml
 import numpy as np
 import src.simset.simset_tools as simset_tools
 import subprocess
+import random
 
 class SimSET_Simulation(object):
     """This class provides functions to run a SimSET simulation."""
@@ -196,7 +197,7 @@ class SimSET_Simulation(object):
 
         simset_tools.make_index_file(sim_dir, self.simset_dir, log_file=log_file)
 
-        return my_phg_file
+        return my_phg_file 
 
     def simulation_postprocessing(self):
 
@@ -287,6 +288,8 @@ class SimSET_Reconstruction(object):
 
         self.input_dir = join(projections_dir,"division_0")
         self.output_dir = reconstructions_dir
+        self.cesga = config.get("cesga")
+        self.cesga_max_time = config.get("cesga_max_time")
 
         self.params = params
         self.config = config
@@ -311,6 +314,7 @@ class SimSET_Reconstruction(object):
             os.makedirs(self.output_dir)
 
         self.prepare_recons()
+        self.run_recons()
 
     def prepare_recons(self):
 
@@ -345,7 +349,7 @@ class SimSET_Reconstruction(object):
         stir_tools.create_stir_hs_from_detparams(self.scanner,sinogram_stir[0:-3] + 'hs')
 
         additive_sino_stir = join(self.output_dir, "stir_additivesino.hdr")
-        tools.convert_simset_sino_to_stir(additive_sinogram,additive_sino_stir)
+        tools.convert_simset_sino_to_stir(corr_randoms_sino,additive_sino_stir)
         shutil.copy(additive_sino_stir[0:-3] + 'img', additive_sino_stir[0:-3] + 's')
         stir_tools.create_stir_hs_from_detparams(self.scanner,additive_sino_stir[0:-3] + 'hs')
         
@@ -356,22 +360,75 @@ class SimSET_Reconstruction(object):
         stir_tools.create_stir_hs_from_detparams(self.scanner,att_stir[0:-3] + 'hs')
 
         if self.scanner.get('analytical_att_correction') == 1:
-
             catt_sino = join(self.output_dir, "catt_sinogram.hdr")
-            catt_add_sino = join(self.output_dir, "my_catt_additivesino.hdr")
             tools.operate_images_analyze(sinogram_stir,att_stir,catt_sino,operation='mult')
+            shutil.copy(catt_sino[0:-3] + 'img', sinogram_stir[0:-3] + 's')
+            #stir_tools.create_stir_hs_from_detparams(self.scanner,catt_sino[0:-3] + 'hs')        
+            catt_add_sino = join(self.output_dir, "my_catt_additivesino.hdr")
             tools.operate_images_analyze(additive_sino_stir,att_stir,catt_add_sino,operation='mult')
-            shutil.copy(catt_sino[0:-3] + 'img', catt_sino[0:-3] + 's')
-            stir_tools.create_stir_hs_from_detparams(self.scanner,catt_sino[0:-3] + 'hs')
-            shutil.copy(catt_add_sino[0:-3] + 'img', catt_add_sino[0:-3] + 's')
-            stir_tools.create_stir_hs_from_detparams(self.scanner,catt_add_sino[0:-3] + 'hs')
+            shutil.copy(catt_add_sino[0:-3] + 'img', additive_sino_stir[0:-3] + 's')
+            #stir_tools.create_stir_hs_from_detparams(self.scanner,catt_add_sino[0:-3] + 'hs')
+
+        num_z_bins = self.scanner.get('num_rings')
+        cortes = num_z_bins * num_z_bins
+        num_aa_bins = self.scanner.get('num_aa_bins')
+        num_td_bins = self.scanner.get('num_td_bins')
+
+        sinogram_stir_s = sinogram_stir[0:-3] + 's'
+        conv_sino2proy_path = rsc.get_rsc('conv_sino2proy','fruitcake')
+        gen_hdr_path = rsc.get_rsc('gen_hdr','fruitcake')
+        proyeccion = join(self.output_dir, "proyeccion.hdr")
+        command = "%s %s fl %s %s %s %s fl" % (conv_sino2proy_path, sinogram_stir_s, num_aa_bins, num_td_bins, cortes, proyeccion[0:-3] + 'img')
+        tools.osrun(command,self.log_file)
+        command = "%s %s %s %s %s fl 1 1 1 0" % (gen_hdr_path, proyeccion[0:-4], num_td_bins, cortes, num_aa_bins)
+        tools.osrun(command,self.log_file)
+
+        if self.scanner.get('psf_value') != 0:
+            convolucion_hdr_path = rsc.get_rsc('convolucion_hdr','fruitcake')
+            conv_proyeccion = join(self.output_dir, "conv_proyeccion.hdr")
+            command = "%s %s %s %s 2d" % (convolucion_hdr_path, proyeccion, conv_proyeccion, self.scanner.get('psf_value'))
+            tools.osrun(command,self.log_file)
+        else:
+            shutil.copy(proyeccion[0:-3] + 'img',conv_proyeccion[0:-3] + 'img')
+	
+        conv_proy2sino_path = rsc.get_rsc('conv_proy2sino','fruitcake')
+        command = "%s %s fl %s %s %s %s fl" % (conv_proy2sino_path, conv_proyeccion[0:-3] + 'img', num_aa_bins, num_td_bins, cortes, sinogram_stir_s)
+        tools.osrun(command,self.log_file)
+
+        if self.scanner.get('add_noise') != 0:
+            poisson_noise_path = join(self.dir_stir,"bin/poisson_noise")
+            noisy_sinogram_stir_path = join(self.output_dir,"noisy_stir_sinogram.hs")
+            command = "%s -p %s %s %s %s" % (poisson_noise_path, noisy_sinogram_stir_path, sinogram_stir[0:-3] + 'hs', self.scanner.get('add_noise'), random.randint(1,2000))
+            tools.osrun(command,self.log_file)
+            shutil.copy(noisy_sinogram_stir_path, sinogram_stir[0:-3] + 'hs')
+            shutil.copy(noisy_sinogram_stir_path[0:-2] + 's', sinogram_stir[0:-3] + 's')
 
     def run_recons(self):
 
         from src.stir import stir_tools
         
-        reconstruction_type = self.scanner.get("recons_type")
+        print("Starting reconstruction")
+        
+        #reconstruction_type = self.scanner.get("recons_type")
         recons_algorithm = self.params.get("recons_type")
         
         #paramsFile = join(self.output_dir, "Params.par")
-        stir_tools.create_stir_parfile(self.scanner, recons_algorithm, self.output_dir)
+        paramsFile, recFileName = stir_tools.create_stir_parfile(self.scanner, recons_algorithm, self.output_dir)
+        
+        if recons_algorithm == 0:
+            command = '%s/bin/OSMAPOSL %s &> %s' % (self.dir_stir, paramsFile, self.log_file)
+        elif recons_algorithm ==1: 
+            command = '%s/bin/FBP3DRP %s &> %s' % (self.dir_stir, paramsFile, self.log_file)
+        else:
+            command = '%s/bin/FBP2D %s &> %s' % (self.dir_stir, paramsFile, self.log_file)
+        
+        if self.cesga:
+            print("Launching cesga job...")
+            tools.launch_cesga_job(command, self.output_dir, self.cesga_max_time, 1, 32)
+        else:
+            tools.osrun(command,self.log_file)
+
+            #por que se ejecuta antes que termine lo anterior? como evitarlo?
+        tools.anything_to_hdr_convert((recFileName + "_" + str(self.scanner.get("numberOfIterations")) + ".hv"))
+        
+        print("Reconstruction finished")

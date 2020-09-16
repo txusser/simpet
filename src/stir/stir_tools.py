@@ -110,6 +110,7 @@ def create_stir_parfile(scannerParams, recons_algorithm, output_dir):
     
     att_img_stir = join(output_dir,"stir_att.hs")
     max_segment = scannerParams.get("max_segment")
+    
     zoom = scannerParams.get("zoomFactor")
     xyOutputSize = scannerParams.get("xyOutputSize")
     zOutputSize =scannerParams.get("zOutputSize")
@@ -117,13 +118,16 @@ def create_stir_parfile(scannerParams, recons_algorithm, output_dir):
     numberOfIterations = scannerParams.get("numberOfIterations")
     savingInterval = scannerParams.get("savingInterval")
     
+    sinogram_stir = join(output_dir,"stir_sinogram.hs")
+    additive_sino_stir = join(output_dir, "stir_additivesino.hs")
+    
     if scannerParams.get("analytical_att_correction") == 1:
-        sinogram_stir = join(output_dir,"catt_sinogram.hs")
-        additive_sino_stir = join(output_dir, "my_catt_additivesino.hs")
+        #sinogram_stir = join(output_dir,"catt_sinogram.hs")
+        #additive_sino_stir = join(output_dir, "my_catt_additivesino.hs")
         att_corr_str = ""
     else:
-        sinogram_stir = join(output_dir,"stir_sinogram.hs")
-        additive_sino_stir = join(output_dir, "stir_additivesino.hs")
+        #sinogram_stir = join(output_dir,"stir_sinogram.hs")
+        #additive_sino_stir = join(output_dir, "stir_additivesino.hs")
         att_corr_str = (
         "Bin Normalisation type := From ProjData \n" + 
         "Bin Normalisation From ProjData := \n" +
@@ -135,7 +139,8 @@ def create_stir_parfile(scannerParams, recons_algorithm, output_dir):
     else:
         scatt_corr_str = ""    
     
-    new_file = open(join(output_dir,"Params.par"), "w")
+    paramsFile = join(output_dir,"Params.par")
+    new_file = open(paramsFile, "w")
     
     if recons_algorithm == 0: #OSEM
         recFileName = join(output_dir,"rec_OSEM3D")
@@ -146,7 +151,7 @@ def create_stir_parfile(scannerParams, recons_algorithm, output_dir):
             "input file := " + sinogram_stir + "\n" +
             "maximum absolute segment number to process := " + str(max_segment)+ "\n" +
             "zero end planes of segment 0 := 0 \n" +
-            "sensitivity filename := sens.v \n" +
+            #"sensitivity filename := sens.v \n" + # ¿? habría que especificar path con anterioridad: sensfilename=join(output_dir, "sens.v")
             "recompute sensitivity := 1 \n" +
             "use subset sensitivities := 0 \n\n" +
             "projector pair type := Matrix \n" +
@@ -180,7 +185,42 @@ def create_stir_parfile(scannerParams, recons_algorithm, output_dir):
             "END := \n" 
             )
     elif recons_algorithm == 1: #FBP3D
+        recFileName = join(output_dir,"rec_FBP3D")
+        new_file.write(
+            "fbp3drpparameters  :=\n\n" + 
+            "input file := " + sinogram_stir + "\n" +
+            "output filename prefix := " + recFileName + "\n\n" +
+            "zoom := " + str(zoom) + "\n" +
+            "xy output image size (in pixels) := " + str(xyOutputSize) + "\n\n" 
+            "maximum absolute segment number to process := 2 \n" +
+            "num segments to combine with ssrb := -1 \n\n" +
+            "alpha parameter for ramp filter := 1 \n" +
+            "cut-off for ramp filter (in cycles) := 0.5 \n\n" +
+            "alpha parameter for colsher filter in axial direction := 1 \n" +
+            "cut-off for colsher filter in axial direction (in cycles) := 0.5 \n" +
+            "alpha parameter for colsher filter in planar direction := 1 \n" +
+            "cut-off for colsher filter in planar direction (in cycles) := 0.5 \n\n" +
+            "stretch factor for colsher filter definition in axial direction := 2 \n" +
+            "stretch factor for colsher filter definition in planar direction := 2 \n\n" +
+            "transaxial extension for fft := 1 \n" +
+            "axial extension for fft := 1 \n\n" +
+            "save intermediate images := 0 \n" +
+            "display level := 0 \n\n" +
+            "end := \n"  
+            )
             
     else: #FBP2D
+        recFileName = join(output_dir,"rec_FBP2D")
+        new_file.write(
+            "fbp2dparameters :=  :=\n\n" + 
+            "input file := " + sinogram_stir + "\n" +
+            "output filename prefix := " + recFileName + "\n\n" +
+            "zoom := " + str(zoom) + "\n" +
+            "xy output image size (in pixels) := " + str(xyOutputSize) + "\n\n" 
+            "num segments to combine with ssrb := -1 \n\n" +
+            "alpha parameter for ramp filter := 1 \n" +
+            "cut-off for ramp filter (in cycles) := 0.5 \n\n" +
+            "end := \n"
+            )
             
-    
+    return paramsFile, recFileName

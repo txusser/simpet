@@ -77,7 +77,15 @@ def get_rsc(resource, type):
             rpath = join(FRUTICAKE, 'generate_SPM_maps')
         elif resource == 'clustering_spm':
             rpath = join(FRUTICAKE, 'generate_SPM_maps')
-
+        elif resource == 'conv_sino2proy':
+            rpath = join(FRUTICAKE, 'conv_sino2proy')
+        elif resource == 'conv_proy2sino':
+            rpath = join(FRUTICAKE, 'conv_proy2sino')
+        elif resource == 'gen_hdr':
+            rpath = join(FRUTICAKE, 'gen_hdr')
+        elif resource == 'convolucion_hdr':
+            rpath = join(FRUTICAKE, 'convolucion_hdr')
+            
         else:
             rpath = False
 

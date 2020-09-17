@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from os.path import join,dirname,abspath,isdir,basename,exists
 import os, sys
 import shutil
@@ -415,20 +416,19 @@ class SimSET_Reconstruction(object):
         #paramsFile = join(self.output_dir, "Params.par")
         paramsFile, recFileName = stir_tools.create_stir_parfile(self.scanner, recons_algorithm, self.output_dir)
         
-        if recons_algorithm == 0:
-            command = '%s/bin/OSMAPOSL %s &> %s' % (self.dir_stir, paramsFile, self.log_file)
+        if recons_algorithm == 0: #no se redirige la salida, mirar cómo hacerlo...
+            command = '%s/bin/OSMAPOSL %s >> %s' % (self.dir_stir, paramsFile, self.log_file)
         elif recons_algorithm ==1: 
-            command = '%s/bin/FBP3DRP %s &> %s' % (self.dir_stir, paramsFile, self.log_file)
+            command = '%s/bin/FBP3DRP %s >> %s' % (self.dir_stir, paramsFile, self.log_file)
         else:
-            command = '%s/bin/FBP2D %s &> %s' % (self.dir_stir, paramsFile, self.log_file)
+            command = '%s/bin/FBP2D %s >> %s' % (self.dir_stir, paramsFile, self.log_file)
         
         if self.cesga:
             print("Launching cesga job...")
             tools.launch_cesga_job(command, self.output_dir, self.cesga_max_time, 1, 32)
         else:
             tools.osrun(command,self.log_file)
-
-            #por que se ejecuta antes que termine lo anterior? como evitarlo?
-        tools.anything_to_hdr_convert((recFileName + "_" + str(self.scanner.get("numberOfIterations")) + ".hv"))
+        
+        reconsFile_hdr = tools.anything_to_hdr_convert((recFileName + "_" + str(self.scanner.get("numberOfIterations")) + ".hv"))
         
         print("Reconstruction finished")

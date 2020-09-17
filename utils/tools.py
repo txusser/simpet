@@ -260,14 +260,21 @@ def anything_to_hdr_convert(image, logfile=False, outfile=False ):
 
         lines = [x.strip() for x in lines]
 
-        pixel_x = lines[13].split()[4]
-        pixel_size_x = lines[14].split()[5]
-        pixel_y = lines[16].split()[4]
-        pixel_size_y = lines[17].split()[5]
-        pixel_z = lines[19].split()[4]
-        pixel_size_z = lines[20].split()[5]
+        #pixel_x = lines[13].split()[4]
+        #pixel_size_x = lines[14].split()[5]
+        #pixel_y = lines[16].split()[4]
+        #pixel_size_y = lines[17].split()[5]
+        #pixel_z = lines[19].split()[4]
+        #pixel_size_z = lines[20].split()[5]
 
-        hdr_header = image[0:-2] + "hdr"
+        pixel_x = lines[16].split()[4]        
+        pixel_size_x = lines[17].split()[5]
+        pixel_y = lines[19].split()[4]
+        pixel_size_y = lines[20].split()[5]
+        pixel_z = lines[22].split()[4]
+        pixel_size_z = lines[23].split()[5]
+        
+        hdr_header = image[0:-3] #+ "hdr" #gen_hdr ya le pone el .hdr
         img_file = image[0:-2] + "img"
         data_file = image[0:-2] + "v"
 
@@ -275,6 +282,7 @@ def anything_to_hdr_convert(image, logfile=False, outfile=False ):
         os.system("gen_hdr %s %s %s %s fl %s %s %s 0" % (hdr_header, pixel_x, pixel_y, pixel_z, pixel_size_x, pixel_size_y, pixel_size_z))
         shutil.copy(data_file, img_file)
 
+        hdr_header = image[0:-2] + "hdr"
         if exists(hdr_header):
             return hdr_header
         else:

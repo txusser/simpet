@@ -24,9 +24,9 @@ max_segment: 39              # Maximum Ring difference on the reconstruction
 zoomFactor: 1                # Zoom factor in x and y
 xyOutputSize: 256
 zOutputSize: 79  
-numberOfSubsets: 9           # Number of subsets
-numberOfIterations: 10       # Number of iterations
-savingInterval: 10           # The interval that we want to save intermediate subiterations images
+numberOfSubsets: 9          # Number of subsets
+numberOfIterations: 10      # Number of iterations
+savingInterval: 10         # The interval that we want to save intermediate subiterations images
 # Attenuation correction 
 # (Don't set both, set what fits your scanner the best)
 analytical_att_correction: 1    # Performed by SimSET calcattenuation

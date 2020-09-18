@@ -321,6 +321,8 @@ class SimSET_Reconstruction(object):
 
         from src.stir import stir_tools
 
+        print("Preparing files for reconstruction")
+        
         trues_sino = join(self.input_dir, "trues.hdr")
         scatter_sino = join(self.input_dir, "scatter.hdr")
         randoms_sino = join(self.input_dir, "randoms.hdr")
@@ -374,28 +376,29 @@ class SimSET_Reconstruction(object):
         cortes = num_z_bins * num_z_bins
         num_aa_bins = self.scanner.get('num_aa_bins')
         num_td_bins = self.scanner.get('num_td_bins')
-
-        sinogram_stir_s = sinogram_stir[0:-3] + 's'
-        conv_sino2proy_path = rsc.get_rsc('conv_sino2proy','fruitcake')
-        gen_hdr_path = rsc.get_rsc('gen_hdr','fruitcake')
-        proyeccion = join(self.output_dir, "proyeccion.hdr")
-        command = "%s %s fl %s %s %s %s fl" % (conv_sino2proy_path, sinogram_stir_s, num_aa_bins, num_td_bins, cortes, proyeccion[0:-3] + 'img')
-        tools.osrun(command,self.log_file)
-        command = "%s %s %s %s %s fl 1 1 1 0" % (gen_hdr_path, proyeccion[0:-4], num_td_bins, cortes, num_aa_bins)
-        tools.osrun(command,self.log_file)
+      
 
         if self.scanner.get('psf_value') != 0:
+            conv_sino2proy_path = rsc.get_rsc('conv_sino2proy','fruitcake')
+            gen_hdr_path = rsc.get_rsc('gen_hdr','fruitcake')
+            proyeccion = join(self.output_dir, "proyeccion.hdr")
+            command = "%s %s fl %s %s %s %s fl" % (conv_sino2proy_path, sinogram_stir[0:-3] + 's', num_aa_bins, num_td_bins, cortes, proyeccion[0:-3] + 'img')
+            tools.osrun(command,self.log_file)
+            command = "%s %s %s %s %s fl 1 1 1 0" % (gen_hdr_path, proyeccion[0:-4], num_td_bins, cortes, num_aa_bins)
+            tools.osrun(command,self.log_file)
             convolucion_hdr_path = rsc.get_rsc('convolucion_hdr','fruitcake')
             conv_proyeccion = join(self.output_dir, "conv_proyeccion.hdr")
             command = "%s %s %s %s 2d" % (convolucion_hdr_path, proyeccion, conv_proyeccion, self.scanner.get('psf_value'))
             tools.osrun(command,self.log_file)
-        else:
-            shutil.copy(proyeccion[0:-3] + 'img',conv_proyeccion[0:-3] + 'img')
-	
-        conv_proy2sino_path = rsc.get_rsc('conv_proy2sino','fruitcake')
-        command = "%s %s fl %s %s %s %s fl" % (conv_proy2sino_path, conv_proyeccion[0:-3] + 'img', num_aa_bins, num_td_bins, cortes, sinogram_stir_s)
-        tools.osrun(command,self.log_file)
-
+            conv_proy2sino_path = rsc.get_rsc('conv_proy2sino','fruitcake')
+            command = "%s %s fl %s %s %s %s fl" % (conv_proy2sino_path, conv_proyeccion[0:-3] + 'img', num_aa_bins, num_td_bins, cortes, sinogram_stir[0:-3] + 's')
+            tools.osrun(command,self.log_file)
+            
+            os.remove(proyeccion)
+            os.remove(proyeccion[0:-3]+"img")
+            os.remove(conv_proyeccion)
+            os.remove(conv_proyeccion[0:-3]+"img")
+        
         if self.scanner.get('add_noise') != 0:
             poisson_noise_path = join(self.dir_stir,"bin/poisson_noise")
             noisy_sinogram_stir_path = join(self.output_dir,"noisy_stir_sinogram.hs")
@@ -403,6 +406,9 @@ class SimSET_Reconstruction(object):
             tools.osrun(command,self.log_file)
             shutil.copy(noisy_sinogram_stir_path, sinogram_stir[0:-3] + 'hs')
             shutil.copy(noisy_sinogram_stir_path[0:-2] + 's', sinogram_stir[0:-3] + 's')
+            
+            os.remove(noisy_sinogram_stir_path)
+            os.remove(noisy_sinogram_stir_path[0:-2]+"s")
 
     def run_recons(self):
 

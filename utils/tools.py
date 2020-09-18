@@ -274,15 +274,15 @@ def anything_to_hdr_convert(image, logfile=False, outfile=False ):
         pixel_z = lines[22].split()[4]
         pixel_size_z = lines[23].split()[5]
         
-        hdr_header = image[0:-3] #+ "hdr" #gen_hdr ya le pone el .hdr
+        hdr_header = image[0:-2] + "hdr" 
         img_file = image[0:-2] + "img"
         data_file = image[0:-2] + "v"
 
         #This will convert .hv to .hdr and copy the data
-        os.system("gen_hdr %s %s %s %s fl %s %s %s 0" % (hdr_header, pixel_x, pixel_y, pixel_z, pixel_size_x, pixel_size_y, pixel_size_z))
+        os.system("gen_hdr %s %s %s %s fl %s %s %s 0" % (hdr_header[0:-4], pixel_x, pixel_y, pixel_z, pixel_size_x, pixel_size_y, pixel_size_z))
         shutil.copy(data_file, img_file)
 
-        hdr_header = image[0:-2] + "hdr"
+        
         if exists(hdr_header):
             return hdr_header
         else:

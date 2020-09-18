@@ -125,7 +125,7 @@ def create_stir_parfile(scannerParams, recons_algorithm, output_dir):
         #sinogram_stir = join(output_dir,"catt_sinogram.hs")
         #additive_sino_stir = join(output_dir, "my_catt_additivesino.hs")
         att_corr_str = ""
-    else:
+    elif scannerParams.get("stir_recons_att_corr")==1:
         #sinogram_stir = join(output_dir,"stir_sinogram.hs")
         #additive_sino_stir = join(output_dir, "stir_additivesino.hs")
         att_corr_str = (

@@ -191,7 +191,7 @@ def install_soap():
     rsystem(icom)
 
     # Install and upgrade PIP
-    icom = 'sudo pip3 install PyYAML'
+    icom = 'sudo pip3 install -U PyYAML'
     rsystem(icom)
 
 

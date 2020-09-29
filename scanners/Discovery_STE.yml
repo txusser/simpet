@@ -1,12 +1,12 @@
 scanner_name: "GE Discovery STE"
 # Scanner Description
 simset_material: 10           # BGO
-average_doi: 1.1              # cm
+average_doi: 1.1              # ¿0.84? cm
 scanner_radius: 44.31         # Scanner radius
 num_rings:  24                # Number of rings
 axial_fov: 7.85               # Axial FOV max (cm) 
 # Crystal Description
-z_crystal_size: 0.63          # Axial Crystal size (cm)
+z_crystal_size: 0.3           # Axial Crystal size (cm)
 transaxial_crystal_size: 0.47 # Transaxial Crystal size (cm). En el ST es 0.63
 crystal_thickness: 3          # Crystal Thickness (cm)
 energy_resolution: 16          # Energy resolution (%)

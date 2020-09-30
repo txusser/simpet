@@ -129,10 +129,10 @@ def create_stir_parfile(scannerParams, recons_algorithm, output_dir):
         #sinogram_stir = join(output_dir,"stir_sinogram.hs")
         #additive_sino_stir = join(output_dir, "stir_additivesino.hs")
         att_corr_str = (
-        "Bin Normalisation type := From ProjData \n" + 
-        "Bin Normalisation From ProjData := \n" +
-        "normalisation projdata filename:= "+att_img_stir + "\n"+
-        "End Bin Normalisation From ProjData:= \n")        
+        " Bin Normalisation type := From ProjData \n" + 
+        " Bin Normalisation From ProjData := \n" +
+        " normalisation projdata filename:= "+att_img_stir + "\n"+
+        " End Bin Normalisation From ProjData:= \n\n")        
                         
     if scannerParams.get("stir_scatt_corr_smoothing") ==1:# Will use smoothed SimSET scatter as additive_sinogram.
         scatt_corr_str = ("additive sinogram := " + additive_sino_stir + "\n\n")

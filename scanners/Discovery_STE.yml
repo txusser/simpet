@@ -1,10 +1,10 @@
 scanner_name: "GE Discovery STE"
 # Scanner Description
 simset_material: 10           # BGO
-average_doi: 1.1              # ¿0.84? cm
+average_doi: 0.84              # ¿0.84? cm
 scanner_radius: 44.31         # Scanner radius
 num_rings:  24                # Number of rings
-axial_fov: 7.85               # Axial FOV max (cm) 
+axial_fov: 15.7               # Axial FOV max (cm) 
 # Crystal Description
 z_crystal_size: 0.3           # Axial Crystal size (cm)
 transaxial_crystal_size: 0.47 # Transaxial Crystal size (cm). En el ST es 0.63
@@ -23,24 +23,24 @@ max_energy_window:  675
 
 # Reconstruction
 max_segment: 23             # Maximum Ring difference on the reconstruction
-zoomFactor: 1.32            # Zoom factor in x and y
+zoomFactor: 1.55            # Zoom factor in x and y
 xyOutputSize: 128
 zOutputSize: 47
 numberOfSubsets: 7          # Number of subsets
-numberOfIterations: 70      # Number of iterations
-savingInterval: 7           # The interval that we want to save intermediate subiterations images
+numberOfIterations: 32      # Number of iterations
+savingInterval: 32           # The interval that we want to save intermediate subiterations images
 # Attenuation correction 
 # (Don't set both, set what fits your scanner the best)
 analytical_att_correction: 0    # Performed by SimSET calcattenuation
 stir_recons_att_corr: 1        # Performed in STIR by entering the att image as a normalization map
 # Scatter Correction
-analytic_scatt_corr_factor:  1      # 0.15 WILL REMOVE 85% of scatter.0 will remove scatter
+analytic_scatt_corr_factor:  0.15      # 0.15 WILL REMOVE 85% of scatter.0 will remove scatter
 stir_scatt_corr_smoothing:   0      # Will use smoothed SimSET scatter as additive_sinogram.
 stir_scatt_simulation:      0      # Will calculate scatter with STIR scatter simulation
 # Randoms Correction
 analytic_randoms_corr_factor: 0     # 0.15 WILL REMOVE 85% of scatter.0 will remove randoms
 recons_type: "OSEM"
 
-psf_value: 1.125
+psf_value: 0 #1.125
 add_noise: 0
 

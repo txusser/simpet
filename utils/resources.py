@@ -3,7 +3,7 @@ from os.path import abspath, join, dirname
 
 # Ablotue paths to folders with resources used
 RESOURCES = abspath(join(dirname(dirname(abspath(__file__))), 'resources'))
-BIN = abspath(join(dirname(dirname(abspath(__file__))), 'include', 'bin'))
+BIN = abspath(join(dirname(dirname(abspath(__file__))), 'include', 'format_converters'))
 FRUTICAKE = abspath(join(dirname(dirname(abspath(__file__))), 'include', 'fruitcake', 'bin'))
 
 def get_rsc(resource, type):

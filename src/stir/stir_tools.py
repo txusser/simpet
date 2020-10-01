@@ -7,22 +7,23 @@ from multiprocessing import Process
 import nibabel as nib
 import numpy as np
 import yaml
+import random
 
 from utils import tools
 from utils import resources as rsc
 
-def create_stir_hs_from_detparams(params,output_file, output_format="SimSET"):
+def create_stir_hs_from_detparams(scannerParams,output_file, output_format="SimSET"):
 
-    num_rings = params.get("num_rings")
-    max_z = params.get("axial_fov")/2
-    min_z = -params.get("axial_fov")/2
-    z_crystal_size = params.get("z_crystal_size")
+    num_rings = scannerParams.get("num_rings")
+    max_z = scannerParams.get("axial_fov")/2
+    min_z = -scannerParams.get("axial_fov")/2
+    z_crystal_size = scannerParams.get("z_crystal_size")
     gap_size = (max_z-min_z-z_crystal_size*num_rings)/(num_rings-1)
     ring_spacing = z_crystal_size + gap_size
 
-    min_td = -params.get("scanner_radius")
-    max_td = params.get("scanner_radius")
-    td_bins = params.get("num_td_bins")
+    min_td = -scannerParams.get("scanner_radius")
+    max_td = scannerParams.get("scanner_radius")
+    td_bins = scannerParams.get("num_td_bins")
     bin_size = (max_td-min_td)/float(td_bins)
     matrix_size, ring_difference = generate_segments_lists_stir(num_rings, num_rings-1)
 
@@ -39,7 +40,7 @@ def create_stir_hs_from_detparams(params,output_file, output_format="SimSET"):
         "!INTERFILE  :=\n" + 
         "!imaging modality := PT\n" +
         "name of data file := " + output_file[0:-2] + "s" + "\n" +
-        "originating system := " + params.get("scanner_name") + "\n" +
+        "originating system := " + scannerParams.get("scanner_name") + "\n" +
         "!version of keys := STIR3.0\n" +
         "!GENERAL DATA :=\n" +
         "!GENERAL IMAGE DATA :=\n" +
@@ -54,7 +55,7 @@ def create_stir_hs_from_detparams(params,output_file, output_format="SimSET"):
         "matrix axis label [4] := segment\n" +
         "!matrix size [4] := " + str(2*(num_rings-1)+1) + "\n" +
         "matrix axis label [" + str(views_coordinate) +"] := view\n" +
-        "!matrix size [" + str(views_coordinate) +"] := " + str(params.get("num_aa_bins")) + "\n" +
+        "!matrix size [" + str(views_coordinate) +"] := " + str(scannerParams.get("num_aa_bins")) + "\n" +
         "matrix axis label ["+ str(axial_coordinate) +"] := axial coordinate\n" +
         "!matrix size [" + str(axial_coordinate) + "] := " + matrix_size + "\n" +
         "matrix axis label [1] := tangential coordinate\n" +
@@ -62,17 +63,17 @@ def create_stir_hs_from_detparams(params,output_file, output_format="SimSET"):
         "minimum ring difference per segment := " + ring_difference + "\n" +
         "maximum ring difference per segment := " + ring_difference + "\n" +
         "Scanner parameters:= \n" +
-        "Scanner type := " + params.get("scanner_name") + "\n" +
+        "Scanner type := " + scannerParams.get("scanner_name") + "\n" +
         "Number of rings := " + str(num_rings) + "\n" +
-        "Number of detectors per ring := " + str(params.get("num_aa_bins")*2) + "\n" 
-        "Inner ring diameter (cm) := " + str(params.get("scanner_radius")*2) + "\n" +
-        "Average depth of interaction (cm) := " + str(params.get("average_doi")) + "\n" +
+        "Number of detectors per ring := " + str(scannerParams.get("num_aa_bins")*2) + "\n" 
+        "Inner ring diameter (cm) := " + str(scannerParams.get("scanner_radius")*2) + "\n" +
+        "Average depth of interaction (cm) := " + str(scannerParams.get("average_doi")) + "\n" +
         "Distance between rings (cm) := " + str(ring_spacing) + "\n" +
         "Default bin size (cm) := " + str(bin_size) + "\n" +
         "View offset (degrees) := 0\n" +
         "Maximum number of non-arc-corrected bins := " + str(td_bins) + "\n" +
         "Default number of arc-corrected bins := " + str(td_bins) + "\n" +
-        "Energy_resolution := " + str(params.get("energy_resolution")*5.11) + "\n" +
+        "Energy_resolution := " + str(scannerParams.get("energy_resolution")*5.11) + "\n" +
         "Reference energy (in keV) := 511\n" +
         "Number of blocks per bucket in transaxial direction := 1\n" +
         "Number of blocks per bucket in axial direction := 1\n" +
@@ -105,90 +106,103 @@ def generate_segments_lists_stir(nrings, max_segment):
 
     return my_matrix_size, my_matrix_ring_difference
 
+def apply_psf(scannerParams, sinogram_stir, log_file):
 
-def create_stir_parfile(scannerParams, recons_algorithm, output_dir):
+    num_z_bins = scannerParams.get('num_rings')
+    num_aa_bins = scannerParams.get('num_aa_bins')
+    num_td_bins = scannerParams.get('num_td_bins')
+    psf_value = scannerParams.get('psf_value')
+
+    conv_sino2proy = rsc.get_rsc('conv_sino2proy','fruitcake')
+    conv_proy2sino = rsc.get_rsc('conv_proy2sino','fruitcake')
+    gen_hdr = rsc.get_rsc('gen_hdr','fruitcake')
+    convolution_hdr = rsc.get_rsc('convolucion_hdr','fruitcake')
     
-    att_img_stir = join(output_dir,"stir_att.hs")
-    max_segment = scannerParams.get("max_segment")
+    cortes = num_z_bins * num_z_bins
+
+    projections = join(dirname(sinogram_stir), "projections.hdr")
+    
+    command = "%s %s fl %s %s %s %s fl" % (conv_sino2proy, sinogram_stir[0:-3] + 's', num_aa_bins, num_td_bins, cortes, projections[0:-3] + 'img')
+    tools.osrun(command,log_file)
+    
+    command = "%s %s %s %s %s fl 1 1 1 0" % (gen_hdr, projections[0:-4], num_td_bins, cortes, num_aa_bins)
+    tools.osrun(command,log_file)
+    
+    conv_projections = join(dirname(sinogram_stir), "conv_projections.hdr")
+    command = "%s %s %s %s 2d" % (convolution_hdr, projections, conv_projections,psf_value)
+    tools.osrun(command,log_file)
+
+    command = "%s %s fl %s %s %s %s fl" % (conv_proy2sino, conv_projections[0:-3] + 'img', num_aa_bins, num_td_bins, cortes, sinogram_stir[0:-3] + 's')
+    tools.osrun(command,log_file)
+            
+    os.remove(projections)
+    os.remove(projections[0:-3]+"img")
+    os.remove(conv_projections)
+    os.remove(conv_projections[0:-3]+"img")
+
+def add_noise(config, scannerParams, sinogram_stir, log_file):
+
+    stir_dir = config.get("dir_stir")
+    poison_noise = join(stir_dir,'bin','poisson_noise')
+
+    noisy_sinogram_stir_path = join(dirname(sinogram_stir),"noisy_stir_sinogram.hs")
+    command = "%s -p %s %s %s %s" % (poison_noise, noisy_sinogram_stir_path, sinogram_stir[0:-3] + 'hs', scannerParams.get('add_noise'), random.randint(1,200000))
+    tools.osrun(command,log_file)
+
+    shutil.copy(noisy_sinogram_stir_path[0:-2] + 's', sinogram_stir[0:-3] + 's')
+            
+    os.remove(noisy_sinogram_stir_path)
+    os.remove(noisy_sinogram_stir_path[0:-2]+"s")
+
+def FBP2D_recons(config,scannerParams, sinograms_stir, output_dir, log_file):
+
+    stir_dir = config.get("dir_stir")
+    recons = join(stir_dir,'bin','FBP2D')
     
     zoom = scannerParams.get("zoomFactor")
     xyOutputSize = scannerParams.get("xyOutputSize")
-    zOutputSize =scannerParams.get("zOutputSize")
-    numberOfSubsets = scannerParams.get("numberOfSubsets")
-    numberOfIterations = scannerParams.get("numberOfIterations")
-    savingInterval = scannerParams.get("savingInterval")
-    
-    sinogram_stir = join(output_dir,"stir_sinogram.hs")
-    additive_sino_stir = join(output_dir, "stir_additivesino.hs")
-    
-    if scannerParams.get("analytical_att_correction") == 1:
-        #sinogram_stir = join(output_dir,"catt_sinogram.hs")
-        #additive_sino_stir = join(output_dir, "my_catt_additivesino.hs")
-        att_corr_str = ""
-    elif scannerParams.get("stir_recons_att_corr")==1:
-        #sinogram_stir = join(output_dir,"stir_sinogram.hs")
-        #additive_sino_stir = join(output_dir, "stir_additivesino.hs")
-        att_corr_str = (
-        "Bin Normalisation type := From ProjData \n" + 
-        "Bin Normalisation From ProjData := \n" +
-        "normalisation projdata filename:= "+att_img_stir + "\n"+
-        "End Bin Normalisation From ProjData:= \n")        
-                        
-    if scannerParams.get("stir_scatt_corr_smoothing") ==1:# Will use smoothed SimSET scatter as additive_sinogram.
-        scatt_corr_str = ("additive sinogram := " + additive_sino_stir + "\n\n")
-    else:
-        scatt_corr_str = ""    
-    
-    paramsFile = join(output_dir,"Params.par")
+
+    recFileName = join(output_dir,"rec_FBP2D")
+
+    paramsFile = join(output_dir,"FBP2D.par")
     new_file = open(paramsFile, "w")
-    
-    if recons_algorithm == 0: #OSEM
-        recFileName = join(output_dir,"rec_OSEM3D")
-        new_file.write(
-            "OSMAPOSLParameters  :=\n\n" + 
-            "objective function type := PoissonLogLikelihoodWithLinearModelForMeanAndProjData\n" +
-            "PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters := \n\n" +
-            "input file := " + sinogram_stir + "\n" +
-            "maximum absolute segment number to process := " + str(max_segment)+ "\n" +
-            "zero end planes of segment 0 := 0 \n" +
-            #"sensitivity filename := sens.v \n" + # ¿? habría que especificar path con anterioridad: sensfilename=join(output_dir, "sens.v")
-            "recompute sensitivity := 1 \n" +
-            "use subset sensitivities := 0 \n\n" +
-            "projector pair type := Matrix \n" +
-            " Projector Pair Using Matrix Parameters := \n" +
-            " Matrix type := Ray Tracing \n" +
-            " Ray tracing matrix parameters := \n" +
-            " number of rays in tangential direction to trace for each bin:= 5 \n" +
-            " End Ray tracing matrix parameters := \n" +
-            " End Projector Pair Using Matrix Parameters := \n\n" +
-            att_corr_str +
-            "prior type := FilterRootPrior \n" +
-            "FilterRootPrior Parameters := \n" +
-            " penalisation factor := 0. \n" +
-            "  Filter type := Median \n" +
-            "   Median Filter Parameters := \n" +
-            "   mask radius x := 1 \n" +
-            "   mask radius y := 1 \n" +
-            "   mask radius z := 1 \n" +
-            "   End Median Filter Parameters:= \n" +
-            "END FilterRootPrior Parameters := \n\n" +
-            scatt_corr_str +
-            "zoom := " + str(zoom) + "\n" +
-            "xy output image size (in pixels) := " + str(xyOutputSize) + "\n" 
-            "Z output image size (in pixels) := " + str(zOutputSize) + "\n\n" +
-            "end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters := \n\n" +
-            "number of subsets := " + str(numberOfSubsets) + "\n" +
-            "number of subiterations := " + str(numberOfIterations) + "\n" +
-            "save estimates at subiteration intervals := " + str(savingInterval) + "\n\n" +
-            "enforce initial positivity condition:=0 \n\n" +
+    new_file.write(
+            "fbp2dparameters :=  :=\n\n" + 
+            "input file := " + sinograms_stir + "\n" +
             "output filename prefix := " + recFileName + "\n\n" +
-            "END := \n" 
+            "zoom := " + str(zoom) + "\n" +
+            "xy output image size (in pixels) := " + str(xyOutputSize) + "\n\n" 
+            "num segments to combine with ssrb := -1 \n\n" +
+            "alpha parameter for ramp filter := 1 \n" +
+            "cut-off for ramp filter (in cycles) := 0.5 \n\n" +
+            "end := \n"
             )
-    elif recons_algorithm == 1: #FBP3D
-        recFileName = join(output_dir,"rec_FBP3D")
-        new_file.write(
+
+    new_file.close()
+
+    command = '%s %s >> %s' % (recons, paramsFile, log_file)
+    tools.osrun(command, log_file)        
+            
+    output = recFileName + ".hv"
+    output = tools.anything_to_hdr_convert((output))
+
+    return output
+
+def FBP3D_recons(config,scannerParams, sinograms_stir, output_dir, log_file):
+
+    stir_dir = config.get("dir_stir")
+    recons = join(stir_dir,'bin','FBP3DRP')
+    
+    zoom = scannerParams.get("zoomFactor")
+    xyOutputSize = scannerParams.get("xyOutputSize")
+
+    recFileName = join(output_dir,"rec_FBP3D")
+
+    paramsFile = join(output_dir,"FBP3D.par")
+    new_file = open(paramsFile, "w")
+    new_file.write(
             "fbp3drpparameters  :=\n\n" + 
-            "input file := " + sinogram_stir + "\n" +
+            "input file := " + sinograms_stir + "\n" +
             "output filename prefix := " + recFileName + "\n\n" +
             "zoom := " + str(zoom) + "\n" +
             "xy output image size (in pixels) := " + str(xyOutputSize) + "\n\n" 
@@ -208,19 +222,104 @@ def create_stir_parfile(scannerParams, recons_algorithm, output_dir):
             "display level := 0 \n\n" +
             "end := \n"  
             )
+
+    new_file.close()
+
+    command = '%s %s >> %s' % (recons, paramsFile, log_file)
+    tools.osrun(command, log_file)        
             
-    else: #FBP2D
-        recFileName = join(output_dir,"rec_FBP2D")
-        new_file.write(
-            "fbp2dparameters :=  :=\n\n" + 
-            "input file := " + sinogram_stir + "\n" +
-            "output filename prefix := " + recFileName + "\n\n" +
+    output = recFileName + ".hv"
+    output = tools.anything_to_hdr_convert((output))
+
+    return output
+
+def OSEM_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att_stir, output_dir, log_file):
+        
+    stir_dir = config.get("dir_stir")
+    recons = join(stir_dir,'bin','OSMAPOSL')
+
+    max_segment = scannerParams.get("max_segment")
+    zoom = scannerParams.get("zoomFactor")
+    xyOutputSize = scannerParams.get("xyOutputSize")
+    zOutputSize =scannerParams.get("zOutputSize")
+    numberOfSubsets = scannerParams.get("numberOfSubsets")
+    numberOfIterations = scannerParams.get("numberOfIterations")
+    savingInterval = scannerParams.get("savingInterval")
+
+    cesga = config.get("cesga")
+    cesga_max_time = config.get("cesga_max_time")
+    
+    if scannerParams.get("analytical_att_correction") == 1:
+        att_corr_str = ""
+    elif scannerParams.get("stir_recons_att_corr")==1:
+        att_corr_str = (
+        "Bin Normalisation type := From ProjData \n" + 
+        "Bin Normalisation From ProjData := \n" +
+        "normalisation projdata filename:= "+att_stir + "\n"+
+        "End Bin Normalisation From ProjData:= \n")        
+                        
+    if scannerParams.get("stir_scatt_corr_smoothing") ==1:# Will use smoothed SimSET scatter as additive_sinogram.
+        scatt_corr_str = ("additive sinogram := " + additive_sino_stir + "\n\n")
+    else:
+        scatt_corr_str = ""
+
+    recFileName = join(output_dir,"rec_OSEM3D")    
+    
+    paramsFile = join(output_dir,"ParamsOSEM.par")
+    new_file = open(paramsFile, "w")
+      
+    new_file.write(
+            "OSMAPOSLParameters  :=\n\n" + 
+            "objective function type := PoissonLogLikelihoodWithLinearModelForMeanAndProjData\n" +
+            "PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters := \n\n" +
+            "input file := " + sinograms_stir + "\n" +
+            "maximum absolute segment number to process := " + str(max_segment)+ "\n" +
+            "zero end planes of segment 0 := 0 \n" +
+            "sensitivity filename := sens.v \n" +
+            "recompute sensitivity := 1 \n" +
+            "use subset sensitivities := 0 \n\n" +
+            "projector pair type := Matrix \n" +
+            "Projector Pair Using Matrix Parameters := \n" +
+            "Matrix type := Ray Tracing \n" +
+            "Ray tracing matrix parameters := \n" +
+            "number of rays in tangential direction to trace for each bin:= 5 \n" +
+            "End Ray tracing matrix parameters := \n" +
+            "End Projector Pair Using Matrix Parameters := \n\n" +
+            att_corr_str +
+            "prior type := FilterRootPrior \n" +
+            "FilterRootPrior Parameters := \n" +
+            "penalisation factor := 0. \n" +
+            "Filter type := Median \n" +
+            "Median Filter Parameters := \n" +
+            "mask radius x := 1 \n" +
+            "mask radius y := 1 \n" +
+            "mask radius z := 1 \n" +
+            "End Median Filter Parameters:= \n" +
+            "END FilterRootPrior Parameters := \n\n" +
+            scatt_corr_str +
             "zoom := " + str(zoom) + "\n" +
-            "xy output image size (in pixels) := " + str(xyOutputSize) + "\n\n" 
-            "num segments to combine with ssrb := -1 \n\n" +
-            "alpha parameter for ramp filter := 1 \n" +
-            "cut-off for ramp filter (in cycles) := 0.5 \n\n" +
-            "end := \n"
+            "xy output image size (in pixels) := " + str(xyOutputSize) + "\n" 
+            "Z output image size (in pixels) := " + str(zOutputSize) + "\n\n" +
+            "end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters := \n\n" +
+            "number of subsets := " + str(numberOfSubsets) + "\n" +
+            "number of subiterations := " + str(numberOfIterations) + "\n" +
+            "save estimates at subiteration intervals := " + str(savingInterval) + "\n\n" +
+            "enforce initial positivity condition:=0 \n\n" +
+            "output filename prefix := " + recFileName + "\n\n" +
+            "END := \n" 
             )
+
+    new_file.close()
+
+    command = '%s %s >> %s' % (recons, paramsFile, log_file)
+    tools.osrun(command, log_file)        
             
-    return paramsFile, recFileName
+    output = recFileName + "_" + str(scannerParams("numberOfIterations")) + ".hv"
+    output = tools.anything_to_hdr_convert(output)
+
+    return output
+
+
+
+
+        

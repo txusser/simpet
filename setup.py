@@ -247,6 +247,8 @@ def download_resources():
 simpet_dir = os.getcwd()
 download_resources()
 
+install_soap()
+
 if not exists(dest_dir):
     os.makedirs(dest_dir)
 os.chdir(dest_dir)
@@ -261,4 +263,4 @@ os.chdir(simpet_dir)
 update_config(stir_dir,simset_dir)
 
 
-install_soap()
+

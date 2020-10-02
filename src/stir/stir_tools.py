@@ -314,8 +314,8 @@ def OSEM_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att_s
     command = '%s %s >> %s' % (recons, paramsFile, log_file)
     tools.osrun(command, log_file)        
             
-    output = recFileName + "_" + str(scannerParams("numberOfIterations")) + ".hv"
-    output = tools.anything_to_hdr_convert(output)
+    output = recFileName + "_" + str(scannerParams.get("numberOfIterations")) + ".hv"
+    output = tools.anything_to_hdr_convert(output,log_file)
 
     return output
 

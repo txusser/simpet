@@ -279,7 +279,9 @@ def anything_to_hdr_convert(image, logfile=False, outfile=False ):
         data_file = image[0:-2] + "v"
 
         #This will convert .hv to .hdr and copy the data
-        os.system("gen_hdr %s %s %s %s fl %s %s %s 0" % (hdr_header[0:-4], pixel_x, pixel_y, pixel_z, pixel_size_x, pixel_size_y, pixel_size_z))
+        gen_hdr = rsc.get_rsc("gen_hdr", "fruitcake")
+        rcommand = "%s %s %s %s %s fl %s %s %s 0" % (gen_hdr, hdr_header[0:-4], pixel_x, pixel_y, pixel_z, pixel_size_x, pixel_size_y, pixel_size_z)
+        osrun(rcommand, logfile)
         shutil.copy(data_file, img_file)
 
         

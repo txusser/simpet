@@ -37,7 +37,7 @@ stir_scatt_corr_smoothing:   1      # Will use smoothed SimSET scatter as additi
 stir_scatt_simulation:      0      # Will calculate scatter with STIR scatter simulation
 # Randoms Correction
 analytic_randoms_corr_factor: 1     # 0.15 WILL REMOVE 85% of scatter.0 will remove randoms
-stir_randoms_corr_smoothing:   1      # Will use smoothed SimSET scatter as additive_sinogram.
+stir_randoms_corr_smoothing:   1    # Will include smoothed SimSET randoms in the additive_sinogram.
 
 recons_type: "OSEM_LM_TOF"
 

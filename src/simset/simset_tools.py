@@ -5,6 +5,7 @@ from os.path import join, exists
 import nibabel as nib
 import numpy as np
 import pexpect
+import yaml
 
 from utils import tools
 
@@ -320,10 +321,7 @@ def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0, log_file=Fals
 
 def make_simset_simplepet_det(scanner_params, output):
     
-    with open(scanner_params, 'rb') as f:
-        params = yaml.load(f.read(), Loader=yaml.FullLoader)
-
-    energy_resolution = params.get("energy_resolution")
+    energy_resolution = scanner_params.get("energy_resolution")
 
     new_file = open(output, "w")
     

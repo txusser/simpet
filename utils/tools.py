@@ -244,7 +244,7 @@ def anything_to_hdr_convert(image, logfile=False, outfile=False ):
         rcommand = '%s %s %s' % (dicom2nii, image, nii)
         osrun(rcommand,logfile)
         if exists(nii):
-            hdr = ap.nii_analyze_convert(nii,logfile=logfile)
+            hdr = nii_analyze_convert(nii,logfile=logfile)
             os.remove(nii)
             if exists(hdr):
                 return hdr
@@ -508,22 +508,22 @@ def petmr2maps(pet_image,mri_image,log_file,mode="SimSET"):
         The maps will be stored on Data/simulation_name/Maps
         """
         message = "GENERATING ACT AND ATT MAPS FROM PETMR IMAGES"
-        tools.log_message(log_file, message, mode='info')
+        log_message(log_file, message, mode='info')
 
         #First of all lets take all to analyze
-        pet_hdr = tools.anything_to_hdr_convert(pet_image)
-        pet_hdr = tools.copy_analyze(pet_hdr,image2=False,dest_dir=self.patient_dir)
-        pet_hdr = tools.prepare_input_image(pet_hdr,log_file,min_voxel_size=1.5)
+        pet_hdr = anything_to_hdr_convert(pet_image)
+        pet_hdr = copy_analyze(pet_hdr,image2=False,dest_dir=self.patient_dir)
+        pet_hdr = prepare_input_image(pet_hdr,log_file,min_voxel_size=1.5)
         pet_img = pet_hdr[0:-3]+"img"
 
-        mri_hdr = tools.anything_to_hdr_convert(mri_image)
-        mri_hdr = tools.copy_analyze(mri_hdr,image2=False,dest_dir=self.patient_dir)
-        mri_hdr = tools.prepare_input_image(mri_hdr,log_file,min_voxel_size=1.5)
+        mri_hdr = anything_to_hdr_convert(mri_image)
+        mri_hdr = copy_analyze(mri_hdr,image2=False,dest_dir=self.patient_dir)
+        mri_hdr = prepare_input_image(mri_hdr,log_file,min_voxel_size=1.5)
         mri_img = mri_hdr[0:-3]+"img"
 
         #Performing PET/MR coregister
         mfile = os.path.join(self.patient_dir,"fusion.m")
-        correg_pet_img = tools.image_fusion(self.spm_run, mfile, mri_img, pet_img, log_file)
+        correg_pet_img = image_fusion(self.spm_run, mfile, mri_img, pet_img, log_file)
 
         #Now the map generation
         from src.patient2maps import patient2maps

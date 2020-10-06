@@ -224,6 +224,8 @@ class SimSET_Simulation(object):
                     message = 'Adding %s from simulation %s' % (image,division)
                     tools.log_message(log_file, message)
                     tools.operate_images_analyze(zero_image,division_image,zero_image,'sum')
+                    os.remove(division_image)
+                    os.remove(division_image[0:-3] + 'img')
 
         for hist in ["phg_hf.hist", "det_hf.hist"]:
 
@@ -261,13 +263,13 @@ class SimSET_Simulation(object):
 
             simset_tools.combine_history_files(self.simset_dir,file_list, output, log_file)
 
-            #shutil.move(output,det_hist)
-            #os.remove(randoms_hist)
+            os.remove(det_hist)
+            os.remove(randoms_hist)
 
         #Once everything is combined in division_0, remove the other divisions
-        # for division in range(1,self.divisions):
-        #     division_dir = join(self.output_dir, "division_" + str(division))
-        #     shutil.rmtree(division_dir)
+        for division in range(1,self.divisions):
+            division_dir = join(self.output_dir, "division_" + str(division))
+            shutil.rmtree(division_dir)
 
         print("Calculating attenuation map...")
         print(" ")

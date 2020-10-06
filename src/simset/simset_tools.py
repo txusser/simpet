@@ -467,7 +467,7 @@ def combine_history_files(simset_dir, history_files, output, log_file):
 
     rcommand = '%s %s %s' % (combinehist, history_files, output)
 
-    proc  = sp.Popen(rcommand, universal_newlines=True, shell=True, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE).communicate("No\n")
+    proc  = sp.Popen(rcommand, universal_newlines=True, shell=True, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE).communicate("Yes\n")
 
     #tools.osrun(rcommand, log_file)
 

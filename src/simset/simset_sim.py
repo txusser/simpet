@@ -254,7 +254,9 @@ class SimSET_Simulation(object):
 
             simset_tools.add_randoms(division_zero, self.simset_dir, coincidence_window,
                                      rebin=False, log_file=log_file)
-
+            
+            os.remove(join(division_zero, "sorted_det_hf.hist"))
+            
             det_hist = join(division_zero, 'det_hf.hist')
             randoms_hist = join(division_zero, 'randoms.hist')
             output = join(division_zero, 'full_det_hf.hist')
@@ -263,8 +265,6 @@ class SimSET_Simulation(object):
 
             simset_tools.combine_history_files(self.simset_dir,file_list, output, log_file)
 
-            os.remove(det_hist)
-            os.remove(randoms_hist)
 
         #Once everything is combined in division_0, remove the other divisions
         for division in range(1,self.divisions):

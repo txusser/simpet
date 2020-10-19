@@ -17,10 +17,8 @@ num_td_bins:  293            # Number of bins
 # Energy window
 min_energy_window:  375
 max_energy_window:  675
-
-#min_td:  -68.855             # FOV min cm
-#max_td:  68.855              # FOV max cm (bin_size:   (max_td-min_td/num_td_bins)
-
+# Used to add randoms to the simulated data
+coincidence_window: 11.7        # nanoseconds. Used only for random simulation (SimSET)
 # Reconstruction
 max_segment: 23             # Maximum Ring difference on the reconstruction
 zoomFactor: 1.55            # Zoom factor in x and y

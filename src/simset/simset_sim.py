@@ -244,18 +244,20 @@ class SimSET_Simulation(object):
                     file_list = zero_hist + " " + division_hist
                     simset_tools.combine_history_files(self.simset_dir,file_list, output, log_file)
                     shutil.move(output,zero_hist)
+                    #Once everything is combined in division_0, remove the other division
+                    shutil.rmtree(division_dir)
 
         if self.add_randoms ==1:
 
             # To have randoms in the final history file, we need to add randoms to the final det_hf.hist
-            print('Adding randoms to the the history file...')
+            print('Adding randoms to the history file...')
 
             coincidence_window = self.scanner.get("coincidence_window")
 
             simset_tools.add_randoms(division_zero, self.simset_dir, coincidence_window,
                                      rebin=False, log_file=log_file)
             
-            os.remove(join(division_zero, "sorted_det_hf.hist"))
+            #os.remove(join(division_zero, "sorted_det_hf.hist"))
             
             det_hist = join(division_zero, 'det_hf.hist')
             randoms_hist = join(division_zero, 'randoms.hist')
@@ -266,10 +268,6 @@ class SimSET_Simulation(object):
             simset_tools.combine_history_files(self.simset_dir,file_list, output, log_file)
 
 
-        #Once everything is combined in division_0, remove the other divisions
-        for division in range(1,self.divisions):
-            division_dir = join(self.output_dir, "division_" + str(division))
-            shutil.rmtree(division_dir)
 
         print("Calculating attenuation map...")
         print(" ")

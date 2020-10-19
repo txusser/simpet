@@ -441,6 +441,8 @@ def add_randoms(sim_dir, simset_dir, coincidence_window, rebin=True, log_file=Fa
 
     command = "%s %s >> %s" % (addrand_bin, template, log_file)
     tools.osrun(command, log_file)
+    
+    os.remove(sorted_file)
 
     # The following will replace the existing det-hist file with the new including randoms
 

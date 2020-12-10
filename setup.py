@@ -214,6 +214,10 @@ def install_soap():
     # Install Pandas
     icom = 'sudo apt install python3-pandas -y -q'
     rsystem(icom)
+    
+    # Install nilearn
+    icom = 'sudo pip3 install -U nilearn'
+    rsystem(icom)
 
     # Install cmake (needed for STIR)
     icom = 'sudo apt install cmake -y -q'

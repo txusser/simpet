@@ -245,6 +245,13 @@ def OSEM_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att_s
     numberOfSubsets = scannerParams.get("numberOfSubsets")
     numberOfIterations = scannerParams.get("numberOfIterations")
     savingInterval = scannerParams.get("savingInterval")
+    
+    scan_radius = scannerParams.get("scanner_radius")
+    td_bins = scannerParams.get("num_td_bins")
+    bin_size = (2*scan_radius)/float(td_bins)
+    xyVoxelSize = round(10*(bin_size/zoom),2) #in mm
+    zoom_aux=1
+    xyOutputSize_aux=round(xyOutputSize/zoom)
 
     cesga = config.get("cesga")
     cesga_max_time = config.get("cesga_max_time")
@@ -297,8 +304,8 @@ def OSEM_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att_s
             "End Median Filter Parameters:= \n" +
             "END FilterRootPrior Parameters := \n\n" +
             scatt_corr_str +
-            "zoom := " + str(zoom) + "\n" +
-            "xy output image size (in pixels) := " + str(xyOutputSize) + "\n" 
+            "zoom := " + str(zoom_aux) + "\n" +
+            "xy output image size (in pixels) := " + str(xyOutputSize_aux) + "\n" 
             "Z output image size (in pixels) := " + str(zOutputSize) + "\n\n" +
             "end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters := \n\n" +
             "number of subsets := " + str(numberOfSubsets) + "\n" +
@@ -316,6 +323,7 @@ def OSEM_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att_s
             
     output = recFileName + "_" + str(scannerParams.get("numberOfIterations")) + ".hv"
     output = tools.anything_to_hdr_convert(output,log_file)
+    output = tools.resampleXYvoxelSizes(output, xyVoxelSize, log_file)
 
     return output
 

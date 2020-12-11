@@ -269,6 +269,21 @@ def OSEM_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att_s
         scatt_corr_str = ("additive sinogram := " + additive_sino_stir + "\n\n")
     else:
         scatt_corr_str = ""
+        
+    if scannerParams.get("inter_iteration_filter")==1: #will apply inter-iteration filter
+        inter_iter_filter_str=(
+            "inter-iteration filter subiteration interval:= " + scannerParams.get("subiteration_interval") +"\n" +
+            "inter-iteration filter type := Separable Cartesian Metz \n" +
+            "  Separable Cartesian Metz Filter Parameters := \n" +
+            "  x-dir filter FWHM (in mm):= " + scannerParams.get("x_dir_filter_FWHM")+ "\n" +
+            "  y-dir filter FWHM (in mm):= " + scannerParams.get("y_dir_filter_FWHM")+ "\n" +
+            "  z-dir filter FWHM (in mm):= " + scannerParams.get("z_dir_filter_FWHM")+ "\n" +
+            "  x-dir filter Metz power:= 0.0 \n" +
+            "  y-dir filter Metz power:= 0.0 \n" +
+            "  z-dir filter Metz power:= 0.0 \n" +
+            "END Separable Cartesian Metz Filter Parameters := \n\n" )
+    else:
+        inter_iter_filter_str= ""
 
     recFileName = join(output_dir,"rec_OSEM3D")    
     
@@ -312,6 +327,7 @@ def OSEM_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att_s
             "number of subiterations := " + str(numberOfIterations) + "\n" +
             "save estimates at subiteration intervals := " + str(savingInterval) + "\n\n" +
             "enforce initial positivity condition:=0 \n\n" +
+            inter_iter_filter_str +
             "output filename prefix := " + recFileName + "\n\n" +
             "END := \n" 
             )

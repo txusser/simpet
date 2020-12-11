@@ -40,6 +40,11 @@ analytic_randoms_corr_factor: 0.2     # 0.15 WILL REMOVE 85% of scatter.0 will r
 stir_randoms_corr_smoothing: 0       # Will include smoothed SimSET randoms in the additive_sinogram.
 
 recons_type: "OSEM"
+inter_iteration_filter: 0
+subiteration_interval: 
+x_dir_filter_FWHM:  # in mm
+y_dir_filter_FWHM:  # in mm
+z_dir_filter_FWHM:  # in mm
 
 psf_value: 0 #1.125
 add_noise: 0

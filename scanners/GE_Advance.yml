@@ -24,7 +24,7 @@ max_segment: 17             # Maximum Ring difference on the reconstruction
 zoomFactor: 2            # Zoom factor in x and y
 xyOutputSize: 128
 zOutputSize: 35
-numberOfSubsets: 14          # Number of subsets
+numberOfSubsets: 16          # Number of subsets
 numberOfIterations: 56      # Number of iterations
 savingInterval: 28           # The interval that we want to save intermediate subiterations images
 # Attenuation correction 
@@ -39,7 +39,7 @@ stir_scatt_simulation:      0      # Will calculate scatter with STIR scatter si
 analytic_randoms_corr_factor: 0.2     # 0.15 WILL REMOVE 85% of scatter.0 will remove randoms
 stir_randoms_corr_smoothing: 0       # Will include smoothed SimSET randoms in the additive_sinogram.
 
-recons_type: "OSEM"
+recons_type: "OSEM2D"
 # Inter-iteration filter
 inter_iteration_filter: 0
 subiteration_interval: 

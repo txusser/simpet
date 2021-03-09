@@ -406,8 +406,11 @@ class SimSET_Reconstruction(object):
             elif recons_algorithm == 'FBP3D':
                 reconsFile_hdr = stir_tools.FBP3D_recons(self.config ,self.scanner, sinogram_stir, self.output_dir, self.log_file)
 
-            elif recons_algorithm == 'OSEM':
-                reconsFile_hdr = stir_tools.OSEM_recons(self.config ,self.scanner, sinogram_stir, additive_sino_stir, att_stir, self.output_dir, self.log_file)
+            elif recons_algorithm == 'OSEM2D':
+                reconsFile_hdr = stir_tools.OSEM2D_recons(self.config ,self.scanner, sinogram_stir, additive_sino_stir, att_stir, self.output_dir, self.log_file)
+                
+            elif recons_algorithm == 'OSEM3D':
+                reconsFile_hdr = stir_tools.OSEM3D_recons(self.config ,self.scanner, sinogram_stir, additive_sino_stir, att_stir, self.output_dir, self.log_file)
         
         
             if exists(reconsFile_hdr):

@@ -233,7 +233,151 @@ def FBP3D_recons(config,scannerParams, sinograms_stir, output_dir, log_file):
 
     return output
 
-def OSEM_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att_stir, output_dir, log_file):
+def FORE_rebin(config, sinograms_stir, maxSegment, output_dir):
+    
+    stir_dir = config.get("dir_stir")
+    rebin = join(stir_dir,'bin','rebin_projdata')
+    paramsFile = join(output_dir,"fore.par")
+    sinoFileName = join(output_dir,"fore_sinograms") 
+    new_file = open(paramsFile, "w")
+      
+    new_file.write(
+            "Rebin projdata Parameters  := \n" + 
+            " rebinning type := FORE \n" +
+            "  FORE Parameters := \n" +
+            "   input file := " + sinograms_stir + "\n" +
+            "   output filename prefix := " + sinoFileName + "\n" +
+            "   Smallest angular frequency := 20 \n" +
+            "   Smallest transaxial frequency := 20 \n" +
+            "   Index for consistency := 20 \n" +
+            "   Delta max for small omega := 10 \n\n" +
+            "   maximum absolute segment number to process := " +str(maxSegment)+ "\n" +
+            "   FORE debug level := 0 \n" +
+            "  End FORE Parameters :=  \n" +
+            "END := \n" 
+            )
+
+    new_file.close()
+
+    command = '%s %s >> %s' % (rebin, paramsFile, log_file)
+    tools.osrun(command, log_file) 
+    
+    return sinoFileName
+
+def OSEM2D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att_stir, output_dir, log_file):
+        
+    stir_dir = config.get("dir_stir")
+    recons = join(stir_dir,'bin','OSMAPOSL')
+
+    #max_segment = scannerParams.get("max_segment")
+    maxSegment = scannerParams.get("num_rings") - 1
+    sinoFileName = FORE_rebin(config, sinograms_stir, maxSegment, output_dir)
+    
+    zoom = scannerParams.get("zoomFactor")
+    xyOutputSize = scannerParams.get("xyOutputSize")
+    zOutputSize =scannerParams.get("zOutputSize")
+    numberOfSubsets = scannerParams.get("numberOfSubsets")
+    numberOfIterations = scannerParams.get("numberOfIterations")
+    savingInterval = scannerParams.get("savingInterval")
+    
+    scan_radius = scannerParams.get("scanner_radius")
+    td_bins = scannerParams.get("num_td_bins")
+    bin_size = (2*scan_radius)/float(td_bins)
+    xyVoxelSize = round(10*(bin_size/zoom),2) #in mm
+    zoom_aux=1
+    xyOutputSize_aux=round(xyOutputSize/zoom)
+
+    cesga = config.get("cesga")
+    cesga_max_time = config.get("cesga_max_time")
+    
+    if scannerParams.get("analytical_att_correction") == 1:
+        att_corr_str = ""
+    elif scannerParams.get("stir_recons_att_corr")==1:
+        att_corr_str = (
+        "Bin Normalisation type := From ProjData \n" + 
+        "Bin Normalisation From ProjData := \n" +
+        "normalisation projdata filename:= "+att_stir + "\n"+
+        "End Bin Normalisation From ProjData:= \n")        
+                        
+    if scannerParams.get("stir_scatt_corr_smoothing") ==1:# Will use smoothed SimSET scatter as additive_sinogram.
+        scatt_corr_str = ("additive sinogram := " + additive_sino_stir + "\n\n")
+    else:
+        scatt_corr_str = ""
+        
+    if scannerParams.get("inter_iteration_filter")==1: #will apply inter-iteration filter
+        inter_iter_filter_str=(
+            "inter-iteration filter subiteration interval:= " + scannerParams.get("subiteration_interval") +"\n" +
+            "inter-iteration filter type := Separable Cartesian Metz \n" +
+            "  Separable Cartesian Metz Filter Parameters := \n" +
+            "  x-dir filter FWHM (in mm):= " + scannerParams.get("x_dir_filter_FWHM")+ "\n" +
+            "  y-dir filter FWHM (in mm):= " + scannerParams.get("y_dir_filter_FWHM")+ "\n" +
+            "  z-dir filter FWHM (in mm):= " + scannerParams.get("z_dir_filter_FWHM")+ "\n" +
+            "  x-dir filter Metz power:= 0.0 \n" +
+            "  y-dir filter Metz power:= 0.0 \n" +
+            "  z-dir filter Metz power:= 0.0 \n" +
+            "END Separable Cartesian Metz Filter Parameters := \n\n" )
+    else:
+        inter_iter_filter_str= ""
+
+    recFileName = join(output_dir,"rec_OSEM2D")    
+    
+    paramsFile = join(output_dir,"ParamsOSEM2D.par")
+    new_file = open(paramsFile, "w")
+      
+    new_file.write(
+            "OSMAPOSLParameters  :=\n\n" + 
+            "objective function type := PoissonLogLikelihoodWithLinearModelForMeanAndProjData\n" +
+            "PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters := \n\n" +
+            "input file := " + sinoFileName + "\n" +
+            "maximum absolute segment number to process := 0 \n" +
+            "zero end planes of segment 0 := 0 \n" +
+            "sensitivity filename := sens.v \n" +
+            "recompute sensitivity := 1 \n" +
+            "use subset sensitivities := 0 \n\n" +
+            "projector pair type := Matrix \n" +
+            "Projector Pair Using Matrix Parameters := \n" +
+            "Matrix type := Ray Tracing \n" +
+            "Ray tracing matrix parameters := \n" +
+            "number of rays in tangential direction to trace for each bin:= 5 \n" +
+            "End Ray tracing matrix parameters := \n" +
+            "End Projector Pair Using Matrix Parameters := \n\n" +
+            att_corr_str +
+            "prior type := FilterRootPrior \n" +
+            "FilterRootPrior Parameters := \n" +
+            "penalisation factor := 0. \n" +
+            "Filter type := Median \n" +
+            "Median Filter Parameters := \n" +
+            "mask radius x := 1 \n" +
+            "mask radius y := 1 \n" +
+            "mask radius z := 1 \n" +
+            "End Median Filter Parameters:= \n" +
+            "END FilterRootPrior Parameters := \n\n" +
+            scatt_corr_str +
+            "zoom := " + str(zoom_aux) + "\n" +
+            "xy output image size (in pixels) := " + str(xyOutputSize_aux) + "\n" 
+            "Z output image size (in pixels) := " + str(zOutputSize) + "\n\n" +
+            "end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters := \n\n" +
+            "number of subsets := " + str(numberOfSubsets) + "\n" +
+            "number of subiterations := " + str(numberOfIterations) + "\n" +
+            "save estimates at subiteration intervals := " + str(savingInterval) + "\n\n" +
+            "enforce initial positivity condition:=0 \n\n" +
+            inter_iter_filter_str +
+            "output filename prefix := " + recFileName + "\n\n" +
+            "END := \n" 
+            )
+
+    new_file.close()
+
+    command = '%s %s >> %s' % (recons, paramsFile, log_file)
+    tools.osrun(command, log_file)        
+            
+    output = recFileName + "_" + str(scannerParams.get("numberOfIterations")) + ".hv"
+    output = tools.anything_to_hdr_convert(output,log_file)
+    output = tools.resampleXYvoxelSizes(output, xyVoxelSize, log_file)
+
+    return output
+
+def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att_stir, output_dir, log_file):
         
     stir_dir = config.get("dir_stir")
     recons = join(stir_dir,'bin','OSMAPOSL')
@@ -287,7 +431,7 @@ def OSEM_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att_s
 
     recFileName = join(output_dir,"rec_OSEM3D")    
     
-    paramsFile = join(output_dir,"ParamsOSEM.par")
+    paramsFile = join(output_dir,"ParamsOSEM3D.par")
     new_file = open(paramsFile, "w")
       
     new_file.write(

@@ -6,8 +6,8 @@ scanner_radius: 46.35         # Scanner radius
 num_rings:  18                # Number of rings
 axial_fov: 15.2               # Axial FOV max (cm) 
 # Crystal Description
-z_crystal_size: 0.4           # Axial Crystal size (cm)
-transaxial_crystal_size: 0.81 # Transaxial Crystal size (cm).
+z_crystal_size: 0.81          # Axial Crystal size (cm)
+transaxial_crystal_size: 0.4 # Transaxial Crystal size (cm).
 crystal_thickness: 3          # Crystal Thickness (cm)
 energy_resolution: 20          # Energy resolution (%)
 #timing_resolution:            # nanoseconds. WARNING: TOF_resolution/sqrt(2)

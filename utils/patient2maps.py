@@ -59,7 +59,7 @@ class patient2maps(object):
         """
         # Starts login
         message = 'I am normalizing the MRI....'
-        print message
+        print(message)
         # Runs SPM12 for new individual norm_spm files
         mfile = join(self.analysis_path, "mynorm_spm12.m")
         template_image = rsc.get_rsc("tpm_file", "image")
@@ -81,7 +81,7 @@ class patient2maps(object):
         """
         # Starts login
         message = 'I am segmenting the MRI...'
-        print message
+        print(message)
 
         template_image = rsc.get_rsc("tpm_file", "image")
 
@@ -93,7 +93,7 @@ class patient2maps(object):
         Runs Atlas-based Quantification to all ROIs and generates maps...
         """
         message = 'I will generate the ACT and ATT maps for %s simulation...' % self.mode
-        print message
+        print(message)
 
         # Getting the necesary resources
         cambia_formato = rsc.get_rsc('change_format', 'fruitcake')

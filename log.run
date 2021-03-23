@@ -1,0 +1,20 @@
+
+Inicial: /mnt/d/Work/SIMPET/SimPET_Radiomics/Data/TEST_CT/maps/att_segment.hdr en fl
+Final: /mnt/d/Work/SIMPET/SimPET_Radiomics/Data/TEST_CT/maps/att_simset.hdr en 1B
+
+
+###########################################################
+TIME: 2021-03-18 13:40:12.158196
+
+INFO: /home/jesus/repositories/simpet/include/fruitcake/bin/cambia_formato_hdr /mnt/d/Work/SIMPET/SimPET_Radiomics/Data/TEST_CT/maps/att_segment.hdr /mnt/d/Work/SIMPET/SimPET_Radiomics/Data/TEST_CT/maps/att_simset.hdr 1B >> log.run
+###########################################################
+
+Inicial: /mnt/d/Work/SIMPET/SimPET_Radiomics/Data/TEST_CT/maps/act_simset.hdr en fl
+Final: /mnt/d/Work/SIMPET/SimPET_Radiomics/Data/TEST_CT/maps/act_simset.hdr en 1B
+
+
+###########################################################
+TIME: 2021-03-18 13:45:02.667522
+
+INFO: /home/jesus/repositories/simpet/include/fruitcake/bin/cambia_formato_hdr /mnt/d/Work/SIMPET/SimPET_Radiomics/Data/TEST_CT/maps/act_simset.hdr /mnt/d/Work/SIMPET/SimPET_Radiomics/Data/TEST_CT/maps/act_simset.hdr 1B >> log.run
+###########################################################

@@ -1,0 +1,20 @@
+
+EXE: wget "https://onedrive.live.com/download?cid=82E5E66193A2F2B1&resid=82E5E66193A2F2B1%21145315&authkey=ABW_h9VIwqAO_f8"
+EXE: mv "download?cid=82E5E66193A2F2B1&resid=82E5E66193A2F2B1!145315&authkey=ABW_h9VIwqAO_f8" resources.tar.gz
+EXE: tar -xvf resources.tar.gz
+EXE: wget "https://onedrive.live.com/download?cid=82E5E66193A2F2B1&resid=82E5E66193A2F2B1%21145315&authkey=ABW_h9VIwqAO_f8"
+EXE: mv "download?cid=82E5E66193A2F2B1&resid=82E5E66193A2F2B1!145315&authkey=ABW_h9VIwqAO_f8" resources.tar.gz
+EXE: tar -xvf resources.tar.gz
+EXE: sudo apt install python3 -y -q
+EXE: sudo apt install python3-pip -y -q
+EXE: sudo apt install libboost-dev libboost-all-dev -y -q
+EXE: sudo apt install libpcre3 libpcre3-dev -y -q
+EXE: sudo apt install libncurses-dev -y -q
+EXE: sudo pip3 install PyYAML
+EXE: sudo apt install python3-numpy -y -q
+EXE: sudo apt install python3-scipy -y -q
+EXE: sudo apt install python3-nibabel -y -q
+EXE: sudo apt install python3-matplotlib -y -q
+EXE: sudo apt install python3-pandas -y -q
+EXE: sudo apt install cmake -y -q
+EXE: sudo apt install swig -y -q

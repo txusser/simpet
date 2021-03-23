@@ -617,7 +617,6 @@ def convert_simset_sino_to_stir(input_img, output=False):
   
     nib.save(stir_img,output)
     
-    
 def resampleXYvoxelSizes(image_hdr, xyVoxelSize, log_file):
     img = nib.load(image_hdr)
     z_VoxelSize =img.header['pixdim'][3]

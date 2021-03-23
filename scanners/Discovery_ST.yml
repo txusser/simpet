@@ -9,7 +9,7 @@ axial_fov: 15.7               # Axial FOV max (cm)
 z_crystal_size: 0.63           # Axial Crystal size (cm)
 transaxial_crystal_size: 0.63 # Transaxial Crystal size (cm).
 crystal_thickness: 3          # Crystal Thickness (cm)
-energy_resolution: 16          # Energy resolution (%)
+energy_resolution: 17          # Energy resolution (%)
 #timing_resolution:            # nanoseconds. WARNING: TOF_resolution/sqrt(2)
 # Binning parameters
 num_aa_bins:  210            # Number of views (Numero de detectores por anillo divido por 2)

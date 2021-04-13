@@ -47,6 +47,9 @@ class SimSET_Simulation(object):
 
         processes = []
 
+        print("Output directory: %s" % self.output_dir)
+        print("Center slice: %s" % self.center_slice)
+
         for division in range(self.divisions):
 
             division_dir = join(self.output_dir, "division_" + str(division))

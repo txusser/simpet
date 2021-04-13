@@ -21,8 +21,8 @@ max_energy_window:  675
 coincidence_window: 11.7        # nanoseconds. Used only for random simulation (SimSET)
 # Reconstruction
 max_segment: 23             # Maximum Ring difference on the reconstruction
-zoomFactor: 1.55            # Zoom factor in x and y
-xyOutputSize: 128
+zoomFactor: 1               # Zoom factor in x and y
+xyOutputSize: 256
 zOutputSize: 47
 numberOfSubsets: 7          # Number of subsets
 numberOfIterations: 32      # Number of iterations
@@ -43,9 +43,9 @@ recons_type: "OSEM3D"
 # Inter-iteration filter
 inter_iteration_filter: 1
 subiteration_interval: 4
-x_dir_filter_FWHM: 1.5 # in mm
-y_dir_filter_FWHM: 1.5 # in mm
-z_dir_filter_FWHM: 3 # in mm
+x_dir_filter_FWHM: 0 # in mm
+y_dir_filter_FWHM: 0 # in mm
+z_dir_filter_FWHM: 0 # in mm
 
 psf_value: 0 #1.125
 add_noise: 0

@@ -618,6 +618,7 @@ def convert_simset_sino_to_stir(input_img, output=False):
     nib.save(stir_img,output)
     
 def resampleXYvoxelSizes(image_hdr, xyVoxelSize, log_file):
+
     img = nib.load(image_hdr)
     z_VoxelSize =img.header['pixdim'][3]
     target_affine = np.diag((xyVoxelSize,xyVoxelSize,z_VoxelSize))
@@ -625,3 +626,20 @@ def resampleXYvoxelSizes(image_hdr, xyVoxelSize, log_file):
     nib.save(res_img,image_hdr)
     
     return image_hdr
+
+def fix_4d_data(data):
+    
+    shape = data.shape
+
+    if len(shape) == 3:
+        return data
+    else:
+        return data[:,:,:,0]
+
+def remove_neg_nan(data):
+    
+    indx = np.where(data<0)
+    data[indx] = 0
+    indx = np.where(np.isnan(data))
+    data[indx] = 0
+

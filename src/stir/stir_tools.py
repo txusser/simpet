@@ -416,12 +416,12 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
         
     if scannerParams.get("inter_iteration_filter")==1: #will apply inter-iteration filter
         inter_iter_filter_str=(
-            "inter-iteration filter subiteration interval:= " + scannerParams.get("subiteration_interval") +"\n" +
+            "inter-iteration filter subiteration interval:= " + str(scannerParams.get("subiteration_interval")) +"\n" +
             "inter-iteration filter type := Separable Cartesian Metz \n" +
             "  Separable Cartesian Metz Filter Parameters := \n" +
-            "  x-dir filter FWHM (in mm):= " + scannerParams.get("x_dir_filter_FWHM")+ "\n" +
-            "  y-dir filter FWHM (in mm):= " + scannerParams.get("y_dir_filter_FWHM")+ "\n" +
-            "  z-dir filter FWHM (in mm):= " + scannerParams.get("z_dir_filter_FWHM")+ "\n" +
+            "  x-dir filter FWHM (in mm):= " + str(scannerParams.get("x_dir_filter_FWHM")) + "\n" +
+            "  y-dir filter FWHM (in mm):= " + str(scannerParams.get("y_dir_filter_FWHM")) + "\n" +
+            "  z-dir filter FWHM (in mm):= " + str(scannerParams.get("z_dir_filter_FWHM")) + "\n" +
             "  x-dir filter Metz power:= 0.0 \n" +
             "  y-dir filter Metz power:= 0.0 \n" +
             "  z-dir filter Metz power:= 0.0 \n" +

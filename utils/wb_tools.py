@@ -172,6 +172,8 @@ class wbpetct2maps(object):
         act_map = np.zeros_like(ct_data)
 
         act_map[indx] = (act_map_1[indx]+act_map_2[indx]+pet_data[indx])/3
+        #act_map[indx] = (act_map_1[indx]+act_map_2[indx])/3
+
 
         act_map = gaussian_filter(act_map, 1)
 
@@ -293,8 +295,8 @@ def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output):
     simpet_data = simpet_data*scaling_factor
 
     # Now we do a smoothing of both data to avoid multiply noise and perform the division
-    simpet_data = gaussian_filter(simpet_data, 3)
-    origpet_data = gaussian_filter(origpet_data, 3)
+    simpet_data = median_filter(simpet_data, 5)
+    origpet_data = median_filter(origpet_data, 5)
 
     div_out = join(output_dir,"smooth_sim.hdr")
     smoothpet_img =nib.AnalyzeImage(simpet_data, simpet.affine, simpet.header)
@@ -313,11 +315,17 @@ def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output):
     indx = np.where(division<=0)
     division[indx] = 0
 
+    division = median_filter(division, 10)
+
     mask_data = np.zeros_like(origpet_data)
     indx = np.where(origpet_data>0.001*np.nanmax(origpet_data))
     mask_data[indx] = 1
     division = division*mask_data
 
+    mask_data_2 = np.zeros_like(simpet_data)
+    indx = np.where(simpet_data<0.001*np.nanmax(simpet_data))
+    division[indx] = 1
+    
 
     div_out = join(output_dir,"division.hdr")
     div_img =nib.AnalyzeImage(division, simpet.affine, simpet.header)
@@ -326,7 +334,6 @@ def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output):
     # We update the act
     updated_act = division*act_data
     #updated_act[indx] = act_data[indx]
-
 
     print(np.nanmax(updated_act))
 

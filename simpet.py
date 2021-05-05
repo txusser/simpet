@@ -256,7 +256,7 @@ class wholebody_simulation(object):
 
         for cs in beds_cs:
 
-            recons_dir = join(output_dir,"Bed_cs_%s" % cs,"%s_sim_%s" % (self.sim_type,self.scanner_model),recons_algorithm)
+            recons_dir = join(output_dir,"Bed_cs_%s" % cs,"%s_Sim_%s" % (self.sim_type,self.scanner_model),recons_algorithm)
             recons_file = join(recons_dir,'rec_%s_%s.hdr' % (recons_algorithm,recons_it))
             recons_beds.append(recons_file)
 
@@ -358,7 +358,7 @@ class wholebody_viset(object):
 
             print("Simulating wholebody image for iteration %s of %s" % (str(it),number_of_its))
             it_sim = wholebody_simulation(self.param_file,config_file=self.config_file, params=self.params)
-            it_sim.run()
+            #it_sim.run()
 
             recons_algorithm = self.scanner.get('recons_type')
             recons_it = self.scanner.get('numberOfIterations')

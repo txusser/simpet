@@ -230,26 +230,30 @@ def install_soap():
 def download_resources():
 
     print('Downloading resources from Onedrive...')
-    icom = 'wget "https://onedrive.live.com/download?cid=82E5E66193A2F2B1&resid=82E5E66193A2F2B1%21145315&authkey=ABW_h9VIwqAO_f8"'
+    icom = 'wget "http://gofile.me/5v8xA/xza6oaaHV"'
     rsystem(icom)
     print('Moving and extracting resources...')
-    icom = 'mv "download?cid=82E5E66193A2F2B1&resid=82E5E66193A2F2B1!145315&authkey=ABW_h9VIwqAO_f8" resources.tar.gz'
+    icom = 'mv "xza6oaaHV" resources.tar.gz'
     rsystem(icom)
     icom = 'tar -xvf resources.tar.gz'
     rsystem(icom)
 
+
+install_soap()
+#download_resources()
+
 # Fruitcake is not needed right now
 # # Add fruitcake paths to bashrc... This can be a problem...
-# fruitcake_binpath = 'echo "export PATH=%s/fruitcake/bin:$PATH" >> ~/.bashrc' % dest_dir
-# rsystem(fruitcake_binpath)
+#fruitcake_binpath = 'echo "export PATH=%s/fruitcake/bin:$PATH" >> ~/.bashrc' % dest_dir
+#rsystem(fruitcake_binpath)
 
-# fruitcake_ldpath = 'echo "export LD_LIBRARY_PATH=%s/fruitcake/book/lib:$LD_LIBRARY_PATH" >> ~/.bashrc' % dest_dir
-# rsystem(fruitcake_ldpath)
+#fruitcake_ldpath = 'echo "export LD_LIBRARY_PATH=%s/fruitcake/book/lib:$LD_LIBRARY_PATH" >> ~/.bashrc' % dest_dir
+#rsystem(fruitcake_ldpath)
 
-# rsystem('source ~/.bashrc')
+#rsystem('source ~/.bashrc')
 
 simpet_dir = os.getcwd()
-download_resources()
+
 
 install_soap()
 
@@ -265,6 +269,5 @@ install_stir(stir_dir, simset_dir, log_file)
 
 os.chdir(simpet_dir)
 update_config(stir_dir,simset_dir)
-
 
 

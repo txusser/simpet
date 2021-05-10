@@ -122,12 +122,15 @@ def make_simset_phg(config, output_file, simulation_dir, act,
         f.write("\n\n# OBJECT GEOMETRY VALUES\n")
         f.write("\nNUM_ELEMENTS_IN_LIST   object = %s" % str(nslices+1))
         f.write("\n		INT		num_slices = %s" % str(nslices))
+        
         for i in range(nslices):
+            zMin_value=round(zMin + i*dz,2)
+            zMax_value=round(zMin +(i+1)*dz,2)
             f.write(
                 "\n		NUM_ELEMENTS_IN_LIST	slice = 9 " +
                 "\n		INT	slice_number  = %s" % str(i) +
-                "\n		REAL	zMin = %s" % str(zMin + i*dz) +
-                "\n		REAL	zMax = %s" % str(zMin + (i+1)*dz) +
+                "\n		REAL	zMin = %s" % str(zMin_value) +
+                "\n		REAL	zMax = %s" % str(zMax_value) +
                 "\n		REAL	xMin = %s" % str(xMin) +
                 "\n		REAL	xMax = %s" % str(xMax) +
                 "\n		REAL	yMin = %s" % str(yMin) +

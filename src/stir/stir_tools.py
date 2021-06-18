@@ -184,7 +184,7 @@ def FBP2D_recons(config,scannerParams, sinograms_stir, output_dir, log_file):
     tools.osrun(command, log_file)        
             
     output = recFileName + ".hv"
-    output = tools.anything_to_hdr_convert((output))
+    output = tools.anything_to_hdr_convert(output, log_file)
 
     return output
 
@@ -233,7 +233,7 @@ def FBP3D_recons(config,scannerParams, sinograms_stir, output_dir, log_file):
 
     return output
 
-def FORE_rebin(config, sinograms_stir, maxSegment, output_dir):
+def FORE_rebin(config, sinograms_stir, maxSegment, output_dir, log_file):
     
     stir_dir = config.get("dir_stir")
     rebin = join(stir_dir,'bin','rebin_projdata')
@@ -262,7 +262,7 @@ def FORE_rebin(config, sinograms_stir, maxSegment, output_dir):
     command = '%s %s >> %s' % (rebin, paramsFile, log_file)
     tools.osrun(command, log_file) 
     
-    return sinoFileName
+    return sinoFileName+".hs"
 
 def OSEM2D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att_stir, output_dir, log_file):
         
@@ -271,7 +271,7 @@ def OSEM2D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
 
     #max_segment = scannerParams.get("max_segment")
     maxSegment = scannerParams.get("num_rings") - 1
-    sinoFileName = FORE_rebin(config, sinograms_stir, maxSegment, output_dir)
+    sinoFileName = FORE_rebin(config, sinograms_stir, maxSegment, output_dir, log_file)
     
     zoom = scannerParams.get("zoomFactor")
     xyOutputSize = scannerParams.get("xyOutputSize")
@@ -306,12 +306,12 @@ def OSEM2D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
         
     if scannerParams.get("inter_iteration_filter")==1: #will apply inter-iteration filter
         inter_iter_filter_str=(
-            "inter-iteration filter subiteration interval:= " + scannerParams.get("subiteration_interval") +"\n" +
+            "inter-iteration filter subiteration interval:= " + str(scannerParams.get("subiteration_interval")) +"\n" +
             "inter-iteration filter type := Separable Cartesian Metz \n" +
             "  Separable Cartesian Metz Filter Parameters := \n" +
-            "  x-dir filter FWHM (in mm):= " + scannerParams.get("x_dir_filter_FWHM")+ "\n" +
-            "  y-dir filter FWHM (in mm):= " + scannerParams.get("y_dir_filter_FWHM")+ "\n" +
-            "  z-dir filter FWHM (in mm):= " + scannerParams.get("z_dir_filter_FWHM")+ "\n" +
+            "  x-dir filter FWHM (in mm):= " + str(scannerParams.get("x_dir_filter_FWHM"))+ "\n" +
+            "  y-dir filter FWHM (in mm):= " + str(scannerParams.get("y_dir_filter_FWHM"))+ "\n" +
+            "  z-dir filter FWHM (in mm):= " + str(scannerParams.get("z_dir_filter_FWHM"))+ "\n" +
             "  x-dir filter Metz power:= 0.0 \n" +
             "  y-dir filter Metz power:= 0.0 \n" +
             "  z-dir filter Metz power:= 0.0 \n" +
@@ -400,28 +400,28 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
     cesga = config.get("cesga")
     cesga_max_time = config.get("cesga_max_time")
     
-    if scannerParams.get("analytical_att_correction") == 1:
-        att_corr_str = ""
-    elif scannerParams.get("stir_recons_att_corr")==1:
+    if scannerParams.get("stir_recons_att_corr")==1:
         att_corr_str = (
         "Bin Normalisation type := From ProjData \n" + 
         "Bin Normalisation From ProjData := \n" +
-        "normalisation projdata filename:= "+att_stir + "\n"+
-        "End Bin Normalisation From ProjData:= \n")        
+        "normalisation projdata filename:= "+ att_stir + "\n" +
+        "End Bin Normalisation From ProjData:= \n")   
+    else:
+        att_corr_str = ""
                         
-    if scannerParams.get("stir_scatt_corr_smoothing") ==1:# Will use smoothed SimSET scatter as additive_sinogram.
+    if scannerParams.get("stir_scatt_corr_smoothing") ==1: # Will use smoothed SimSET scatter as additive_sinogram.
         scatt_corr_str = ("additive sinogram := " + additive_sino_stir + "\n\n")
     else:
         scatt_corr_str = ""
         
     if scannerParams.get("inter_iteration_filter")==1: #will apply inter-iteration filter
         inter_iter_filter_str=(
-            "inter-iteration filter subiteration interval:= " + scannerParams.get("subiteration_interval") +"\n" +
+            "inter-iteration filter subiteration interval:= " + str(scannerParams.get("subiteration_interval")) +"\n" +
             "inter-iteration filter type := Separable Cartesian Metz \n" +
             "  Separable Cartesian Metz Filter Parameters := \n" +
-            "  x-dir filter FWHM (in mm):= " + scannerParams.get("x_dir_filter_FWHM")+ "\n" +
-            "  y-dir filter FWHM (in mm):= " + scannerParams.get("y_dir_filter_FWHM")+ "\n" +
-            "  z-dir filter FWHM (in mm):= " + scannerParams.get("z_dir_filter_FWHM")+ "\n" +
+            "  x-dir filter FWHM (in mm):= " + str(scannerParams.get("x_dir_filter_FWHM"))+ "\n" +
+            "  y-dir filter FWHM (in mm):= " + str(scannerParams.get("y_dir_filter_FWHM"))+ "\n" +
+            "  z-dir filter FWHM (in mm):= " + str(scannerParams.get("z_dir_filter_FWHM"))+ "\n" +
             "  x-dir filter Metz power:= 0.0 \n" +
             "  y-dir filter Metz power:= 0.0 \n" +
             "  z-dir filter Metz power:= 0.0 \n" +

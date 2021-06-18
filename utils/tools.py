@@ -407,6 +407,7 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     hdr1 = nib.AnalyzeHeader()
     hdr1.set_data_dtype(img.get_data_dtype())
     hdr1.set_data_shape(img.shape)
+    #hdr1.set_zooms(abs(np.diag(img.affine)))
     hdr1.set_zooms(abs(np.diag(img.affine))[0:3])
 
     analyze_img = nib.AnalyzeImage(data, hdr1.get_base_affine(), hdr1)

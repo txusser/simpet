@@ -21,16 +21,16 @@ max_energy_window:  675
 coincidence_window: 11.7        # nanoseconds. Used only for random simulation (SimSET)
 # Reconstruction
 max_segment: 23             # Maximum Ring difference on the reconstruction
-zoomFactor: 1.55            # Zoom factor in x and y
+zoomFactor: 0.55 #1.55            # Zoom factor in x and y
 xyOutputSize: 128
 zOutputSize: 47
 numberOfSubsets: 7          # Number of subsets
-numberOfIterations: 32      # Number of iterations
-savingInterval: 32           # The interval that we want to save intermediate subiterations images
+numberOfIterations: 32 #64 #32      # Number of iterations
+savingInterval: 8 #8 #32           # The interval that we want to save intermediate subiterations images
 # Attenuation correction 
 # (Don't set both, set what fits your scanner the best)
 analytical_att_correction: 0    # Performed by SimSET calcattenuation
-stir_recons_att_corr: 1        # Performed in STIR by entering the att image as a normalization map
+stir_recons_att_corr: 1 #1        # Performed in STIR by entering the att image as a normalization map
 # Scatter Correction
 analytic_scatt_corr_factor:  0.15      # 0.15 WILL REMOVE 85% of scatter.0 will remove scatter
 stir_scatt_corr_smoothing:   0      # Will use smoothed SimSET scatter as additive_sinogram.
@@ -41,10 +41,10 @@ stir_randoms_corr_smoothing: 0       # Will include smoothed SimSET randoms in t
 
 recons_type: "OSEM3D"
 inter_iteration_filter: 0
-subiteration_interval: 
-x_dir_filter_FWHM:  # in mm
-y_dir_filter_FWHM:  # in mm
-z_dir_filter_FWHM:  # in mm
+subiteration_interval: 4 
+x_dir_filter_FWHM: 1.5  # in mm
+y_dir_filter_FWHM: 1.5  # in mm
+z_dir_filter_FWHM: 3  # in mm
 
 psf_value: 0 #1.125
 add_noise: 0

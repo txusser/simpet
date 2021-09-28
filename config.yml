@@ -1,10 +1,10 @@
 # Directories to the necesary binaries
-dir_stir:  "/home/jsilva/Work/simpet/include/STIR/install"
-dir_simset:  "/home/jsilva/Work/simpet/include/SimSET/2.9.2"
+dir_stir:  "/run/media/jsilva/Work/repositories/simpet/include/STIR/install"
+dir_simset:  "/run/media/jsilva/Work/repositories/simpet/include/SimSET/2.9.2"
 matlab_mcr_path:  "/opt/MATLAB/MATLAB_Compiler_Runtime/v901/"
 spm_path:  "/home/jesus/Work/repositories/simpet/include/spm12"
-dir_data_path: "/home/jsilva/Work/simpet/Data"
-dir_results_path: "/home/jsilva/Work/simpet/Results"
+dir_data_path: False
+dir_results_path: False
 
 # If set to one you may see some prompts to prevent you to overwrite existing data
 interactive_mode: 0

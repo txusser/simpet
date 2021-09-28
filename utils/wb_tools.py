@@ -195,6 +195,7 @@ class wbpetct2maps(object):
 
 def calculate_center_slices(act_map,scanner,zmin,zmax,overlapping=0.1):
 
+    
     act_img = nib.load(act_map)
     z_voxsize = act_img.affine[2,2]
 

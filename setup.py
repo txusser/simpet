@@ -239,7 +239,7 @@ def download_resources():
     rsystem(icom)
 
 
-install_soap()
+#install_soap()
 #download_resources()
 
 # Fruitcake is not needed right now
@@ -255,17 +255,17 @@ install_soap()
 simpet_dir = os.getcwd()
 
 
-install_soap()
+#install_soap()
 
 if not exists(dest_dir):
     os.makedirs(dest_dir)
 os.chdir(dest_dir)
 
 simset_dir = join(dest_dir,"SimSET")
-install_simset(simset_dir, log_file)
+#install_simset(simset_dir, log_file)
 
 stir_dir = join(dest_dir,"STIR")
-install_stir(stir_dir, simset_dir, log_file)
+#install_stir(stir_dir, simset_dir, log_file)
 
 os.chdir(simpet_dir)
 update_config(stir_dir,simset_dir)

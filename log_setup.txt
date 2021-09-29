@@ -17,4 +17,4 @@ EXE: sudo apt install python3-nibabel -y -q
 EXE: sudo apt install python3-matplotlib -y -q
 EXE: sudo apt install python3-pandas -y -q
 EXE: sudo apt install cmake -y -q
-EXE: sudo apt install swig -y -q
+EXE: sudo apt install swig -y -qERROR executing: sudo apt install python3 -y -q 

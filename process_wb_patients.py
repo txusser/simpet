@@ -2,7 +2,7 @@ import os, sys
 from os.path import join,exists
 
 
-simpet_path = "/home/jsilva/Work/repositories/simpet"
+simpet_path = "/home/usc/mp/paf/JSilva/simpet"
 sys.path.insert(0,simpet_path)
 
 from simpet import wholebody_simulation
@@ -13,7 +13,7 @@ params_yml = join(simpet_path,'initialParams.yml')
 act_name = "ACT_map_5.hdr" # Note that for this to work the ACT and ATT should be named the same for all patients
 att_name = "ATT_map_5.hdr"
 
-maps_dir = join(simpet_path,'Data')
+maps_dir = join('/mnt/lustre/scratch/home/usc/mp/paf/SimPET','Data')
 maps_list = sorted(os.listdir(maps_dir))
 
 # Iterates over the directory to process all patients

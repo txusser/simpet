@@ -375,7 +375,7 @@ def process_weights(weights_file, output_dir, scanner, add_randoms = 0):
 
     output = join(output_dir,"trues.hdr")
     tools.create_analyze_from_imgdata(trues_file,output,nbins,nangles,nslices,1,1,1,"fl")
-    os.remove(trues_file)
+    #os.remove(trues_file)
 
     scatter_start = trues_end
     scatter_end = trues_end + block_size
@@ -402,7 +402,7 @@ def process_weights(weights_file, output_dir, scanner, add_randoms = 0):
 
         output = join(output_dir,"randoms.hdr")
         tools.create_analyze_from_imgdata(randoms_file,output,nbins,nangles,nslices,1,1,1,"fl")
-        os.remove(randoms_file)
+        #os.remove(randoms_file)
 
 def add_randoms(sim_dir, simset_dir, coincidence_window, rebin=True, log_file=False):
 

@@ -2,7 +2,7 @@
 sim_type: "SimSET"        # SimSET, STIR or GATE (only SimSET working)
 do_simulation: 1          # Set to 0 to reconstruction previous simulation
 do_reconstruction: 1      # Set to 0 to generate adq data only
-divisions: 20             # Number os subprocesses for parallel simulation
+divisions: 7             # Number os subprocesses for parallel simulation
 viset_iterations: 2
 
 # PET system (Vereos, Siemens_mCT, Discovery_ST, Discovery_STE, GE_Advance)
@@ -12,8 +12,8 @@ scanner: "Discovery_ST"
 patient_dirname: "2011663"
 pet_image: "PET.hdr"
 ct_image: "CT.hdr"
-act_map: "ACT_map_5.hdr"
-att_map: "ATT_map_5.hdr"
+act_map: "ACT_map_5_new.hdr"
+att_map: "ATT_map_5_new.hdr"
 output_dir: "2011663"         #Name of the Results Dir
 
 #Config your phantom

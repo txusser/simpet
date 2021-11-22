@@ -28,7 +28,7 @@ xyOutputSize: 128
 zOutputSize: 47
 numberOfSubsets: 7          # Number of subsets
 numberOfIterations: 32      # Number of iterations
-savingInterval: 32           # The interval that we want to save intermediate subiterations images
+savingInterval: 8           # The interval that we want to save intermediate subiterations images
 # Attenuation correction 
 # (Don't set both, set what fits your scanner the best)
 analytical_att_correction: 0    # Performed by SimSET calcattenuation
@@ -49,6 +49,6 @@ x_dir_filter_FWHM: 1.5 # in mm
 y_dir_filter_FWHM: 1.5 # in mm
 z_dir_filter_FWHM: 3 # in mm
 
-psf_value: 0 #1.125
+psf_value: 1.125
 add_noise: 0
 

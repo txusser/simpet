@@ -320,7 +320,7 @@ def OSEM2D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
         inter_iter_filter_str= ""
 
     recFileName = join(output_dir,"rec_OSEM2D")    
-    
+    sensitFileName = join(output_dir,"sens.v")
     paramsFile = join(output_dir,"ParamsOSEM2D.par")
     new_file = open(paramsFile, "w")
       
@@ -331,7 +331,7 @@ def OSEM2D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
             "input file := " + sinoFileName + "\n" +
             "maximum absolute segment number to process := 0 \n" +
             "zero end planes of segment 0 := 0 \n" +
-            "sensitivity filename := sens.v \n" +
+            "sensitivity filename := " + sensitFileName + "\n" +
             "recompute sensitivity := 1 \n" +
             "use subset sensitivities := 0 \n\n" +
             "projector pair type := Matrix \n" +
@@ -430,7 +430,7 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
         inter_iter_filter_str= ""
 
     recFileName = join(output_dir,"rec_OSEM3D")    
-    
+    sensitFileName = join(output_dir,"sens.v")
     paramsFile = join(output_dir,"ParamsOSEM3D.par")
     new_file = open(paramsFile, "w")
       
@@ -441,7 +441,7 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
             "input file := " + sinograms_stir + "\n" +
             "maximum absolute segment number to process := " + str(max_segment)+ "\n" +
             "zero end planes of segment 0 := 0 \n" +
-            "sensitivity filename := sens.v \n" +
+            "sensitivity filename := " + sensitFileName + "\n" +
             "recompute sensitivity := 1 \n" +
             "use subset sensitivities := 0 \n\n" +
             "projector pair type := Matrix \n" +

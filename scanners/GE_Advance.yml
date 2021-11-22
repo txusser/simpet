@@ -1,4 +1,6 @@
 scanner_name: "GE Advance"
+# Scanner Model (simple_pet, cylindrical)
+model_type: "simple_pet"
 # Scanner Description
 simset_material: 10           # BGO
 average_doi: 0.84              # ¿0.84? cm
@@ -18,7 +20,7 @@ num_td_bins:  281            # Number of bins
 min_energy_window:  375
 max_energy_window:  675
 # Used to add randoms to the simulated data
-coincidence_window: 12.5        # nanoseconds. Used only for random simulation (SimSET)
+coincidence_window: 12.5     # nanoseconds. Used only for random simulation (SimSET)
 # Reconstruction
 max_segment: 17             # Maximum Ring difference on the reconstruction
 zoomFactor: 2            # Zoom factor in x and y
@@ -41,7 +43,7 @@ stir_randoms_corr_smoothing: 0       # Will include smoothed SimSET randoms in t
 
 recons_type: "OSEM2D"
 # Inter-iteration filter
-inter_iteration_filter: 0
+inter_iteration_filter: 0 #1 for activate, 0 for deactivate
 subiteration_interval: 
 x_dir_filter_FWHM:  # in mm
 y_dir_filter_FWHM:  # in mm

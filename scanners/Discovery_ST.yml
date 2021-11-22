@@ -1,4 +1,6 @@
 scanner_name: "GE Discovery ST"
+# Scanner Model (simple_pet, cylindrical)
+model_type: "simple_pet"
 # Scanner Description
 simset_material: 10           # BGO
 average_doi: 0.84              # ¿0.84? cm
@@ -41,7 +43,7 @@ stir_randoms_corr_smoothing: 0       # Will include smoothed SimSET randoms in t
 
 recons_type: "OSEM3D"
 # Inter-iteration filter
-inter_iteration_filter: 1
+inter_iteration_filter: 0 #1 for activate, 0 for deactivate
 subiteration_interval: 4
 x_dir_filter_FWHM: 1.5 # in mm
 y_dir_filter_FWHM: 1.5 # in mm

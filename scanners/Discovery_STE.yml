@@ -1,4 +1,6 @@
 scanner_name: "GE Discovery STE"
+# Scanner Model (simple_pet, cylindrical)
+model_type: "simple_pet"
 # Scanner Description
 simset_material: 10           # BGO
 average_doi: 0.84              # ¿0.84? cm
@@ -40,7 +42,7 @@ analytic_randoms_corr_factor: 0.2     # 0.15 WILL REMOVE 85% of scatter.0 will r
 stir_randoms_corr_smoothing: 0       # Will include smoothed SimSET randoms in the additive_sinogram.
 
 recons_type: "OSEM3D"
-inter_iteration_filter: 0
+inter_iteration_filter: 0 #1 for activate, 0 for deactivate
 subiteration_interval: 4 
 x_dir_filter_FWHM: 1.5  # in mm
 y_dir_filter_FWHM: 1.5  # in mm

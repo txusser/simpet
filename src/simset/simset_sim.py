@@ -167,6 +167,7 @@ class SimSET_Simulation(object):
 
         log_file = join(sim_dir, "logging.log")
         # Establishing necessary parameters
+        model_type = self.scanner.get("model_type")
         scanner_radius = self.scanner.get("scanner_radius")
         scanner_axial_fov = self.scanner.get("axial_fov")
 
@@ -191,7 +192,10 @@ class SimSET_Simulation(object):
                                      sim_photons, sim_time, add_randoms, self.phglistmode, sampling, log_file=log_file)
 
         my_det_file = join(sim_dir,"det.rec")
-        simset_tools.make_simset_cyl_det(self.scanner, my_det_file, sim_dir, det_listmode, log_file=log_file)
+        if model_type=="simple_pet":
+            simset_tools.make_simset_simp_det(self.scanner, my_det_file, sim_dir, det_listmode, log_file=log_file)
+        elif model_type=="cylindrical":
+            simset_tools.make_simset_cyl_det(self.scanner, my_det_file, sim_dir, det_listmode, log_file=log_file)
 
         my_bin_file = join(sim_dir,"bin.rec")
         simset_tools.make_simset_bin(self.config, my_bin_file, sim_dir, self.scanner, add_randoms, log_file=log_file)

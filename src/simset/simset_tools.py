@@ -243,6 +243,28 @@ def make_simset_bin(config, output_file, simulation_dir, scanner, add_randoms=Fa
         message = "Created bin_file in: %s" % output_file
         tools.log_message(log_file,message,'info')
 
+def make_simset_simp_det(scanner_params, output, sim_dir, det_hf=0, log_file=False):
+    
+    energy_resolution = scanner_params.get("energy_resolution")
+    new_file = open(output, "w")
+    new_file.write(
+        "ENUM detector_type = simple_pet \n\n" +
+        "REAL    reference_energy_keV = 511.0 \n" +
+        "REAL    energy_resolution_percentage = %s \n" % energy_resolution)
+    
+    if det_hf==1:
+        new_file.write('STR     history_file = "' + join(sim_dir, "det_hf.hist" + '"\n'))
+    else:
+        new_file.write('STR     history_file = ""|n')        
+
+    new_file.close()
+
+    if log_file:
+        message = ("Created det_file with:\n" +                  
+                  "Energy resolution: %s" % energy_resolution)
+
+        tools.log_message(log_file,message,'info')
+    
 def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0, log_file=False):
 
     num_rings = scanner_params.get("num_rings")
@@ -309,6 +331,8 @@ def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0, log_file=Fals
         )
     if det_hf==1:
             new_file.write('STR     history_file = "' + join(sim_dir, "det_hf.hist" + '"\n'))
+    else:
+        new_file.write('STR     history_file = ""|n')
 
     new_file.close()
 

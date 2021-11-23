@@ -254,8 +254,7 @@ def make_simset_simp_det(scanner_params, output, sim_dir, det_hf=0, log_file=Fal
     
     if det_hf==1:
         new_file.write('STR     history_file = "' + join(sim_dir, "det_hf.hist" + '"\n'))
-    else:
-        new_file.write('STR     history_file = ""|n')        
+        
 
     new_file.close()
 
@@ -331,8 +330,7 @@ def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0, log_file=Fals
         )
     if det_hf==1:
             new_file.write('STR     history_file = "' + join(sim_dir, "det_hf.hist" + '"\n'))
-    else:
-        new_file.write('STR     history_file = ""|n')
+    
 
     new_file.close()
 

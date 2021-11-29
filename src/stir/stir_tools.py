@@ -27,6 +27,10 @@ def create_stir_hs_from_detparams(scannerParams,output_file, output_format="SimS
     bin_size = (max_td-min_td)/float(td_bins)
     matrix_size, ring_difference = generate_segments_lists_stir(num_rings, num_rings-1)
 
+    scanner_name = scannerParams.get("scanner_name")
+    if sanner_name=="GE Advance":
+        output_format=scanner_name
+        
     if output_format=="SimSET":
         views_coordinate = 2
         axial_coordinate = 3
@@ -40,7 +44,7 @@ def create_stir_hs_from_detparams(scannerParams,output_file, output_format="SimS
         "!INTERFILE  :=\n" + 
         "!imaging modality := PT\n" +
         "name of data file := " + output_file[0:-2] + "s" + "\n" +
-        "originating system := " + scannerParams.get("scanner_name") + "\n" +
+        "originating system := " + scanner_name + "\n" +
         "!version of keys := STIR3.0\n" +
         "!GENERAL DATA :=\n" +
         "!GENERAL IMAGE DATA :=\n" +
@@ -63,7 +67,7 @@ def create_stir_hs_from_detparams(scannerParams,output_file, output_format="SimS
         "minimum ring difference per segment := " + ring_difference + "\n" +
         "maximum ring difference per segment := " + ring_difference + "\n" +
         "Scanner parameters:= \n" +
-        "Scanner type := " + scannerParams.get("scanner_name") + "\n" +
+        "Scanner type := " + scanner_name + "\n" +
         "Number of rings := " + str(num_rings) + "\n" +
         "Number of detectors per ring := " + str(scannerParams.get("num_aa_bins")*2) + "\n" 
         "Inner ring diameter (cm) := " + str(scannerParams.get("scanner_radius")*2) + "\n" +

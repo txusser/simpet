@@ -345,19 +345,6 @@ def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0, log_file=Fals
 
         tools.log_message(log_file,message,'info')
 
-def make_simset_simplepet_det(scanner_params, output):
-    
-    energy_resolution = scanner_params.get("energy_resolution")
-
-    new_file = open(output, "w")
-    
-    new_file.write(
-        "ENUM detector_type = simple_pet \n\n" +
-        "REAL    reference_energy_keV = 511.0 \n" +
-        "REAL    energy_resolution_percentage = %s \n" % energy_resolution
-        )
-
-    new_file.close()
 
 def make_index_file(simulation_dir, simset_dir, log_file=False):
 
@@ -383,7 +370,7 @@ def process_weights(weights_file, output_dir, scanner, add_randoms = 0):
     nangles = scanner.get("num_aa_bins")
     nrings = scanner.get("num_rings")
     nslices = nrings*nrings
-
+    
     Simset_offset = 32768
     block_size = nbins*nangles*nslices*4
 

@@ -28,7 +28,7 @@ def create_stir_hs_from_detparams(scannerParams,output_file, output_format="SimS
     matrix_size, ring_difference = generate_segments_lists_stir(num_rings, num_rings-1)
 
     scanner_name = scannerParams.get("scanner_name")
-    if sanner_name=="GE Advance":
+    if scanner_name=="GE Advance":
         output_format=scanner_name
         
     if output_format=="SimSET":

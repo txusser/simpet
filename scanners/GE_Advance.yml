@@ -22,8 +22,8 @@ max_energy_window:  675
 # Used to add randoms to the simulated data
 coincidence_window: 12.5     # nanoseconds. Used only for random simulation (SimSET)
 # Reconstruction
-max_segment: 11 #17             # Maximum Ring difference on the reconstruction
-zoomFactor: 2            # Zoom factor in x and y
+max_segment: 11              # Maximum Ring difference on the reconstruction
+zoomFactor: 1.65             # Zoom factor in x and y
 xyOutputSize: 128
 zOutputSize: 35
 numberOfSubsets: 14          # Number of subsets

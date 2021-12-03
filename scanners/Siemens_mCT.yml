@@ -1,18 +1,18 @@
-Scanner_name: "Siemens Biograph mCT"
+scanner_name: "Siemens Biograph mCT"
 # Scanner Model (simple_pet, cylindrical)
 model_type: "simple_pet"
 # Scanner Description
 simset_material: 18       # LSO
 average_doi: 0.1          # cm
-radio_scanner:  42.45     # Scanner radius
+scanner_radius:  42.45     # Scanner radius
 num_rings:  52            # Number of rings
 axial_fov: 10.9           # Axial FOV max (cm)
 # Crystal Description
 z_crystal_size: 0.4
 transaxial_crystal_size: 0.4 # Transaxial Crystal size (cm)
-crystal_thickness: 2           # Crystal Thickness (cm)
+crystal_thickness: 2         # Crystal Thickness (cm)
 energy_resolution: 11.5      # Energy resolution (%)
-#timing_resolution:            # nanoseconds. WARNING: TOF_resolution/sqrt(2)
+#timing_resolution:          # nanoseconds. WARNING: TOF_resolution/sqrt(2)
 # Binning parameters
 num_aa_bins:  312         # Number of views (Numero de detectores por anillo divido por 2)
 num_td_bins:  312         # Number of bins
@@ -22,13 +22,13 @@ max_energy_window:  650
 # Used to add randoms to the simulated data
 coincidence_window: 4.1  # nanoseconds. Used only for random simulation (SimSET)
 # Reconstruction
-max_segment:  49          # Maximum Ring difference on the reconstruction
-zoomFactor:  1		      # Zoom factor in x and y
-xyOutputSize:  200 	          
-zOutputSize:  103 	             
-numberOfSubsets:  26	  # Number of subsets
-numberOfIterations:  260  # Number of iterations
-savingInterval:  26	      # The interval that we want to save intermediate subiterations images
+max_segment:  49         # Maximum Ring difference on the reconstruction
+zoomFactor: 1            # Zoom factor in x and y
+xyOutputSize:  400     
+zOutputSize:  148  
+numberOfSubsets:  26     # Number of subsets
+numberOfIterations: 130  # Number of iterations
+savingInterval: 26       # The interval that we want to save intermediate subiterations images
 # Attenuation correction 
 # (Don't set both, set what fits your scanner the best)
 analytical_att_correction: 0    # Performed by SimSET calcattenuation

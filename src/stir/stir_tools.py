@@ -375,7 +375,8 @@ def OSEM2D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
             
     output = recFileName + "_" + str(scannerParams.get("numberOfIterations")) + ".hv"
     output = tools.anything_to_hdr_convert(output,log_file)
-    output = tools.resampleXYvoxelSizes(output, xyVoxelSize, log_file)
+    if zoom!=zoom_aux:
+        output = tools.resampleXYvoxelSizes(output, xyVoxelSize, log_file)
 
     return output
 
@@ -485,7 +486,8 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
             
     output = recFileName + "_" + str(scannerParams.get("numberOfIterations")) + ".hv"
     output = tools.anything_to_hdr_convert(output,log_file)
-    output = tools.resampleXYvoxelSizes(output, xyVoxelSize, log_file)
+    if zoom!=zoom_aux:
+        output = tools.resampleXYvoxelSizes(output, xyVoxelSize, log_file)
 
     return output
 

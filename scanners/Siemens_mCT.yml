@@ -4,9 +4,9 @@ model_type: "simple_pet"
 # Scanner Description
 simset_material: 18       # LSO
 average_doi: 0.1          # cm
-scanner_radius:  42.45     # Scanner radius
+scanner_radius: 42.1     # Scanner radius
 num_rings:  52            # Number of rings
-axial_fov: 10.9           # Axial FOV max (cm)
+axial_fov: 21.8           # Axial FOV max (cm)
 # Crystal Description
 z_crystal_size: 0.4
 transaxial_crystal_size: 0.4 # Transaxial Crystal size (cm)
@@ -23,7 +23,7 @@ max_energy_window:  650
 coincidence_window: 4.1  # nanoseconds. Used only for random simulation (SimSET)
 # Reconstruction
 max_segment:  49         # Maximum Ring difference on the reconstruction
-zoomFactor: 1            # Zoom factor in x and y
+zoomFactor: 2.65         # Zoom factor in x and y
 xyOutputSize:  400     
 zOutputSize:  148  
 numberOfSubsets:  26     # Number of subsets

@@ -151,6 +151,7 @@ def add_noise(config, scannerParams, sinogram_stir, log_file):
     command = "%s -p %s %s %s %s" % (poison_noise, noisy_sinogram_stir_path, sinogram_stir[0:-3] + 'hs', scannerParams.get('add_noise'), random.randint(1,200000))
     tools.osrun(command,log_file)
 
+    create_stir_hs_from_detparams(scannerParams,sinogram_stir[0:-3] + 'hs',"GE Advance")
     shutil.copy(noisy_sinogram_stir_path[0:-2] + 's', sinogram_stir[0:-3] + 's')
             
     os.remove(noisy_sinogram_stir_path)

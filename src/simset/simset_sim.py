@@ -384,9 +384,7 @@ class SimSET_Reconstruction(object):
             
         if self.scanner.get('add_noise') != 0:
             stir_tools.add_noise(self.config, self.scanner, sinogram_stir, self.log_file)
-            
-        if self.scanner.get("scanner_name")=="GE Advance":
-            stir_tools.create_stir_hs_from_detparams(self.scanner,sinogram_stir[0:-3] + 'hs',"GE Advance")    
+                
 
     def run_recons(self):
 

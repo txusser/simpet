@@ -1,6 +1,4 @@
 scanner_name: "GE Discovery ST"
-# Scanner Model (simple_pet, cylindrical)
-model_type: "simple_pet"
 # Scanner Description
 simset_material: 10           # BGO
 average_doi: 0.84              # ¿0.84? cm

@@ -1,6 +1,4 @@
 scanner_name: "Siemens Biograph mCT"
-# Scanner Model (simple_pet, cylindrical)
-model_type: "simple_pet"
 # Scanner Description
 simset_material: 18       # LSO
 average_doi: 0.1          # cm

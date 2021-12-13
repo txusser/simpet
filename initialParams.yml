@@ -6,6 +6,8 @@ divisions: 12              # Number os subprocesses for parallel simulation
 
 # PET system (Vereos, Siemens_mCT, Discovery_ST, Discovery_STE, GE_Advance)
 scanner: "Vereos"
+# Scanner Model (simple_pet, cylindrical)
+model_type: "simple_pet"
 
 #Patient Variables
 patient_dirname: "C3_w413"

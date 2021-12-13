@@ -167,7 +167,7 @@ class SimSET_Simulation(object):
 
         log_file = join(sim_dir, "logging.log")
         # Establishing necessary parameters
-        model_type = self.scanner.get("model_type")
+        model_type = self.params.get("model_type")
         scanner_radius = self.scanner.get("scanner_radius")
         scanner_axial_fov = self.scanner.get("axial_fov")
 

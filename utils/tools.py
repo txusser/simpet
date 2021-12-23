@@ -627,3 +627,14 @@ def resampleXYvoxelSizes(image_hdr, xyVoxelSize, log_file):
     nib.save(res_img,image_hdr)
     
     return image_hdr
+
+def resampleZvoxelSize(image_hdr, zOutputvoxelSize, log_file):
+    img = nib.load(image_hdr)
+    x_VoxelSize = img.header['pixdim'][1]
+    y_VoxelSize = img.header['pixdim'][2]
+    target_affine =  np.diag((x_VoxelSize,y_VoxelSize,zOutputvoxelSize))
+    res_img=image.resample_img(image_hdr[0:-3]+'img',target_affine)
+    nib.save(res_img,image_hdr)
+    
+    return image_hdr
+

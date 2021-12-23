@@ -25,6 +25,7 @@ max_segment: 23             # Maximum Ring difference on the reconstruction
 zoomFactor: 1.55            # Zoom factor in x and y
 xyOutputSize: 128
 zOutputSize: 47
+zOutputVoxelSize: 3.27      # mm
 numberOfSubsets: 7          # Number of subsets
 numberOfIterations: 32       # Number of iterations
 savingInterval: 8            # The interval that we want to save intermediate subiterations images

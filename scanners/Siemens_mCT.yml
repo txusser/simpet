@@ -23,7 +23,8 @@ coincidence_window: 4.1  # nanoseconds. Used only for random simulation (SimSET)
 max_segment:  49         # Maximum Ring difference on the reconstruction
 zoomFactor: 2.65         # Zoom factor in x and y
 xyOutputSize:  400     
-zOutputSize:  148  
+zOutputSize:  148
+zOutputVoxelSize: 1.50   # mm  
 numberOfSubsets:  26     # Number of subsets
 numberOfIterations: 130  # Number of iterations
 savingInterval: 26       # The interval that we want to save intermediate subiterations images

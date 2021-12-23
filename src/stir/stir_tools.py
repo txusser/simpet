@@ -151,7 +151,7 @@ def add_noise(config, scannerParams, sinogram_stir, log_file):
     command = "%s -p %s %s %s %s" % (poison_noise, noisy_sinogram_stir_path, sinogram_stir[0:-3] + 'hs', scannerParams.get('add_noise'), random.randint(1,200000))
     tools.osrun(command,log_file)
 
-    create_stir_hs_from_detparams(scannerParams,sinogram_stir[0:-3] + 'hs',"GE Advance")
+    create_stir_hs_from_detparams(scannerParams,sinogram_stir[0:-3] + 'hs',"after_poiSson_noise")
     shutil.copy(noisy_sinogram_stir_path[0:-2] + 's', sinogram_stir[0:-3] + 's')
             
     os.remove(noisy_sinogram_stir_path)
@@ -397,10 +397,19 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
     scan_radius = scannerParams.get("scanner_radius")
     td_bins = scannerParams.get("num_td_bins")
     bin_size = (2*scan_radius)/float(td_bins)
-    xyVoxelSize = round(10*(bin_size/zoom),2) #in mm
+    xyVoxelSize = 10*(bin_size/zoom) #in mm
     zoom_aux=1
-    xyOutputSize_aux=round(xyOutputSize/zoom)
-
+    xyOutputSize_aux = xyOutputSize/zoom
+    
+    zOutputVoxelSize = scannerParams.get("zOutputVoxelSize")
+    num_rings = scannerParams.get("num_rings")
+    max_z = scannerParams.get("axial_fov")/2
+    min_z = -scannerParams.get("axial_fov")/2
+    z_crystal_size = scannerParams.get("z_crystal_size")
+    gap_size = (max_z-min_z-z_crystal_size*num_rings)/(num_rings-1)
+    zVoxelSize = (z_crystal_size + gap_size)/2
+    zOutputSize_aux = (zOutputSize*zOutputVoxelSize)/(zVoxelSize*10)
+    
     cesga = config.get("cesga")
     cesga_max_time = config.get("cesga_max_time")
     
@@ -469,7 +478,7 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
             scatt_corr_str +
             "zoom := " + str(zoom_aux) + "\n" +
             "xy output image size (in pixels) := " + str(xyOutputSize_aux) + "\n" 
-            "Z output image size (in pixels) := " + str(zOutputSize) + "\n\n" +
+            "Z output image size (in pixels) := " + str(zOutputSize_aux) + "\n\n" +
             "end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters := \n\n" +
             "number of subsets := " + str(numberOfSubsets) + "\n" +
             "number of subiterations := " + str(numberOfIterations) + "\n" +
@@ -487,8 +496,13 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
             
     output = recFileName + "_" + str(scannerParams.get("numberOfIterations")) + ".hv"
     output = tools.anything_to_hdr_convert(output,log_file)
+    
     if zoom!=zoom_aux:
         output = tools.resampleXYvoxelSizes(output, xyVoxelSize, log_file)
+        
+    
+    if zOutputVoxelSize != zVoxelSize:
+        output = tools.resampleZvoxelSize(output, zOutputVoxelSize, log_file)
 
     return output
 

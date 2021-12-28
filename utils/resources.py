@@ -85,6 +85,8 @@ def get_rsc(resource, type):
             rpath = join(FRUTICAKE, 'gen_hdr')
         elif resource == 'convolucion_hdr':
             rpath = join(FRUTICAKE, 'convolucion_hdr')
+        elif resource == 'corta_pega_filcol_hdr':
+            rpath = join(FRUTICAKE, 'corta_pega_filcol_hdr')
             
         else:
             rpath = False

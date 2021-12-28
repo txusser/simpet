@@ -1,8 +1,8 @@
 # Directories to the necesary binaries
 dir_stir:  "/media/usuario3/HDD2/simpet_repositorio/include/STIR/install"
 dir_simset:  "/media/usuario3/HDD2/simpet_repositorio/include/SimSET/2.9.2"
-matlab_mcr_path:  "/opt/MATLAB/MATLAB_Compiler_Runtime/v901/"
-spm_path:  "/home/jesus/Work/repositories/simpet/include/spm12"
+matlab_mcr_path:  "/media/usuario3/HDD/SPM_standalone/MCR/v713"
+spm_path:  "/media/usuario3/HDD/SPM_standalone/spm12"
 dir_data_path: ""
 dir_results_path: ""
 

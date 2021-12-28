@@ -3,6 +3,7 @@ from os.path import join, exists, isfile, isdir, dirname, basename, splitext
 from subprocess import getstatusoutput as getoutput
 import nibabel as nib
 from utils import resources as rsc
+from utils import spm_tools as spm
 import numpy as np
 from operator import itemgetter
 from nilearn import image
@@ -123,11 +124,14 @@ def read_analyze_header(header_file,logfile):
     img = nib.load(header_file)
 
     zpix = img.shape[2]
-    zsize = abs(img.get_affine[2,2])
+    #zsize = abs(img.get_affine[2,2])
+    zsize = abs(img.affine[2,2])
     xpix = img.shape[0]
-    xsize = abs(img.get_affine[0,0])
+    #xsize = abs(img.get_affine[0,0])
+    xsize = abs(img.affine[0,0])
     ypix = img.shape[1]
-    ysize = abs(img.get_affine[1,1])
+    #ysize = abs(img.get_affine[1,1])
+    ysize = abs(img.affine[1,1])
 
     return zpix, zsize, xpix, xsize, ypix, ysize
 
@@ -408,7 +412,8 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     hdr1.set_data_dtype(img.get_data_dtype())
     hdr1.set_data_shape(img.shape)
     #hdr1.set_zooms(abs(np.diag(img.affine)))
-    hdr1.set_zooms(abs(np.diag(img.affine))[0:3])
+    #hdr1.set_zooms(abs(np.diag(img.affine))[0:3])
+    hdr1.set_zooms(abs(np.diag(img.affine))[0:4])
 
     analyze_img = nib.AnalyzeImage(data, hdr1.get_base_affine(), hdr1)
 
@@ -459,8 +464,8 @@ def operate_images_analyze(image1, image2, out_image, operation='mult'):
     hdr1 = nib.AnalyzeHeader()
     hdr1.set_data_dtype(img1.get_data_dtype())
     hdr1.set_data_shape(img1.shape)
-    hdr1.set_zooms(abs(np.diag(img1.affine))[0:3])
-
+    #hdr1.set_zooms(abs(np.diag(img1.affine))[0:3])
+    hdr1.set_zooms(abs(np.diag(img1.affine))[0:4])
     analyze_img = nib.AnalyzeImage(res_data, hdr1.get_base_affine(), hdr1)
 
     nib.save(analyze_img,out_image)
@@ -501,7 +506,7 @@ def log_message(logfile, message, mode='info'):
         with open(logfile, 'w') as lfile:
             lfile.write(stream)
 
-def petmr2maps(pet_image,mri_image,log_file,mode="SimSET"):
+def petmr2maps(pet_image,mri_image,log_file, spm_run, patient_dir, mode="SimSET"):
         """
         It will create act and att maps from PET and MR images.
         Required inputs are:
@@ -516,23 +521,26 @@ def petmr2maps(pet_image,mri_image,log_file,mode="SimSET"):
 
         #First of all lets take all to analyze
         pet_hdr = anything_to_hdr_convert(pet_image)
-        pet_hdr = copy_analyze(pet_hdr,image2=False,dest_dir=self.patient_dir)
+        #pet_hdr = copy_analyze(pet_hdr,image2=False,dest_dir=patient_dir)
         pet_hdr = prepare_input_image(pet_hdr,log_file,min_voxel_size=1.5)
         pet_img = pet_hdr[0:-3]+"img"
 
         mri_hdr = anything_to_hdr_convert(mri_image)
-        mri_hdr = copy_analyze(mri_hdr,image2=False,dest_dir=self.patient_dir)
+        #mri_hdr = copy_analyze(mri_hdr,image2=False,dest_dir=patient_dir)
         mri_hdr = prepare_input_image(mri_hdr,log_file,min_voxel_size=1.5)
         mri_img = mri_hdr[0:-3]+"img"
 
+        #make mri image square
+        makeImageSquare(mri_hdr, log_file)
+
         #Performing PET/MR coregister
-        mfile = os.path.join(self.patient_dir,"fusion.m")
-        correg_pet_img = image_fusion(self.spm_run, mfile, mri_img, pet_img, log_file)
+        mfile = os.path.join(patient_dir,"fusion.m")
+        correg_pet_img = spm.image_fusion(spm_run, mfile, mri_img, pet_img, log_file)
 
         #Now the map generation
-        from src.patient2maps import patient2maps
+        from utils.patient2maps import patient2maps
 
-        my_map_generation = patient2maps(self.spm_run, self.sim_maps_dir, log_file,
+        my_map_generation = patient2maps(spm_run, patient_dir, log_file,
                                          mri_img, correg_pet_img, mode=mode)
         activity_map_hdr, attenuation_map_hdr = my_map_generation.run()
 
@@ -554,7 +562,8 @@ def convert_map_values(act_map,att_map,output_dir,log_file,mode="SimSET"):
 
         if mode == "SimSET":
 
-            rcommand = '%s %s %s 0.096 1 >> %s' % (cambia_val, att_map, new_att_map, log_file)
+            #rcommand = '%s %s %s 0.096 1 >> %s' % (cambia_val, att_map, new_att_map, log_file)
+            rcommand = '%s %s %s 0.096 4 >> %s' % (cambia_val, att_map, new_att_map, log_file)
             osrun(rcommand, log_file)
             rcommand = '%s %s %s 0.135 3 >> %s' % (cambia_val, new_att_map, new_att_map, log_file)
             osrun(rcommand, log_file)
@@ -628,6 +637,7 @@ def resampleXYvoxelSizes(image_hdr, xyVoxelSize, log_file):
     
     return image_hdr
 
+
 def resampleZvoxelSize(image_hdr, zOutputvoxelSize, log_file):
     img = nib.load(image_hdr)
     x_VoxelSize = img.header['pixdim'][1]
@@ -638,3 +648,57 @@ def resampleZvoxelSize(image_hdr, zOutputvoxelSize, log_file):
     
     return image_hdr
 
+
+def makeImageSquare(image_hdr, log_file):
+    
+    # Tools for image manipulation
+    corta_pega_filcol_hdr = rsc.get_rsc('corta_pega_filcol_hdr', 'fruitcake') 
+    zpix, zsize, xpix, xsize, ypix, ysize = read_analyze_header(image_hdr,log_file)
+    
+    pixDif = abs(xpix-ypix)
+    
+    if pixDif % 2 == 0:
+        oneSide = pixDif/2
+        otherSide = oneSide
+    else:
+        oneSide = np.trunc(pixDif/2)
+        otherSide = oneSide +1
+    
+    if xpix > ypix:  
+        rcommand1 = '%s %s %s peg %s %s >> %s' % (corta_pega_filcol_hdr, image_hdr, image_hdr, "1", str(oneSide), log_file)
+        rcommand2 = '%s %s %s peg %s %s >> %s' % (corta_pega_filcol_hdr, image_hdr, image_hdr, "2", str(otherSide), log_file)
+    elif ypix > xpix:
+        rcommand1 = '%s %s %s peg %s %s >> %s' % (corta_pega_filcol_hdr, image_hdr, image_hdr, "3", str(oneSide), log_file)
+        rcommand2 = '%s %s %s peg %s %s >> %s' % (corta_pega_filcol_hdr, image_hdr, image_hdr, "4", str(otherSide), log_file)
+        
+    osrun(rcommand1, log_file)
+    osrun(rcommand2, log_file)
+
+
+def scalImage(image_hdr, maxValue, log_file):
+    """
+    Given the input image_hdr (analyze format), this function scales their to values to the input maxValue
+    
+    """
+    #cambia_val_interval = rsc.get_rsc('change_interval', 'fruitcake')
+    img, data =nib_load(image_hdr, log_file)
+    
+    factor = maxValue/np.max(data)
+    
+    # mask_hdr="mask.hdr"
+    # rcommand = '%s %s %s 0 0.9 0 >> %s' % (cambia_val_interval, image_hdr, mask_hdr, log_file)
+    # osrun(rcommand, log_file)
+    # rcommand = '%s %s %s 0.9 10000000000 1 >> %s' % (cambia_val_interval, mask_hdr, mask_hdr, log_file)
+    # osrun(rcommand, log_file)
+    
+    operate_single_image(image_hdr, "mult", factor, image_hdr, log_file)
+    
+    # rcommand = '%s %s %s 0 1 1 >> %s' % (cambia_val_interval, image_hdr[0:-4]+"_scal.hdr", image_hdr[0:-4]+"_scal_+.hdr", log_file)
+    # osrun(rcommand, log_file)
+    
+    # operate_images_analyze(image_hdr, mask_hdr, image_hdr[0:-4]+"_scal_+.hdr", "mult")    
+    
+    #os.remove(mask_hdr)
+    #os.remove("mask.img")
+    
+    

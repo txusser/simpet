@@ -11,6 +11,7 @@ import numpy as np
 
 from utils import tools
 from utils import resources as rsc
+from utils import spm_tools as spm
 
 class patient2maps(object):
     """
@@ -21,7 +22,7 @@ class patient2maps(object):
     log: logging file
     mri_path: .img of analyze file for mri
     pet_path: .img of analyze file for pet
-    mode: STIR or SIMSET
+    mode: STIR or SimSET
     """
 
     def __init__(self, spm_run, maps_path, log, mri_path, pet_path, mode):
@@ -59,21 +60,21 @@ class patient2maps(object):
         """
         # Starts login
         message = 'I am normalizing the MRI....'
-        print message
+        print(message)
         # Runs SPM12 for new individual norm_spm files
         mfile = join(self.analysis_path, "mynorm_spm12.m")
         template_image = rsc.get_rsc("tpm_file", "image")
         atlas = rsc.get_rsc("hammers", "image")
 
         #Runs old_normalize of the data
-        norm_mri, mri_transformation_matrix = tools.new_normalize(self.spm_run, mfile, self.mri_img, template_image, self.log_file)
+        norm_mri, mri_transformation_matrix = spm.new_normalize(self.spm_run, mfile, self.mri_img, template_image, self.log_file)
 
         # Apply deformations on Atlases and Mask images
         images_to_deform =[]
         images_to_deform.append(atlas)
         
         mfile = join(self.analysis_path, "atlas_deformations.m")
-        tools.new_deformations(self.spm_run, mfile, mri_transformation_matrix,self.mri_img, images_to_deform, self.analysis_path, 0, self.log_file)
+        spm.new_deformations(self.spm_run, mfile, mri_transformation_matrix,self.mri_img, images_to_deform, self.analysis_path, 0, self.log_file)
 
     def mri_segmentation(self):
         """
@@ -81,19 +82,19 @@ class patient2maps(object):
         """
         # Starts login
         message = 'I am segmenting the MRI...'
-        print message
+        print(message)
 
         template_image = rsc.get_rsc("tpm_file", "image")
 
         mfile = os.path.join(self.analysis_path,"segment.m")
-        tools.segment_mri_spm(self.spm_run, mfile, self.mri_img, template_image, self.log_file)
+        spm.segment_mri_spm(self.spm_run, mfile, self.mri_img, template_image, self.log_file)
         
     def atlas_generation(self):
         """
         Runs Atlas-based Quantification to all ROIs and generates maps...
         """
         message = 'I will generate the ACT and ATT maps for %s simulation...' % self.mode
-        print message
+        print(message)
 
         # Getting the necesary resources
         cambia_formato = rsc.get_rsc('change_format', 'fruitcake')
@@ -230,7 +231,7 @@ class patient2maps(object):
         tools.osrun(rcommand, self.log_file)
 
         # Scaling to avoid problems....
-        tools.operate_single_image(segmented_pet_final,"mult",1000,segmented_pet_final,self.log_file)
+        #tools.operate_single_image(segmented_pet_final,"mult",1000,segmented_pet_final,self.log_file)
         tools.operate_single_image(pet_hdr,"mult",1000,pet_hdr,self.log_file)
 
         #Generating Attenuation map
@@ -247,21 +248,24 @@ class patient2maps(object):
         rcommand = '%s %s %s 0.136 10 %s' % (cambia_val_interval, output_bone_hdr[0:-4] + "_attindex.hdr", output_bone_hdr[0:-4] + "_attindex.hdr", 0.096)
         tools.osrun(rcommand, self.log_file)
 
-        att_map = join(self.maps_path, "attenuation_map_" + self.mode +".hdr")
+        att_map = join(self.maps_path, "att_map_" + self.mode +"_it0.hdr")
         tools.copy_analyze(output_bone_hdr[0:-4] + "_attindex.hdr", image2=att_map)
 
-        act_map = join(self.maps_path,"activity_map_" + self.mode +".hdr")
+        act_map = join(self.maps_path,"act_map_" + self.mode +"_it0.hdr")
         tools.copy_analyze(segmented_pet_final, image2=act_map)
 
-        if self.mode == "SIMSET":
-            rcommand = '%s %s %s 0.096 1' % (cambia_val, att_map, att_map)
+        if self.mode == "SimSET":
+            #rcommand = '%s %s %s 0.096 1' % (cambia_val, att_map, att_map)
+            rcommand = '%s %s %s 0.096 4' % (cambia_val, att_map, att_map)
             tools.osrun(rcommand, self.log_file)
             rcommand = '%s %s %s 0.135 3 ' % (cambia_val, att_map, att_map)
             tools.osrun(rcommand, self.log_file)
             rcommand = '%s %s %s 1B' % (cambia_formato, att_map, att_map)
             tools.osrun(rcommand, self.log_file)
+            tools.scalImage(act_map, 127, self.log_file)
             rcommand = '%s %s %s 1B' % (cambia_formato, act_map, act_map)
             tools.osrun(rcommand, self.log_file)
+            
 
         return act_map, att_map
 
@@ -270,7 +274,7 @@ class patient2maps(object):
         Cleans all the crap generated during the process
         """
         message = 'Cleaning up the mesh...'
-        print message
+        print(message)
         os.system("rm %s/seg_*" % self.analysis_path)
         os.system("rm %s/c1* %s/c2* %s/c3* %s/c4* %s/c5*" % (self.analysis_path, self.analysis_path, self.analysis_path, self.analysis_path, self.analysis_path))
         os.system("rm %s/gm* %s/w* " % (self.analysis_path, self.analysis_path))

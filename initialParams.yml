@@ -16,7 +16,7 @@ att_map: "xCtrl_3_flipLR.att.hdr"
 output_dir: "C3"         #Name of the Results Dir
 
 #Config your phantom
-center_slice:  153       # The slice number to be placed on the center of the scanner
+center_slice:  153       # The slice number to be placed on the center of the scanner. If 0, automatically, the half of the slices will be calculated and used
 total_dose: 1            # mCi
 simulation_time: 30     # secods
 

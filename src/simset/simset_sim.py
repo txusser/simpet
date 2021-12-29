@@ -10,6 +10,7 @@ import yaml
 import numpy as np
 import src.simset.simset_tools as simset_tools
 import subprocess
+import nibabel as nib
 
 
 class SimSET_Simulation(object):
@@ -32,7 +33,11 @@ class SimSET_Simulation(object):
         self.att_map = att_map
         self.output_dir = projections_dir
         self.center_slice = params.get("center_slice")
-
+        
+        if self.center_slice== 0: #we calculate the half of the total z voxels
+            img = nib.load(act_map)            
+            self.center_slice = img.shape[2]/2
+            
         self.sim_dose = params.get("total_dose")
         self.s_photons = params.get("sampling_photons")
         self.photons = params.get("photons")

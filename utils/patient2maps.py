@@ -256,14 +256,14 @@ class patient2maps(object):
 
         if self.mode == "SimSET":
             #rcommand = '%s %s %s 0.096 1' % (cambia_val, att_map, att_map)
-            rcommand = '%s %s %s 0.096 4' % (cambia_val, att_map, att_map)
+            rcommand = '%s %s %s 0.096 4 >> %s' % (cambia_val, att_map, att_map, self.log_file)
             tools.osrun(rcommand, self.log_file)
-            rcommand = '%s %s %s 0.135 3 ' % (cambia_val, att_map, att_map)
+            rcommand = '%s %s %s 0.135 3 >> %s ' % (cambia_val, att_map, att_map, self.log_file)
             tools.osrun(rcommand, self.log_file)
-            rcommand = '%s %s %s 1B' % (cambia_formato, att_map, att_map)
+            rcommand = '%s %s %s 1B >> %s' % (cambia_formato, att_map, att_map, self.log_file)
             tools.osrun(rcommand, self.log_file)
             tools.scalImage(act_map, 127, self.log_file)
-            rcommand = '%s %s %s 1B' % (cambia_formato, act_map, act_map)
+            rcommand = '%s %s %s 1B >> %s' % (cambia_formato, act_map, act_map, self.log_file)
             tools.osrun(rcommand, self.log_file)
             
 

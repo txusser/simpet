@@ -413,7 +413,8 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     hdr1.set_data_shape(img.shape)
     #hdr1.set_zooms(abs(np.diag(img.affine)))
     #hdr1.set_zooms(abs(np.diag(img.affine))[0:3])
-    hdr1.set_zooms(abs(np.diag(img.affine))[0:4])
+    #hdr1.set_zooms(abs(np.diag(img.affine))[0:4])
+    hdr1.set_zooms(abs(np.diag(img.affine))[0:img.ndim])
 
     analyze_img = nib.AnalyzeImage(data, hdr1.get_base_affine(), hdr1)
 
@@ -465,7 +466,8 @@ def operate_images_analyze(image1, image2, out_image, operation='mult'):
     hdr1.set_data_dtype(img1.get_data_dtype())
     hdr1.set_data_shape(img1.shape)
     #hdr1.set_zooms(abs(np.diag(img1.affine))[0:3])
-    hdr1.set_zooms(abs(np.diag(img1.affine))[0:4])
+    #hdr1.set_zooms(abs(np.diag(img1.affine))[0:4])
+    hdr1.set_zooms(abs(np.diag(img1.affine))[0:img1.ndim])
     analyze_img = nib.AnalyzeImage(res_data, hdr1.get_base_affine(), hdr1)
 
     nib.save(analyze_img,out_image)
@@ -701,4 +703,5 @@ def scalImage(image_hdr, maxValue, log_file):
     #os.remove(mask_hdr)
     #os.remove("mask.img")
     
+#def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map):
     

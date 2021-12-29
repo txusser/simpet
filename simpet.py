@@ -231,31 +231,38 @@ class brainviset(object):
         # We will start generating the initial maps from the PET and the CT
         print("Generating initial act and att maps from PET and CT data...")
         act_map, att_map = tools.petmr2maps(pet, mri, log_file, self.spmrun, patient_dir)
+        self.params['att_map'] = att_map
 
         for it in range(int(number_of_its)):            
-            #att_map = join(patient_dir,"att_map_SimSET_it0.hdr")            
+            #att_map = join(patient_dir,"att_map_SimSET_it0.hdr")  
+            output_dir_aux = join(output_dir, "It_%s" % str(it))
             components = os.path.split(pet)
             preproc_pet = os.path.join(components[0], 'r' + components[1])
 
-            self.params['act_map'] = act_map
-            self.params['att_map'] = att_map
-            self.params['output_dir'] = join(output_name, "It_%s" % str(it))
+            self.params['act_map'] = act_map            
+            self.params['output_dir'] = output_dir_aux
 
             print("Simulating brain image for iteration %s of %s" % (str(it),number_of_its))
             it_sim = SimPET(self.param_file)
-            it_sim.simset_simulation(act_map, att_map, output_dir)
+            it_sim.simset_simulation(act_map, att_map, output_dir_aux)
             #it_sim = wholebody_simulation(self.param_file,config_file=self.config_file, params=self.params)
             #it_sim.run()
 
             recons_algorithm = self.scanner.get('recons_type')
             recons_it = self.scanner.get('numberOfIterations')
 
-            it_output = join(output_dir,"It_%s" % str(it))
-            rec_file = join(it_output,'rec_%s_%s.hdr' % (recons_algorithm,recons_it))
+            
+            rec_file = join(output_dir_aux, "SimSET_Sim_"+self.params.get("scanner"),recons_algorithm,'rec_%s_%s.hdr' % (recons_algorithm,recons_it))
+            print(rec_file)
             
             if exists(rec_file):
                 print("Updating activity map and preparing for iteration %s of %s" % ((it+1),number_of_its))
-                updated_act = join(patient_dir,"act_simset_it%s.hdr" % str(it+1))
+                updated_act = join(patient_dir,act_map[0:-5]+"%s.hdr" % str(it+1))
+                tools.update_act_map(self.spmrun, act_map, att_map, preproc_pet, rec_file,updated_act)
                 #wb_tools.update_act_map(self.spmrun, act_map, att_map, preproc_pet, rec_file,updated_act)
                 
-            act_map = join(patient_dir,"act_map_SimSET_it%s.hdr" % str(it))
+                act_map = updated_act
+            else:
+                raise Exception('The brainviset process was aborted.')
+                ## Place some logging here
+                sys.exit(1)

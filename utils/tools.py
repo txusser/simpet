@@ -389,7 +389,8 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     Given an input image, multiply or divide it by a numerical factor
     saving the result as output_image
     :param input_image: image base operation on
-    :param operation: 1 = multiply, 2 = divide
+    #:param operation: 1 = multiply, 2 = divide
+    :param operation: 'mult' = multiply, 'div' = divide
     :param factor: operation factor
     :param output_image: output image file
     :return:
@@ -508,7 +509,7 @@ def log_message(logfile, message, mode='info'):
         with open(logfile, 'w') as lfile:
             lfile.write(stream)
 
-def petmr2maps(pet_image,mri_image,log_file, spm_run, patient_dir, mode="SimSET"):
+def petmr2maps(pet_image, mri_image, log_file, spm_run, output_dir, mode="SimSET"):
         """
         It will create act and att maps from PET and MR images.
         Required inputs are:
@@ -516,7 +517,8 @@ def petmr2maps(pet_image,mri_image,log_file, spm_run, patient_dir, mode="SimSET"
         mri_image: dicom_dir, nii.gz, nii or Analyze (.hdr or .img)
         mode: Choose STIR or SIMSET. The maps will be different for each simulation.
         The inputs will be stored to Data/simulation_name/Patient as reformatted/corregistered Analyze
-        The maps will be stored on Data/simulation_name/Maps
+        #The maps will be stored on Data/simulation_name/Maps
+        The maps will be stored on Results/output_name/Maps
         """
         message = "GENERATING ACT AND ATT MAPS FROM PETMR IMAGES"
         log_message(log_file, message, mode='info')
@@ -536,13 +538,13 @@ def petmr2maps(pet_image,mri_image,log_file, spm_run, patient_dir, mode="SimSET"
         makeImageSquare(mri_hdr, log_file)
 
         #Performing PET/MR coregister
-        mfile = os.path.join(patient_dir,"fusion.m")
+        mfile = os.path.join(output_dir,"fusion.m")
         correg_pet_img = spm.image_fusion(spm_run, mfile, mri_img, pet_img, log_file)
 
         #Now the map generation
         from utils.patient2maps import patient2maps
 
-        my_map_generation = patient2maps(spm_run, patient_dir, log_file,
+        my_map_generation = patient2maps(spm_run, output_dir, log_file,
                                          mri_img, correg_pet_img, mode=mode)
         activity_map_hdr, attenuation_map_hdr = my_map_generation.run()
 
@@ -703,5 +705,137 @@ def scalImage(image_hdr, maxValue, log_file):
     #os.remove(mask_hdr)
     #os.remove("mask.img")
     
-#def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map):
+def remove_neg_nan(data):
     
+    indx = np.where(data<0)
+    data[indx] = 0
+    indx = np.where(np.isnan(data))
+    data[indx] = 0
+    
+def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map, axialFOV):
+    
+    output_dir = dirname(output_act_map)
+    mfileFusion = join(dirname(output_act_map),"fusion.m")
+    log_file = join(dirname(output_act_map), "update_activity_maps.log")
+    
+    #img = nib.load(act_map)            
+    #center_slice = img.shape[2]/2
+    
+    # First step is coregistering the output image with the orig pet (coregistered to the mri)
+    act_map_img = act_map[0:-3]+"img"
+    simu_pet_img = simu_pet[0:-3]+"img"
+    orig_pet_img = orig_pet[0:-3]+"img"
+    coreg_simpet_img = spm.image_fusion(spmrun, mfileFusion, orig_pet_img, simu_pet_img, log_file)
+    #coreg_simpet_img = spm.image_fusion(spmrun, mfile, act_map_img, simu_pet_img, log_file)
+    coreg_simpet_hdr =coreg_simpet_img[0:-3]+"hdr"
+    
+    # Once done we load the images and remove negativen and NaN values
+    simpet, simpet_data = nib_load(coreg_simpet_hdr)
+    remove_neg_nan(simpet_data)
+    origpet, origpet_data = nib_load(orig_pet)
+    remove_neg_nan(origpet_data)
+    act, act_data = nib_load(act_map)
+    remove_neg_nan(act_data)
+    att, att_data = nib_load(att_map)
+    remove_neg_nan(att_data)
+    
+    # Next, we will do a scaling by the mean
+    norm_factor = proportional_scaling(coreg_simpet_hdr, orig_pet, orig_pet, log_file)
+    operate_single_image(coreg_simpet_hdr,'mult',norm_factor,coreg_simpet_hdr, log_file)
+    
+    # Now we do a smoothing of both data to avoid multiply noise and perform the division
+    mfileSmooth = join(dirname(output_act_map),"smooth.m")
+    division_hdr = join(output_dir, "division.hdr")
+    #smooth_analyze(coreg_simpet_hdr,5, output)
+    #smooth_analyze(orig_pet, 5, output )
+    s_coreg_simpet_img = spm.smoothing(spmrun, mfileSmooth, coreg_simpet_img, 5, "s", log_file)    
+    s_orig_pet_img = spm.smoothing(spmrun, mfileSmooth, orig_pet_img, 5, "s", log_file)
+    
+    s_coreg_simpet_hdr = s_coreg_simpet_img[0:-3]+"hdr"
+    s_orig_pet_hdr = s_orig_pet_img[0:-3]+"hdr"
+    operate_images_analyze(s_orig_pet_hdr, s_coreg_simpet_hdr, division_hdr, 'div')
+    
+    # Now we do some stuff on the division image to avoid problems
+    pet_mask_hdr = join(output_dir, "pet_mask.hdr")
+    vmax, vmean = compute_vmax_vmean(orig_pet, orig_pet)
+    cambia_val_interval = rsc.get_rsc('change_interval', 'fruitcake')    
+    rcommand = '%s %s %s 0 %s 0' % (cambia_val_interval, orig_pet, pet_mask_hdr, 0.1*vmax)
+    osrun(rcommand, log_file)
+    rcommand = '%s %s %s %s 10000000000 1' % (cambia_val_interval, pet_mask_hdr, pet_mask_hdr, 0.1*vmax)
+    osrun(rcommand, log_file)
+    pet_mask, pet_mask_data = nib_load(pet_mask_hdr)
+    remove_neg_nan(pet_mask_data)
+    deleteValuesOutFov(pet_mask_hdr, axialFOV/2, act.shape[2]/2)
+    operate_images_analyze(division_hdr, pet_mask_hdr, division_hdr, 'mult')
+    division, division_data = nib_load(division_hdr)
+    remove_neg_nan(division_data)
+    rcommand = '%s %s %s 5 100000000000000000000000000000000000 1' % (cambia_val_interval, division_hdr, division_hdr)
+    osrun(rcommand, log_file)
+    operate_images_analyze(division_hdr, pet_mask_hdr, division_hdr, 'mult')
+    
+    
+    
+def proportional_scaling(img,ref_img,mask_img, log_file):
+
+    img_max, img_mean = compute_vmax_vmean(img, mask_img)
+    ref_max, ref_mean = compute_vmax_vmean(ref_img, mask_img)
+
+    if float(img_mean) != 0:
+        fnorm = ref_mean / img_mean
+        return fnorm
+    else:        
+        message = 'Error scaling image. Image maean value is zero: ' + str(img)
+        log_message(log_file, message, 'error')
+        #print message  
+
+def compute_vmax_vmean(img, mask_img):
+    """
+    Compute maximum and mean intensity values on input image counting 
+    on voxels inside the reference image (brain mask)
+    :param img: (string) input image path
+    :param ref_img: (string) reference image path
+    :return: 
+    """
+
+    img, data = nib_load(img)
+    data = np.nan_to_num(data) #tools.remove_neg_nan(data)
+
+    ref_img, data_ref = nib_load(mask_img)
+    data_ref = np.nan_to_num(data_ref) #tools.remove_neg_nan(data_ref)
+
+    i_max = np.amax(data_ref)
+
+    super_threshold_indices = data_ref > 0.2*i_max
+    data_ref[super_threshold_indices] = 0
+
+    # Compute values restricted to voxels inside mask (ref image)
+    indx = np.where((data>0) & (data_ref.reshape(data.shape)>0))
+
+    # Maximum intensity value
+    v_max = np.max(data[indx])
+    # Mean intensity value
+    v_mean = np.mean(data[indx])
+
+    return v_max, v_mean 
+
+
+def deleteValuesOutFov(mask_hdr, max_z, central_slice):
+    
+    img, data = nib_load(mask_hdr)
+    data = np.nan_to_num(data)
+    
+    z = img.shape[2]
+    z_size = img.header['pixdim'][3] #mm
+    max_z = int(round((float(max_z)*10)/float(z_size))) 
+    
+    i_min = int(central_slice)-max_z
+    i_max = int(central_slice)+max_z 
+    
+    for i in range(0, i_min):
+        data[:,:,i]=0
+    
+    for i in range(i_max,z):
+        data[:,:,i]=0
+
+    img_to_write = nib.Nifti1Image(data, img.affine, img.header)
+    nib.save(img_to_write,mask_hdr)

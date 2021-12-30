@@ -220,24 +220,27 @@ class brainviset(object):
 
         output_name = self.params.get("output_dir")
         output_dir = join(self.dir_results,output_name)
+        maps_dir = join(output_dir, "Maps")
         log_file = join(output_dir,'log_sim.log')
 
-        number_of_its = self.params.get("maximumIteration")
+        number_of_its = self.params.get("maximumIteration")        
+        axialFOV = self.scanner.get("axial_fov")
         
-
         if not exists(output_dir):
             os.makedirs(output_dir)
+        if not exists(maps_dir):
+            os.makedirs(maps_dir)
 
         # We will start generating the initial maps from the PET and the CT
         print("Generating initial act and att maps from PET and CT data...")
-        act_map, att_map = tools.petmr2maps(pet, mri, log_file, self.spmrun, patient_dir)
+        act_map, att_map = tools.petmr2maps(pet, mri, log_file, self.spmrun, maps_dir)
         self.params['att_map'] = att_map
 
         for it in range(int(number_of_its)):            
             #att_map = join(patient_dir,"att_map_SimSET_it0.hdr")  
             output_dir_aux = join(output_dir, "It_%s" % str(it))
             components = os.path.split(pet)
-            preproc_pet = os.path.join(components[0], 'r' + components[1])
+            preproc_pet = os.path.join(components[0], 'r' + components[1][0:-3]+"hdr")
 
             self.params['act_map'] = act_map            
             self.params['output_dir'] = output_dir_aux
@@ -251,14 +254,12 @@ class brainviset(object):
             recons_algorithm = self.scanner.get('recons_type')
             recons_it = self.scanner.get('numberOfIterations')
 
-            
             rec_file = join(output_dir_aux, "SimSET_Sim_"+self.params.get("scanner"),recons_algorithm,'rec_%s_%s.hdr' % (recons_algorithm,recons_it))
-            print(rec_file)
             
             if exists(rec_file):
                 print("Updating activity map and preparing for iteration %s of %s" % ((it+1),number_of_its))
-                updated_act = join(patient_dir,act_map[0:-5]+"%s.hdr" % str(it+1))
-                tools.update_act_map(self.spmrun, act_map, att_map, preproc_pet, rec_file,updated_act)
+                updated_act = join(maps_dir,act_map[0:-5]+"%s.hdr" % str(it+1))
+                tools.update_act_map(self.spmrun, act_map, att_map, preproc_pet, rec_file, updated_act, axialFOV)
                 #wb_tools.update_act_map(self.spmrun, act_map, att_map, preproc_pet, rec_file,updated_act)
                 
                 act_map = updated_act

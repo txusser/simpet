@@ -237,7 +237,8 @@ class brainviset(object):
         self.params['att_map'] = att_map
 
         for it in range(int(number_of_its)):            
-            #att_map = join(patient_dir,"att_map_SimSET_it0.hdr")  
+            #att_map = join(patient_dir,"att_map_SimSET_it0.hdr") 
+            log_file = join(output_dir,"log_sim_It_%s.log" % str(it))
             output_dir_aux = join(output_dir, "It_%s" % str(it))
             components = os.path.split(pet)
             preproc_pet = os.path.join(components[0], 'r' + components[1][0:-3]+"hdr")
@@ -259,7 +260,7 @@ class brainviset(object):
             if exists(rec_file):
                 print("Updating activity map and preparing for iteration %s of %s" % ((it+1),number_of_its))
                 updated_act = join(maps_dir,act_map[0:-5]+"%s.hdr" % str(it+1))
-                tools.update_act_map(self.spmrun, act_map, att_map, preproc_pet, rec_file, updated_act, axialFOV)
+                tools.update_act_map(self.spmrun, act_map, att_map, preproc_pet, rec_file, updated_act, axialFOV, log_file)
                 #wb_tools.update_act_map(self.spmrun, act_map, att_map, preproc_pet, rec_file,updated_act)
                 
                 act_map = updated_act

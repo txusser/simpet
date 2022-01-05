@@ -688,8 +688,6 @@ def scalImage(image_hdr, maxValue, log_file):
     img, data =nib_load(image_hdr, log_file)
     
     factor = maxValue/np.max(data)
-    print(np.max(data))
-    print(factor)
     
     mask_hdr="mask.hdr"
     rcommand = '%s %s %s 0 0.9 0 >> %s' % (cambia_val_interval, image_hdr, mask_hdr, log_file)
@@ -699,15 +697,13 @@ def scalImage(image_hdr, maxValue, log_file):
     
     operate_single_image(image_hdr, "mult", factor, image_hdr, log_file)
     
-    #rcommand = '%s %s %s 0 1 1 >> %s' % (cambia_val_interval, image_hdr[0:-4]+"_scal.hdr", image_hdr[0:-4]+"_scal_+.hdr", log_file)
     rcommand = '%s %s %s 0 1 1 >> %s' % (cambia_val_interval, image_hdr, image_hdr, log_file)
     osrun(rcommand, log_file)
     
-    #operate_images_analyze(image_hdr, mask_hdr, image_hdr[0:-4]+"_scal_+.hdr", "mult") 
     operate_images_analyze(image_hdr, mask_hdr, image_hdr, "mult") 
     
-    # os.remove(mask_hdr)
-    # os.remove("mask.img")
+    os.remove(mask_hdr)
+    os.remove("mask.img")
     
 def remove_neg_nan(data):
     
@@ -725,11 +721,13 @@ def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map,
     cambia_formato = rsc.get_rsc('change_format', 'fruitcake')
     cambia_val_interval = rsc.get_rsc('change_interval', 'fruitcake') 
     operate_image_hdr = rsc.get_rsc('operate_image', 'fruitcake')
+    remove_nan_hdr = rsc.get_rsc('erase_nans', 'fruitcake')
+    remove_neg_hdr = rsc.get_rsc('erase_negs', 'fruitcake')
     #img = nib.load(act_map)            
     #center_slice = img.shape[2]/2
     
     # First step is coregistering the output image with the orig pet (coregistered to the mri)
-    act_map_img = act_map[0:-3]+"img"
+    #act_map_img = act_map[0:-3]+"img"
     simu_pet_img = simu_pet[0:-3]+"img"
     orig_pet_img = orig_pet[0:-3]+"img"
     coreg_simpet_img = spm.image_fusion(spmrun, mfileFusion, orig_pet_img, simu_pet_img, log_file)
@@ -737,14 +735,14 @@ def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map,
     coreg_simpet_hdr =coreg_simpet_img[0:-3]+"hdr"
     
     # Once done we load the images and remove negativen and NaN values
-    simpet, simpet_data = nib_load(coreg_simpet_hdr)
-    remove_neg_nan(simpet_data)
-    origpet, origpet_data = nib_load(orig_pet)
-    remove_neg_nan(origpet_data)
+    #simpet, simpet_data = nib_load(coreg_simpet_hdr)
+    #remove_neg_nan(simpet_data)
+    #origpet, origpet_data = nib_load(orig_pet)
+    #remove_neg_nan(origpet_data)
     act, act_data = nib_load(act_map)
-    remove_neg_nan(act_data)
-    att, att_data = nib_load(att_map)
-    remove_neg_nan(att_data)
+    #remove_neg_nan(act_data)
+    #att, att_data = nib_load(att_map)
+    #remove_neg_nan(att_data)
     
     # Next, we will do a scaling by the mean
     norm_factor = proportional_scaling(coreg_simpet_hdr, orig_pet, orig_pet, log_file)
@@ -771,32 +769,35 @@ def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map,
     # osrun(rcommand, log_file)
     # rcommand = '%s %s %s %s 10000000000 1' % (cambia_val_interval, pet_mask_hdr, pet_mask_hdr, 0.1*vmax)
     # osrun(rcommand, log_file)
-    pet_mask, pet_mask_data = nib_load(pet_mask_hdr)
-    remove_neg_nan(pet_mask_data)
+    #pet_mask, pet_mask_data = nib_load(pet_mask_hdr)
+    #remove_neg_nan(pet_mask_data)
     deleteValuesOutFov(pet_mask_hdr, axialFOV/2, act.shape[2]/2)
     
     #operate_images_analyze(division_hdr, pet_mask_hdr, division_hdr, 'mult')
     rcommand = '%s %s %s %s fl multi' % (operate_image_hdr, division_hdr, pet_mask_hdr, division_hdr)
     osrun(rcommand, log_file)
-    division, division_data = nib_load(division_hdr)
-    remove_neg_nan(division_data)
+    #division, division_data = nib_load(division_hdr)
+    #remove_neg_nan(division_data)
+    rcommand = '%s %s %s >> %s' % (remove_nan_hdr, division_hdr, division_hdr, log_file)
+    osrun(rcommand, log_file)
+    rcommand = '%s %s %s >> %s' % (remove_neg_hdr, division_hdr, division_hdr, log_file)
+    osrun(rcommand, log_file)
+    
     rcommand = '%s %s %s 5 100000000000000000000000000000000000 1' % (cambia_val_interval, division_hdr, division_hdr)
     osrun(rcommand, log_file)
+    
     #operate_images_analyze(division_hdr, pet_mask_hdr, division_hdr, 'mult')
     rcommand = '%s %s %s %s fl multi' % (operate_image_hdr, division_hdr, pet_mask_hdr, division_hdr)
     osrun(rcommand, log_file)
     
     #and finally, we calculate the new activity image    
     rcommand = '%s %s %s %s fl multi' % (operate_image_hdr, act_map, division_hdr, output_act_map)
-    osrun(rcommand, log_file)
-    scalImage(output_act_map, 127, log_file)
-    rcommand = '%s %s %s 1B >> %s' % (cambia_formato, output_act_map, output_act_map[0:-4]+"_prueba.hdr", log_file)
-    osrun(rcommand, log_file)
+    osrun(rcommand, log_file)    
+    scalImage(output_act_map, 127, log_file)    
+    rcommand = '%s %s %s 1B >> %s' % (cambia_formato, output_act_map, output_act_map, log_file)
+    osrun(rcommand, log_file)  
     
-    
-    
-    
-    
+      
 def proportional_scaling(img,ref_img,mask_img, log_file):
 
     img_max, img_mean = compute_vmax_vmean(img, mask_img)
@@ -820,10 +821,10 @@ def compute_vmax_vmean(img, mask_img):
     """
 
     img, data = nib_load(img)
-    data = np.nan_to_num(data) #tools.remove_neg_nan(data)
+    data = np.nan_to_num(data) 
 
     ref_img, data_ref = nib_load(mask_img)
-    data_ref = np.nan_to_num(data_ref) #tools.remove_neg_nan(data_ref)
+    data_ref = np.nan_to_num(data_ref)
 
     i_max = np.amax(data_ref)
 

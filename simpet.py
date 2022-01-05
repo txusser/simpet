@@ -234,6 +234,9 @@ class brainviset(object):
         # We will start generating the initial maps from the PET and the CT
         print("Generating initial act and att maps from PET and CT data...")
         act_map, att_map = tools.petmr2maps(pet, mri, log_file, self.spmrun, maps_dir)
+
+        #act_map = "/media/usuario3/HDD2/simpet_repositorio/Results/prueba_BV_2/Maps/act_map_SimSET_it0.hdr"
+        #att_map = "/media/usuario3/HDD2/simpet_repositorio/Results/prueba_BV_2/Maps/att_map_SimSET_it0.hdr"
         self.params['att_map'] = att_map
 
         for it in range(int(number_of_its)):            
@@ -249,8 +252,6 @@ class brainviset(object):
             print("Simulating brain image for iteration %s of %s" % (str(it),number_of_its))
             it_sim = SimPET(self.param_file)
             it_sim.simset_simulation(act_map, att_map, output_dir_aux)
-            #it_sim = wholebody_simulation(self.param_file,config_file=self.config_file, params=self.params)
-            #it_sim.run()
 
             recons_algorithm = self.scanner.get('recons_type')
             recons_it = self.scanner.get('numberOfIterations')

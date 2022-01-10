@@ -605,6 +605,7 @@ def convert_simset_sino_to_stir(input_img, output=False):
 
     n_slices = shape[2]
     nrings = np.sqrt(n_slices)
+    n_x = shape[0]
 
     input_definition = []
 
@@ -617,6 +618,7 @@ def convert_simset_sino_to_stir(input_img, output=False):
 
     output_definition = sorted(input_definition, key=itemgetter(3))
     stir_img_data = np.empty(shape, dtype=float, order='C')
+    stir_img_data_flip_x = np.empty(shape, dtype=float, order='C')
 
     for i in range(n_slices):
 
@@ -624,7 +626,11 @@ def convert_simset_sino_to_stir(input_img, output=False):
         input_slice = simset_img_data[:,:,output_index]
         stir_img_data[:,:,i] = input_slice
 
-    stir_img = nib.AnalyzeImage(stir_img_data, simset_img.affine, simset_img.header)
+    for j in range(n_x):
+        stir_img_data_flip_x[j,:,:] = stir_img_data[n_x-1-j, :, :]
+        
+    #stir_img = nib.AnalyzeImage(stir_img_data, simset_img.affine, simset_img.header)
+    stir_img = nib.AnalyzeImage(stir_img_data_flip_x, simset_img.affine, simset_img.header)
 
     if not output:
         output = input_img [0:-4] + '_stir.hdr'

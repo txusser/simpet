@@ -764,9 +764,9 @@ def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map,
     
     s_coreg_simpet_hdr = s_coreg_simpet_img[0:-3]+"hdr"
     s_orig_pet_hdr = s_orig_pet_img[0:-3]+"hdr"
-    #operate_images_analyze(s_orig_pet_hdr, s_coreg_simpet_hdr, division_hdr, 'div')
-    rcommand = '%s %s %s %s fl divid' % (operate_image_hdr, s_orig_pet_hdr, s_coreg_simpet_hdr, division_hdr)
-    osrun(rcommand, log_file)
+    operate_images_analyze(s_orig_pet_hdr, s_coreg_simpet_hdr, division_hdr, 'div')
+    # rcommand = '%s %s %s %s fl divid' % (operate_image_hdr, s_orig_pet_hdr, s_coreg_simpet_hdr, division_hdr)
+    # osrun(rcommand, log_file)
     
     # Now we do some stuff on the division image to avoid problems
     pet_mask_hdr = join(dirname(orig_pet), "pet_mask.hdr")
@@ -868,3 +868,20 @@ def deleteValuesOutFov(mask_hdr, max_z, central_slice):
 
     img_to_write = nib.Nifti1Image(data, img.affine, img.header)
     nib.save(img_to_write,mask_hdr)
+    
+def compute_corr_coeff(img1, img2, log_file):
+    """
+    Compute the correlation coefficiente between img1 and img2 
+    :param img1: (string) input header image1 path
+    :param img2: (string) input header image2 path
+    :return: 
+    """
+    
+    img1_img, img1_data = nib_load(img1, log_file)
+    img2_img, img2_data = nib_load(img2, log_file)
+    corrCoefmtx = np.corrcoef(img1_data.flatten(),img2_data.flatten())
+    
+    return corrCoefmtx[0,1]
+    
+    
+    

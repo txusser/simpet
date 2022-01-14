@@ -239,33 +239,53 @@ class brainviset(object):
         #att_map = "/media/usuario3/HDD2/simpet_repositorio/Results/prueba_BV_2/Maps/att_map_SimSET_it0.hdr"
         self.params['att_map'] = att_map
 
-        for it in range(int(number_of_its)):            
-            #att_map = join(patient_dir,"att_map_SimSET_it0.hdr") 
-            log_file = join(output_dir,"log_sim_It_%s.log" % str(it))
-            output_dir_aux = join(output_dir, "It_%s" % str(it))
-            components = os.path.split(pet)
-            preproc_pet = os.path.join(components[0], 'r' + components[1][0:-3]+"hdr")
-
-            self.params['act_map'] = act_map            
-            self.params['output_dir'] = output_dir_aux
-
-            print("Simulating brain image for iteration %s of %s" % (str(it),number_of_its))
-            it_sim = SimPET(self.param_file)
-            it_sim.simset_simulation(act_map, att_map, output_dir_aux)
-
-            recons_algorithm = self.scanner.get('recons_type')
-            recons_it = self.scanner.get('numberOfIterations')
-
-            rec_file = join(output_dir_aux, "SimSET_Sim_"+self.params.get("scanner"),recons_algorithm,'rec_%s_%s.hdr' % (recons_algorithm,recons_it))
-            
-            if exists(rec_file):
-                print("Updating activity map and preparing for iteration %s of %s" % ((it+1),number_of_its))
-                updated_act = join(maps_dir,act_map[0:-5]+"%s.hdr" % str(it+1))
-                tools.update_act_map(self.spmrun, act_map, att_map, preproc_pet, rec_file, updated_act, axialFOV, log_file)
-                #wb_tools.update_act_map(self.spmrun, act_map, att_map, preproc_pet, rec_file,updated_act)
+        max_num_it = int(number_of_its)  
+        if max_num_it >= 1:
+            it=0
+            old_corrCoef = 0.0
+            new_corrCoef = 0.0
+            more_its = True
+            while ((it < max_num_it) & more_its):
+            #for it in range(int(number_of_its)):    
+                #att_map = join(patient_dir,"att_map_SimSET_it0.hdr") 
+                log_file = join(output_dir,"log_sim_It_%s.log" % str(it))
+                output_dir_aux = join(output_dir, "It_%s" % str(it))
+                components = os.path.split(pet)
+                preproc_pet = os.path.join(components[0], 'r' + components[1][0:-3]+"hdr")
+    
+                self.params['act_map'] = act_map            
+                self.params['output_dir'] = output_dir_aux
+    
+                print("Simulating brain image for iteration %s of %s" % (str(it),number_of_its))
+                it_sim = SimPET(self.param_file)
+                it_sim.simset_simulation(act_map, att_map, output_dir_aux)
+    
+                recons_algorithm = self.scanner.get('recons_type')
+                recons_it = self.scanner.get('numberOfIterations')
+    
+                rec_file = join(output_dir_aux, "SimSET_Sim_"+self.params.get("scanner"),recons_algorithm,'rec_%s_%s.hdr' % (recons_algorithm,recons_it))
                 
-                act_map = updated_act
-            else:
-                raise Exception('The brainviset process was aborted.')
-                ## Place some logging here
-                sys.exit(1)
+                if exists(rec_file):
+                    print("Updating activity map")
+                    updated_act_map = join(maps_dir,act_map[0:-5]+"%s.hdr" % str(it+1))
+                    tools.update_act_map(self.spmrun, act_map, att_map, preproc_pet, rec_file, updated_act_map, axialFOV, log_file)
+                    new_corrCoef = tools.compute_corr_coeff(act_map, updated_act_map, log_file)
+                    print("Correlation coefficiente between images is %s " % (new_corrCoef))
+                    if ((new_corrCoef>0.99) | (old_corrCoef>new_corrCoef)):
+                        print("No further iterations are necessary")
+                        print("Final activity map is %s" %(act_map))
+                        more_its = False
+                    else:
+                        print("Not converging yet. Preparing for iteration %s of %s" % ((it+1),number_of_its))
+                        it=it+1
+                        old_corrCoef = new_corrCoef
+                        act_map = updated_act_map
+                else:
+                    raise Exception('The brainviset process was aborted.')
+                    ## Place some logging here
+                    sys.exit(1)
+                print(more_its)
+            print(more_its)
+            if more_its:
+                print("Maximum number of iterations reached")
+                print("Final activity map is %s" %(updated_act_map))

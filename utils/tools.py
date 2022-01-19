@@ -265,13 +265,6 @@ def anything_to_hdr_convert(image, logfile=False, outfile=False ):
 
         lines = [x.strip() for x in lines]
 
-        #pixel_x = lines[13].split()[4]
-        #pixel_size_x = lines[14].split()[5]
-        #pixel_y = lines[16].split()[4]
-        #pixel_size_y = lines[17].split()[5]
-        #pixel_z = lines[19].split()[4]
-        #pixel_size_z = lines[20].split()[5]
-
         pixel_x = lines[16].split()[4]        
         pixel_size_x = lines[17].split()[5]
         pixel_y = lines[19].split()[4]
@@ -280,15 +273,18 @@ def anything_to_hdr_convert(image, logfile=False, outfile=False ):
         pixel_size_z = lines[23].split()[5]
         
         hdr_header = image[0:-2] + "hdr" 
-        img_file = image[0:-2] + "img"
+        # img_file = image[0:-2] + "img"
         data_file = image[0:-2] + "v"
 
         #This will convert .hv to .hdr and copy the data
-        gen_hdr = rsc.get_rsc("gen_hdr", "fruitcake")
-        rcommand = "%s %s %s %s %s fl %s %s %s 0" % (gen_hdr, hdr_header[0:-4], pixel_x, pixel_y, pixel_z, pixel_size_x, pixel_size_y, pixel_size_z)
-        osrun(rcommand, logfile)
-        shutil.copy(data_file, img_file)
-
+        # gen_hdr = rsc.get_rsc("gen_hdr", "fruitcake")
+        # rcommand = "%s %s %s %s %s fl %s %s %s 0" % (gen_hdr, hdr_header[0:-4], pixel_x, pixel_y, pixel_z, pixel_size_x, pixel_size_y, pixel_size_z)
+        # osrun(rcommand, logfile)
+        # shutil.copy(data_file, img_file)
+        create_analyze_from_imgdata(data_file,hdr_header,float(pixel_x),float(pixel_y),float(pixel_z),float(pixel_size_x),float(pixel_size_y),float(pixel_size_z))
+        #nii_analyze_convert("inicial.hdr",logfile,"aux.nii")
+        #nii_analyze_convert("aux.nii",logfile,hdr_header)
+        #os.remove("aux.nii")
         
         if exists(hdr_header):
             return hdr_header
@@ -399,6 +395,7 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     img = nib.load(input_image)
     data = img.get_data()[:,:,:]
     data = np.nan_to_num(data)
+    
 
     if operation == 'mult':
         data = data * float(factor)
@@ -418,7 +415,7 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     hdr1.set_zooms(abs(np.diag(img.affine))[0:img.ndim])
 
     analyze_img = nib.AnalyzeImage(data, hdr1.get_base_affine(), hdr1)
-
+    
     nib.save(analyze_img,output_image)
 
 def launch_cesga_job(command, sim_folder, cesga_max_time, cesga_cores, cesga_mem):
@@ -466,10 +463,11 @@ def operate_images_analyze(image1, image2, out_image, operation='mult'):
     hdr1 = nib.AnalyzeHeader()
     hdr1.set_data_dtype(img1.get_data_dtype())
     hdr1.set_data_shape(img1.shape)
-    #hdr1.set_zooms(abs(np.diag(img1.affine))[0:3])
-    #hdr1.set_zooms(abs(np.diag(img1.affine))[0:4])
+    ##hdr1.set_zooms(abs(np.diag(img1.affine))[0:3])
+    ##hdr1.set_zooms(abs(np.diag(img1.affine))[0:4])
     hdr1.set_zooms(abs(np.diag(img1.affine))[0:img1.ndim])
-    analyze_img = nib.AnalyzeImage(res_data, hdr1.get_base_affine(), hdr1)
+    
+    analyze_img = nib.AnalyzeImage(res_data, hdr1.get_base_affine(), hdr1)    
 
     nib.save(analyze_img,out_image)
 
@@ -644,6 +642,8 @@ def resampleXYvoxelSizes(image_hdr, xyVoxelSize, log_file):
     target_affine = np.diag((xyVoxelSize,xyVoxelSize,z_VoxelSize))
     res_img=image.resample_img(image_hdr[0:-3]+'img',target_affine)
     nib.save(res_img,image_hdr)
+    # res_img=image.resample_img(image_hdr,target_affine)
+    # nib.save(res_img,image_hdr[0:-4]+"_resXY.hdr")
     
     return image_hdr
 
@@ -655,6 +655,8 @@ def resampleZvoxelSize(image_hdr, zOutputvoxelSize, log_file):
     target_affine =  np.diag((x_VoxelSize,y_VoxelSize,zOutputvoxelSize))
     res_img=image.resample_img(image_hdr[0:-3]+'img',target_affine)
     nib.save(res_img,image_hdr)
+    # res_img=image.resample_img(image_hdr,target_affine)
+    # nib.save(res_img,image_hdr[0:-4]+"_resZ.hdr")
     
     return image_hdr
 
@@ -722,33 +724,23 @@ def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map,
     
     output_dir = dirname(output_act_map)
     mfileFusion = join(dirname(output_act_map),"fusion.m")
-    #log_file = join(dirname(output_act_map), "update_activity_maps.log")
+    
     # Getting the necesary resources
     cambia_formato = rsc.get_rsc('change_format', 'fruitcake')
     cambia_val_interval = rsc.get_rsc('change_interval', 'fruitcake') 
     operate_image_hdr = rsc.get_rsc('operate_image', 'fruitcake')
     remove_nan_hdr = rsc.get_rsc('erase_nans', 'fruitcake')
     remove_neg_hdr = rsc.get_rsc('erase_negs', 'fruitcake')
-    #img = nib.load(act_map)            
-    #center_slice = img.shape[2]/2
-    
+        
     # First step is coregistering the output image with the orig pet (coregistered to the mri)
     #act_map_img = act_map[0:-3]+"img"
     simu_pet_img = simu_pet[0:-3]+"img"
     orig_pet_img = orig_pet[0:-3]+"img"
     coreg_simpet_img = spm.image_fusion(spmrun, mfileFusion, orig_pet_img, simu_pet_img, log_file)
-    #coreg_simpet_img = spm.image_fusion(spmrun, mfileFusion, act_map_img, simu_pet_img, log_file)
     coreg_simpet_hdr =coreg_simpet_img[0:-3]+"hdr"
     
-    # Once done we load the images and remove negativen and NaN values
-    #simpet, simpet_data = nib_load(coreg_simpet_hdr)
-    #remove_neg_nan(simpet_data)
-    #origpet, origpet_data = nib_load(orig_pet)
-    #remove_neg_nan(origpet_data)
     act, act_data = nib_load(act_map)
-    #remove_neg_nan(act_data)
-    #att, att_data = nib_load(att_map)
-    #remove_neg_nan(att_data)
+    
     
     # Next, we will do a scaling by the mean
     norm_factor = proportional_scaling(coreg_simpet_hdr, orig_pet, orig_pet, log_file)
@@ -757,8 +749,6 @@ def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map,
     # Now we do a smoothing of both data to avoid multiply noise and perform the division
     mfileSmooth = join(dirname(output_act_map),"smooth.m")
     division_hdr = join(output_dir, "division.hdr")
-    #smooth_analyze(coreg_simpet_hdr,5, output)
-    #smooth_analyze(orig_pet, 5, output )
     s_coreg_simpet_img = spm.smoothing(spmrun, mfileSmooth, coreg_simpet_img, 5, "s", log_file)    
     s_orig_pet_img = spm.smoothing(spmrun, mfileSmooth, orig_pet_img, 5, "s", log_file)
     
@@ -769,21 +759,11 @@ def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map,
     # osrun(rcommand, log_file)
     
     # Now we do some stuff on the division image to avoid problems
-    pet_mask_hdr = join(dirname(orig_pet), "pet_mask.hdr")
-    # vmax, vmean = compute_vmax_vmean(orig_pet, orig_pet)    
-    # rcommand = '%s %s %s 0 %s 0' % (cambia_val_interval, orig_pet, pet_mask_hdr, 0.1*vmax)
-    # osrun(rcommand, log_file)
-    # rcommand = '%s %s %s %s 10000000000 1' % (cambia_val_interval, pet_mask_hdr, pet_mask_hdr, 0.1*vmax)
-    # osrun(rcommand, log_file)
-    #pet_mask, pet_mask_data = nib_load(pet_mask_hdr)
-    #remove_neg_nan(pet_mask_data)
+    pet_mask_hdr = join(dirname(orig_pet), "pet_mask.hdr")    
     deleteValuesOutFov(pet_mask_hdr, axialFOV/2, act.shape[2]/2)
     
-    #operate_images_analyze(division_hdr, pet_mask_hdr, division_hdr, 'mult')
     rcommand = '%s %s %s %s fl multi' % (operate_image_hdr, division_hdr, pet_mask_hdr, division_hdr)
     osrun(rcommand, log_file)
-    #division, division_data = nib_load(division_hdr)
-    #remove_neg_nan(division_data)
     rcommand = '%s %s %s >> %s' % (remove_nan_hdr, division_hdr, division_hdr, log_file)
     osrun(rcommand, log_file)
     rcommand = '%s %s %s >> %s' % (remove_neg_hdr, division_hdr, division_hdr, log_file)

@@ -235,8 +235,6 @@ class brainviset(object):
         print("Generating initial act and att maps from PET and CT data...")
         act_map, att_map = tools.petmr2maps(pet, mri, log_file, self.spmrun, maps_dir)
 
-        #act_map = "/media/usuario3/HDD2/simpet_repositorio/Results/prueba_BV_2/Maps/act_map_SimSET_it0.hdr"
-        #att_map = "/media/usuario3/HDD2/simpet_repositorio/Results/prueba_BV_2/Maps/att_map_SimSET_it0.hdr"
         self.params['att_map'] = att_map
 
         max_num_it = int(number_of_its)  
@@ -245,9 +243,7 @@ class brainviset(object):
             old_corrCoef = 0.0
             new_corrCoef = 0.0
             more_its = True
-            while ((it < max_num_it) & more_its):
-            #for it in range(int(number_of_its)):    
-                #att_map = join(patient_dir,"att_map_SimSET_it0.hdr") 
+            while ((it < max_num_it) & more_its):            
                 log_file = join(output_dir,"log_sim_It_%s.log" % str(it))
                 output_dir_aux = join(output_dir, "It_%s" % str(it))
                 components = os.path.split(pet)
@@ -284,8 +280,7 @@ class brainviset(object):
                     raise Exception('The brainviset process was aborted.')
                     ## Place some logging here
                     sys.exit(1)
-                print(more_its)
-            print(more_its)
+                
             if more_its:
                 print("Maximum number of iterations reached")
                 print("Final activity map is %s" %(updated_act_map))

@@ -25,13 +25,14 @@ class patient2maps(object):
     mode: STIR or SimSET
     """
 
-    def __init__(self, spm_run, maps_path, log, mri_path, pet_path, mode):
+    def __init__(self, spm_run, maps_path, log, mri_path, pet_path, ct_path, mode):
 
         # Maps Paths
         self.analysis_path = dirname(pet_path)
         self.maps_path = maps_path
         self.mri_img = mri_path
         self.pet_img = pet_path
+        self.ct_img = ct_path
         self.mode = mode
         # SPM
         self.spm_run = spm_run
@@ -235,19 +236,37 @@ class patient2maps(object):
         tools.operate_single_image(pet_hdr,"mult",1000,pet_hdr,self.log_file)
 
         #Generating Attenuation map
-        rcommand = '%s %s %s 1 %s' % (cambia_val, output_bone_hdr, output_bone_hdr[0:-4] + "_attindex.hdr", 0.135)
-        tools.osrun(rcommand, self.log_file)
-
-        for k in [output_gm_hdr, output_wm_hdr, output_csf_hdr, output_soft_hdr]:
-            rcommand = '%s %s %s 1 %s' % (cambia_val, k, k[0:-4] + "_attindex.hdr", 0.096)
+        if self.ct_img: #ct_img is not empty
+            rcommand = '%s %s %s %s fl multi' % (opera_imagen, self.ct_img[0:-3]+"hdr", pet_mask,self.ct_img[0:-3]+"hdr")
             tools.osrun(rcommand, self.log_file)
-            rcommand = '%s %s %s %s fl sumar' % (opera_imagen, k[0:-4] + "_attindex.hdr", 
-                                                 output_bone_hdr[0:-4] + "_attindex.hdr",output_bone_hdr[0:-4] + "_attindex.hdr")
+            img_ct, data_ct = tools.nib_load(self.ct_img, self.log_file)
+            data_ct[data_ct<0]=0
+            data_ct[(data_ct<600) & (data_ct>=0)]=0.096
+            data_ct[data_ct>=600]=0.135
+            hdr1 = nib.AnalyzeHeader()
+            hdr1.set_data_dtype(img_ct.get_data_dtype())
+            hdr1.set_data_shape(img_ct.shape)
+            hdr1.set_zooms(abs(np.diag(img_ct.affine))[0:img_ct.ndim])        
+            analyze_img = nib.AnalyzeImage(data_ct, hdr1.get_base_affine(), hdr1)            
+            nib.save(analyze_img,output_bone_hdr[0:-4] + "_attindex.hdr")
+            rcommand = '%s %s %s %s fl multi' % (opera_imagen, output_bone_hdr[0:-4] + "_attindex.hdr", pet_mask, output_bone_hdr[0:-4] + "_attindex.hdr")
             tools.osrun(rcommand, self.log_file)
-
-        rcommand = '%s %s %s 0.136 10 %s' % (cambia_val_interval, output_bone_hdr[0:-4] + "_attindex.hdr", output_bone_hdr[0:-4] + "_attindex.hdr", 0.096)
-        tools.osrun(rcommand, self.log_file)
-
+        
+        else:                
+            rcommand = '%s %s %s 1 %s' % (cambia_val, output_bone_hdr, output_bone_hdr[0:-4] + "_attindex.hdr", 0.135)
+            tools.osrun(rcommand, self.log_file)
+    
+            for k in [output_gm_hdr, output_wm_hdr, output_csf_hdr, output_soft_hdr]:
+                rcommand = '%s %s %s 1 %s' % (cambia_val, k, k[0:-4] + "_attindex.hdr", 0.096)
+                tools.osrun(rcommand, self.log_file)
+                rcommand = '%s %s %s %s fl sumar' % (opera_imagen, k[0:-4] + "_attindex.hdr", 
+                                                     output_bone_hdr[0:-4] + "_attindex.hdr",output_bone_hdr[0:-4] + "_attindex.hdr")
+                tools.osrun(rcommand, self.log_file)
+    
+            rcommand = '%s %s %s 0.136 10 %s' % (cambia_val_interval, output_bone_hdr[0:-4] + "_attindex.hdr", output_bone_hdr[0:-4] + "_attindex.hdr", 0.096)
+            tools.osrun(rcommand, self.log_file)
+    
+            
         att_map = join(self.maps_path, "att_map_" + self.mode +"_it0.hdr")
         tools.copy_analyze(output_bone_hdr[0:-4] + "_attindex.hdr", image2=att_map)
 

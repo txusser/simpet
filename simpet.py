@@ -215,7 +215,10 @@ class brainviset(object):
 
         patient_dir = join(self.dir_data,self.params.get("patient_dirname"))
         pet = join(patient_dir, self.params.get("pet_image"))
-        #ct = join(patient_dir, self.params.get("ct_image"))
+        if self.params.get("ct_image"):
+            ct = join(patient_dir, self.params.get("ct_image"))
+        else:
+            ct=""
         mri = join(patient_dir, self.params.get("mri_image"))
 
         output_name = self.params.get("output_dir")
@@ -231,9 +234,9 @@ class brainviset(object):
         if not exists(maps_dir):
             os.makedirs(maps_dir)
 
-        # We will start generating the initial maps from the PET and the CT
-        print("Generating initial act and att maps from PET and CT data...")
-        act_map, att_map = tools.petmr2maps(pet, mri, log_file, self.spmrun, maps_dir)
+        # We will start generating the initial maps from the PET and the MRI
+        print("Generating initial act and att maps from PET, (CT), and MRI data...")
+        act_map, att_map = tools.petmr2maps(pet, mri, ct, log_file, self.spmrun, maps_dir)
 
         self.params['att_map'] = att_map
 

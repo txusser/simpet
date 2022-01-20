@@ -507,7 +507,7 @@ def log_message(logfile, message, mode='info'):
         with open(logfile, 'w') as lfile:
             lfile.write(stream)
 
-def petmr2maps(pet_image, mri_image, log_file, spm_run, output_dir, mode="SimSET"):
+def petmr2maps(pet_image, mri_image, ct_image, log_file, spm_run, output_dir, mode="SimSET"):
         """
         It will create act and att maps from PET and MR images.
         Required inputs are:
@@ -526,6 +526,11 @@ def petmr2maps(pet_image, mri_image, log_file, spm_run, output_dir, mode="SimSET
         #pet_hdr = copy_analyze(pet_hdr,image2=False,dest_dir=patient_dir)
         pet_hdr = prepare_input_image(pet_hdr,log_file,min_voxel_size=1.5)
         pet_img = pet_hdr[0:-3]+"img"
+        
+        if ct_image: #ct_image is not empty
+            ct_hdr = anything_to_hdr_convert(ct_image)
+            ct_hdr = prepare_input_image(ct_hdr,log_file,min_voxel_size=1.5)
+            ct_img = ct_hdr[0:-3]+"img"
 
         mri_hdr = anything_to_hdr_convert(mri_image)
         #mri_hdr = copy_analyze(mri_hdr,image2=False,dest_dir=patient_dir)
@@ -535,15 +540,19 @@ def petmr2maps(pet_image, mri_image, log_file, spm_run, output_dir, mode="SimSET
         #make mri image square
         makeImageSquare(mri_hdr, log_file)
 
-        #Performing PET/MR coregister
-        mfile = os.path.join(output_dir,"fusion.m")
+        #Performing PET-CT/MR coregister
+        mfile = os.path.join(output_dir,"fusion_pet_to_mri.m")
         correg_pet_img = spm.image_fusion(spm_run, mfile, mri_img, pet_img, log_file)
+        correg_ct_img=""
+        if ct_image: #ct_image is not empty
+            mfile = os.path.join(output_dir,"fusion_ct_to_mri.m")
+            correg_ct_img = spm.image_fusion(spm_run, mfile, mri_img, ct_img, log_file)
 
         #Now the map generation
         from utils.patient2maps import patient2maps
 
         my_map_generation = patient2maps(spm_run, output_dir, log_file,
-                                         mri_img, correg_pet_img, mode=mode)
+                                         mri_img, correg_pet_img, correg_ct_img, mode=mode)
         activity_map_hdr, attenuation_map_hdr = my_map_generation.run()
 
         return activity_map_hdr, attenuation_map_hdr

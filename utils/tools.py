@@ -302,7 +302,7 @@ def prepare_input_image(image_hdr, logfile, min_voxel_size=1):
 
     # Tools for image manipulation
     change_format = rsc.get_rsc('change_format', 'fruitcake')
-    change_matrix = rsc.get_rsc('change_img_matrix', 'fruitcake')
+    # change_matrix = rsc.get_rsc('change_img_matrix', 'fruitcake')
     erase_negs = rsc.get_rsc('erase_negs', 'fruitcake')
     erase_nans = rsc.get_rsc('erase_nans', 'fruitcake')
 
@@ -311,10 +311,12 @@ def prepare_input_image(image_hdr, logfile, min_voxel_size=1):
     osrun(rcommand, logfile)
 
     # Resize image if necessary
-    ndims = recalculate_matrix(image_hdr, min_voxel_size)
-    rcommand = '%s %s %s %s %s %s novecino >> %s' % (change_matrix, image_hdr, image_hdr,
-                                                     str(ndims[0]), str(ndims[1]), str(ndims[2]), logfile)
-    osrun(rcommand, logfile)
+    # ndims = recalculate_matrix(image_hdr, min_voxel_size)
+    # rcommand = '%s %s %s %s %s %s novecino >> %s' % (change_matrix, image_hdr, image_hdr,
+    #                                                  str(ndims[0]), str(ndims[1]), str(ndims[2]), logfile)
+    # osrun(rcommand, logfile)
+    image_hdr = resampleXYvoxelSizes(image_hdr, min_voxel_size, logfile)
+    image_hdr = resampleZvoxelSize(image_hdr, min_voxel_size, logfile)
 
     # Erase negative and NaN values
     rcommand = '%s %s %s >> %s' % (erase_negs, image_hdr, image_hdr, logfile)

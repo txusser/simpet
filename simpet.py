@@ -229,10 +229,22 @@ class brainviset(object):
         number_of_its = self.params.get("maximumIteration")        
         axialFOV = self.scanner.get("axial_fov")
         
-        if not exists(output_dir):
-            os.makedirs(output_dir)
-        if not exists(maps_dir):
-            os.makedirs(maps_dir)
+        if exists(output_dir):
+            if self.config.get("interactive_mode")==1:
+                print("The introduced output dir already has a brainviset simulation.Proceeding will delete it.")
+                remove = input(" Write 'Y' to delete it: ")
+                print("You can disable this prompt by deactivating interactive mode in the config file.")
+                if remove == "Y":
+                    shutil.rmtree(output_dir)
+                else:
+                    raise Exception('The simulation was aborted.')
+                    ## Place some logging here
+                    sys.exit(1)
+            else:
+                shutil.rmtree(output_dir)
+        
+        os.makedirs(output_dir)
+        os.makedirs(maps_dir)
 
         # We will start generating the initial maps from the PET and the MRI
         print("Generating initial act and att maps from PET, (CT), and MRI data...")

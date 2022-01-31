@@ -497,7 +497,7 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
     output = recFileName + "_" + str(scannerParams.get("numberOfIterations")) + ".hv"
        
     output = tools.anything_to_hdr_convert(output,log_file)
-    tools.prepare_input_image(output, log_file, min_voxel_size=1.5)
+    # tools.prepare_input_image(output, log_file, min_voxel_size=1.5)
     
     if zoom!=zoom_aux:
         output = tools.resampleXYvoxelSizes(output, xyVoxelSize, log_file)
@@ -506,6 +506,7 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
     if zOutputVoxelSize != zVoxelSize:
         output = tools.resampleZvoxelSize(output, zOutputVoxelSize, log_file)
         
+    tools.reorient_dcmtonii(output)
     
     return output
 

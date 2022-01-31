@@ -297,5 +297,5 @@ class patient2maps(object):
         os.system("rm %s/seg_*" % self.analysis_path)
         os.system("rm %s/c1* %s/c2* %s/c3* %s/c4* %s/c5*" % (self.analysis_path, self.analysis_path, self.analysis_path, self.analysis_path, self.analysis_path))
         os.system("rm %s/gm* %s/w* " % (self.analysis_path, self.analysis_path))
-        os.system("rm %s/*txt" % self.analysis_path)
+        # os.system("rm %s/*txt" % self.analysis_path)
         os.system("rm %s/y_*" % self.analysis_path)

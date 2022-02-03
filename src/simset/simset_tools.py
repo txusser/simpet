@@ -495,7 +495,7 @@ def simset_calcattenuation(simset_dir,sim_dir,output,hdr_to_copy,nrays=1,timeout
     os.chdir(sim_dir)
 
     child = pexpect.spawn(calcattenuation,timeout=timeout)
-    child.logfile = sys.stdout.buffer
+    #child.logfile = sys.stdout.buffer #I comment it because it failed when I run the code on the spyder console
     child.expect('Enter name of param file: ')
     child.sendline('phg.rec')
     child.expect('Enter name of output file: ')

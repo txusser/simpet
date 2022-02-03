@@ -505,9 +505,10 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
     
     if zOutputVoxelSize != zVoxelSize:
         output = tools.resampleZvoxelSize(output, zOutputVoxelSize, log_file)
-        
-    tools.reorient_dcmtonii(output)
-    
+     
+    # output = tools.nii_analyze_convert(output)    
+    # tools.reorient_dcmtonii(output)
+    # output = tools.nii_analyze_convert(output) 
     return output
 
 

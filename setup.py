@@ -226,6 +226,10 @@ def install_soap():
     # Install swig (needed for STIR)
     icom = 'sudo apt install swig -y -q'
     rsystem(icom)
+    
+    # Install NIPYPE
+    icom = 'sudo pip3 install nipype'
+    rsystem(icom)
 
 def download_resources():
 

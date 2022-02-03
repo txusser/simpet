@@ -8,6 +8,7 @@ import numpy as np
 from operator import itemgetter
 from nilearn import image
 from nipype.interfaces.dcm2nii import Dcm2nii
+from nipype.interfaces import fsl
 import sys
 
 def osrun(command, logfile, catch_out=False):
@@ -597,6 +598,8 @@ def petmr2maps(pet_image, mri_image, ct_image, log_file, spm_run, output_dir, mo
 
         #Performing PET-CT/MR coregister
         mfile = os.path.join(output_dir,"fusion_pet_to_mri.m")
+        # correg_pet_hdr = fsl_flirt(mri_hdr, pet_hdr, log_file)
+        # correg_pet_img =correg_pet_hdr[0:-3]+"img"
         correg_pet_img = spm.image_fusion(spm_run, mfile, mri_img, pet_img, log_file)
         correg_ct_img=""
         if ct_image: #ct_image is not empty
@@ -797,7 +800,7 @@ def remove_neg_nan(image_hdr):
 def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map, axialFOV, log_file):
     
     output_dir = dirname(output_act_map)
-    mfileFusion = join(dirname(output_act_map),"fusion.m")
+    # mfileFusion = join(dirname(output_act_map),"fusion.m")
     
     # Getting the necesary resources
     cambia_formato = rsc.get_rsc('change_format', 'fruitcake')
@@ -808,10 +811,11 @@ def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map,
         
     # First step is coregistering the output image with the orig pet (coregistered to the mri)
     #act_map_img = act_map[0:-3]+"img"
-    simu_pet_img = simu_pet[0:-3]+"img"
+    # simu_pet_img = simu_pet[0:-3]+"img"
     orig_pet_img = orig_pet[0:-3]+"img"
-    coreg_simpet_img = spm.image_fusion(spmrun, mfileFusion, orig_pet_img, simu_pet_img, log_file)
-    coreg_simpet_hdr =coreg_simpet_img[0:-3]+"hdr"
+    # coreg_simpet_img = spm.image_fusion(spmrun, mfileFusion, orig_pet_img, simu_pet_img, log_file)
+    coreg_simpet_hdr = fsl_flirt(orig_pet, simu_pet, log_file)
+    coreg_simpet_img =coreg_simpet_hdr[0:-3]+"img"
     
     act, act_data = nib_load(act_map)
     
@@ -856,6 +860,31 @@ def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map,
     scalImage(output_act_map, 127, log_file)    
     rcommand = '%s %s %s 1B >> %s' % (cambia_formato, output_act_map, output_act_map, log_file)
     osrun(rcommand, log_file)  
+    
+def fsl_flirt(reference_hdr, input_hdr, log_file):
+    print("hola")
+    components = os.path.split(input_hdr)
+    coreg_hdr = os.path.join(components[0], 'r' + components[1])
+    flt = fsl.FLIRT(bins=640, cost_func='mutualinfo')
+    flt.inputs.in_file = input_hdr
+    flt.inputs.reference = reference_hdr
+    flt.out_file = coreg_hdr
+    print(flt.out_file)
+    flt.out_log=log_file
+    flt.save_log=True
+    flt.inputs.output_type = "NIFTI_GZ"
+    flt.cmdline 
+    'flirt -in %s -ref %s -out %s -dof 6 -cost mutualinfo -searchrx -30 30 -searchry -30 30 -searchrz -30 30' %(input_hdr, reference_hdr, coreg_hdr)
+    aux = os.getcwd()
+    os.chdir(components[0])
+    flt.run()
+    os.chdir(aux)
+    
+    anything_to_hdr_convert(input_hdr[0:-4]+"_flirt.nii.gz")
+    copy_analyze(input_hdr[0:-4]+"_flirt.hdr", coreg_hdr)
+    os.system("rm %s*" % input_hdr[0:-4]+"_flirt.*")
+    
+    return coreg_hdr
     
       
 def proportional_scaling(img,ref_img,mask_img, log_file):

@@ -862,14 +862,12 @@ def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map,
     osrun(rcommand, log_file)  
     
 def fsl_flirt(reference_hdr, input_hdr, log_file):
-    print("hola")
     components = os.path.split(input_hdr)
     coreg_hdr = os.path.join(components[0], 'r' + components[1])
     flt = fsl.FLIRT(bins=640, cost_func='mutualinfo')
     flt.inputs.in_file = input_hdr
     flt.inputs.reference = reference_hdr
     flt.out_file = coreg_hdr
-    print(flt.out_file)
     flt.out_log=log_file
     flt.save_log=True
     flt.inputs.output_type = "NIFTI_GZ"

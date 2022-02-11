@@ -247,7 +247,8 @@ class brainviset(object):
         os.makedirs(maps_dir)
 
         # We will start generating the initial maps from the PET and the MRI
-        print("Generating initial act and att maps from PET, (CT), and MRI data...")
+        msg = "Generating initial act and att maps from PET, (CT), and MRI data..."
+        print(msg)
         act_map, att_map = tools.petmr2maps(pet, mri, ct, log_file, self.spmrun, maps_dir)
 
         self.params['att_map'] = att_map
@@ -259,15 +260,17 @@ class brainviset(object):
             new_corrCoef = 0.0
             more_its = True
             while ((it < max_num_it) & more_its):            
-                log_file = join(output_dir,"log_sim_It_%s.log" % str(it))
+                log_file_its = join(output_dir,"log_sim_It_%s.log" % str(it))
                 output_dir_aux = join(output_dir, "It_%s" % str(it))
                 components = os.path.split(pet)
                 preproc_pet = os.path.join(components[0], 'r' + components[1][0:-3]+"hdr")
     
                 self.params['act_map'] = act_map            
                 self.params['output_dir'] = output_dir_aux
-    
-                print("Simulating brain image for iteration %s of %s" % (str(it),number_of_its))
+                
+                msg = "Simulating brain image for iteration %s of %s" % (str(it),number_of_its)
+                print(msg)
+                tools.log_message(log_file_its, msg)
                 it_sim = SimPET(self.param_file)
                 it_sim.simset_simulation(act_map, att_map, output_dir_aux)
     
@@ -278,16 +281,23 @@ class brainviset(object):
                 
                 if exists(rec_file):
                     print("Updating activity map")
+                    tools.log_message(log_file_its, "Updating activity maps")
                     updated_act_map = join(maps_dir,act_map[0:-5]+"%s.hdr" % str(it+1))
-                    tools.update_act_map(self.spmrun, act_map, att_map, preproc_pet, rec_file, updated_act_map, axialFOV, log_file)
-                    new_corrCoef = tools.compute_corr_coeff(act_map, updated_act_map, log_file)
-                    print("Correlation coefficiente between images is %s " % (new_corrCoef))
+                    tools.update_act_map(self.spmrun, act_map, att_map, preproc_pet, rec_file, updated_act_map, axialFOV, log_file_its)
+                    rrec_file = join(output_dir_aux, "SimSET_Sim_"+self.params.get("scanner"),recons_algorithm,'rrec_%s_%s.hdr' % (recons_algorithm,recons_it))
+                    new_corrCoef = tools.compute_corr_coeff(preproc_pet, rrec_file, log_file_its)
+                    msg = "Correlation coefficiente between images is %s " % (new_corrCoef)
+                    print(msg)
+                    tools.log_message(log_file_its, msg)
                     if ((new_corrCoef>0.99) | (old_corrCoef>new_corrCoef)):
-                        print("No further iterations are necessary")
-                        print("Final activity map is %s" %(act_map))
+                        msg = "No further iterations are necessary. Final activity map is %s" %(act_map)
+                        print(msg)
+                        tools.log_message(log_file, msg)
                         more_its = False
                     else:
-                        print("Not converging yet. Preparing for iteration %s of %s" % ((it+1),number_of_its))
+                        msg = "Not converging yet. Preparing for iteration %s of %s" % ((it+1),number_of_its)
+                        print(msg)
+                        tools.log_message(log_file_its, msg)
                         it=it+1
                         old_corrCoef = new_corrCoef
                         act_map = updated_act_map
@@ -297,5 +307,6 @@ class brainviset(object):
                     sys.exit(1)
                 
             if more_its:
-                print("Maximum number of iterations reached")
-                print("Final activity map is %s" %(updated_act_map))
+                msg = "Maximum number of iterations reached. Final activity map is %s" %(updated_act_map)
+                print(msg)
+                tools.log_message(log_file, msg)

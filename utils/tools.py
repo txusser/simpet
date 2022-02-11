@@ -324,13 +324,8 @@ def prepare_input_image(image_hdr, logfile, min_voxel_size=1):
     # osrun(rcommand, logfile)
     
     ## # CONTEMPLAR POSIBILIDAD DE CONVERTIR ESTO EN FUNCIÓN PARA SUSTITUIR AL "cambia_formato_hdr" de fruitcake
-    img, data = nib_load(image_hdr)
-    data = data.astype(np.float32) 
-    hdr = nib.AnalyzeHeader()
-    hdr.set_data_dtype(np.float32)
-    hdr.set_data_shape(data.shape)
-    imageToWrite = nib.AnalyzeImage(data, img.affine, hdr)    
-    nib.save(imageToWrite, image_hdr)
+    change_format(image_hdr, "fl", logfile)
+    
     ###
     
     # Resize image if necessary
@@ -346,7 +341,7 @@ def prepare_input_image(image_hdr, logfile, min_voxel_size=1):
     # osrun(rcommand, logfile)
     # rcommand = '%s %s %s >> %s' % (erase_nans, image_hdr, image_hdr, logfile)
     # osrun(rcommand, logfile)
-    image_hdr = remove_neg_nan(image_hdr)
+    remove_neg_nan(image_hdr)
     
 
     return image_hdr
@@ -795,7 +790,7 @@ def remove_neg_nan(image_hdr):
     os.remove("aux.hdr")
     os.remove("aux.img")
     
-    return image_hdr
+    #return image_hdr
     
 def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map, axialFOV, log_file):
     
@@ -803,11 +798,11 @@ def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map,
     # mfileFusion = join(dirname(output_act_map),"fusion.m")
     
     # Getting the necesary resources
-    cambia_formato = rsc.get_rsc('change_format', 'fruitcake')
-    cambia_val_interval = rsc.get_rsc('change_interval', 'fruitcake') 
-    operate_image_hdr = rsc.get_rsc('operate_image', 'fruitcake')
-    remove_nan_hdr = rsc.get_rsc('erase_nans', 'fruitcake')
-    remove_neg_hdr = rsc.get_rsc('erase_negs', 'fruitcake')
+    # cambia_formato = rsc.get_rsc('change_format', 'fruitcake')
+    # cambia_val_interval = rsc.get_rsc('change_interval', 'fruitcake') 
+    # operate_image_hdr = rsc.get_rsc('operate_image', 'fruitcake')
+    # remove_nan_hdr = rsc.get_rsc('erase_nans', 'fruitcake')
+    # remove_neg_hdr = rsc.get_rsc('erase_negs', 'fruitcake')
         
     # First step is coregistering the output image with the orig pet (coregistered to the mri)
     #act_map_img = act_map[0:-3]+"img"
@@ -840,26 +835,33 @@ def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map,
     pet_mask_hdr = join(dirname(orig_pet), "pet_mask.hdr")    
     deleteValuesOutFov(pet_mask_hdr, axialFOV/2, act.shape[2]/2)
     
-    rcommand = '%s %s %s %s fl multi' % (operate_image_hdr, division_hdr, pet_mask_hdr, division_hdr)
-    osrun(rcommand, log_file)
-    rcommand = '%s %s %s >> %s' % (remove_nan_hdr, division_hdr, division_hdr, log_file)
-    osrun(rcommand, log_file)
-    rcommand = '%s %s %s >> %s' % (remove_neg_hdr, division_hdr, division_hdr, log_file)
-    osrun(rcommand, log_file)
-    
-    rcommand = '%s %s %s 5 100000000000000000000000000000000000 1' % (cambia_val_interval, division_hdr, division_hdr)
-    osrun(rcommand, log_file)
+    # rcommand = '%s %s %s %s fl multi' % (operate_image_hdr, division_hdr, pet_mask_hdr, division_hdr)
+    # osrun(rcommand, log_file)
+    # rcommand = '%s %s %s >> %s' % (remove_nan_hdr, division_hdr, division_hdr, log_file)
+    # osrun(rcommand, log_file)
+    # rcommand = '%s %s %s >> %s' % (remove_neg_hdr, division_hdr, division_hdr, log_file)
+    # osrun(rcommand, log_file)
+    fix_4d_image(pet_mask_hdr)
+    operate_images_analyze(division_hdr, pet_mask_hdr, division_hdr, "mult")
+    remove_neg_nan(division_hdr)
+    change_interval_values(division_hdr, division_hdr, 5, 100000000000000000000000000000000000,1)
+    # rcommand = '%s %s %s 5 100000000000000000000000000000000000 1' % (cambia_val_interval, division_hdr, division_hdr)
+    # osrun(rcommand, log_file)
     
     #operate_images_analyze(division_hdr, pet_mask_hdr, division_hdr, 'mult')
-    rcommand = '%s %s %s %s fl multi' % (operate_image_hdr, division_hdr, pet_mask_hdr, division_hdr)
-    osrun(rcommand, log_file)
+    operate_images_analyze(division_hdr, pet_mask_hdr, division_hdr, "mult")
+    # rcommand = '%s %s %s %s fl multi' % (operate_image_hdr, division_hdr, pet_mask_hdr, division_hdr)
+    # osrun(rcommand, log_file)
     
-    #and finally, we calculate the new activity image    
-    rcommand = '%s %s %s %s fl multi' % (operate_image_hdr, act_map, division_hdr, output_act_map)
-    osrun(rcommand, log_file)    
-    scalImage(output_act_map, 127, log_file)    
-    rcommand = '%s %s %s 1B >> %s' % (cambia_formato, output_act_map, output_act_map, log_file)
-    osrun(rcommand, log_file)  
+    #and finally, we calculate the new activity image 
+    fix_4d_image(act_map)
+    operate_images_analyze(division_hdr, act_map, output_act_map, "mult")
+    # rcommand = '%s %s %s %s fl multi' % (operate_image_hdr, act_map, division_hdr, output_act_map)
+    # osrun(rcommand, log_file)    
+    scalImage(output_act_map, 127, log_file) 
+    change_format(output_act_map,"1B", log_file)
+    # rcommand = '%s %s %s 1B >> %s' % (cambia_formato, output_act_map, output_act_map, log_file)
+    # osrun(rcommand, log_file)  
     
 def fsl_flirt(reference_hdr, input_hdr, log_file):
     components = os.path.split(input_hdr)
@@ -964,4 +966,50 @@ def compute_corr_coeff(img1, img2, log_file):
     
     return corrCoefmtx[0,1]
 
+def fix_4d_image(image_hdr):
+    img, data = nib_load(image_hdr)
+    shape = data.shape
+   
+    if len(shape) != 3:
+        data_new = data[:,:,:,0]
+        
+    imageToWrite = nib.AnalyzeImage(data_new,img.affine,img.header)
+    nib.save(imageToWrite, "aux.hdr")
+    copy_analyze("aux.hdr",image_hdr)
+    os.remove("aux.hdr")
+    os.remove("aux.img")
     
+def change_interval_values(input_hdr, output_hdr, min_value, max_value, rep_value):
+    img, data = nib_load(input_hdr)
+    
+    
+    indx = np.where(data<max_value) and np.where(data>min_value)
+    
+    data[indx] = rep_value    
+    
+    imageToWrite = nib.AnalyzeImage(data,img.affine,img.header)
+    nib.save(imageToWrite, "aux.hdr")
+    copy_analyze("aux.hdr",output_hdr)
+    os.remove("aux.hdr")
+    os.remove("aux.img")
+
+def change_format(image_hdr, newFormat, logfile):
+    message=""
+    img, data = nib_load(image_hdr)
+    
+    if newFormat == "fl":
+        form=np.float32
+    elif newFormat == "1B":
+        form=np.uint8
+    else:
+        message = "Error! Invalid format (or not implemented yet): " +str(newFormat)
+        print(message)
+        log_message(logfile, message, 'error')
+    
+    if message=="":
+        data = data.astype(form) 
+        hdr = nib.AnalyzeHeader()
+        hdr.set_data_dtype(form)
+        hdr.set_data_shape(data.shape)
+        imageToWrite = nib.AnalyzeImage(data, img.affine, hdr)    
+        nib.save(imageToWrite, image_hdr)

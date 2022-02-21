@@ -281,26 +281,30 @@ class brainviset(object):
                 
                 if exists(rec_file):
                     print("Updating activity map")
-                    tools.log_message(log_file_its, "Updating activity maps")
-                    updated_act_map = join(maps_dir,act_map[0:-5]+"%s.hdr" % str(it+1))
-                    tools.update_act_map(self.spmrun, act_map, att_map, preproc_pet, rec_file, updated_act_map, axialFOV, log_file_its)
+                    tools.log_message(log_file_its, "Updating activity maps")                    
                     rrec_file = join(output_dir_aux, "SimSET_Sim_"+self.params.get("scanner"),recons_algorithm,'rrec_%s_%s.hdr' % (recons_algorithm,recons_it))
                     new_corrCoef = tools.compute_corr_coeff(preproc_pet, rrec_file, log_file_its)
-                    msg = "Correlation coefficiente between images is %s " % (new_corrCoef)
+                    msg = "Correlation coefficient between images is %s " % (new_corrCoef)
                     print(msg)
                     tools.log_message(log_file_its, msg)
-                    if ((new_corrCoef>0.99) | (old_corrCoef>new_corrCoef)):
-                        msg = "No further iterations are necessary. Final activity map is %s" %(act_map)
-                        print(msg)
-                        tools.log_message(log_file, msg)
+                    if (new_corrCoef>0.99) :
+                        msg = "No further iterations are necessary. Final activity map is %s" %(act_map)                        
                         more_its = False
+                    elif (old_corrCoef>new_corrCoef):
+                        fin_act_map = join(maps_dir,act_map[0:-5]+"%s.hdr" % str(it-1))
+                        msg = "No further iterations will be done.  The correlation coefficient has worsened. Final activity map is %s" %(fin_act_map)
+                        more_its = False
+                        #remove all the folders relatively to the last iteration done?
                     else:
-                        msg = "Not converging yet. Preparing for iteration %s of %s" % ((it+1),number_of_its)
-                        print(msg)
-                        tools.log_message(log_file_its, msg)
                         it=it+1
+                        msg = "Not converging yet. Preparing for iteration %s of %s" % (it,number_of_its)                                                
                         old_corrCoef = new_corrCoef
+                        updated_act_map = join(maps_dir,act_map[0:-5]+"%s.hdr" % str(it))
+                        tools.update_act_map(self.spmrun, act_map, att_map, preproc_pet, rec_file, updated_act_map, axialFOV, log_file_its)
                         act_map = updated_act_map
+                        
+                    print(msg)
+                    tools.log_message(log_file, msg)
                 else:
                     raise Exception('The brainviset process was aborted.')
                     ## Place some logging here

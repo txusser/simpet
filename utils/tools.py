@@ -973,11 +973,11 @@ def fix_4d_image(image_hdr):
     if len(shape) != 3:
         data_new = data[:,:,:,0]
         
-    imageToWrite = nib.AnalyzeImage(data_new,img.affine,img.header)
-    nib.save(imageToWrite, "aux.hdr")
-    copy_analyze("aux.hdr",image_hdr)
-    os.remove("aux.hdr")
-    os.remove("aux.img")
+        imageToWrite = nib.AnalyzeImage(data_new,img.affine,img.header)
+        nib.save(imageToWrite, "aux.hdr")
+        copy_analyze("aux.hdr",image_hdr)
+        os.remove("aux.hdr")
+        os.remove("aux.img")
     
 def change_interval_values(input_hdr, output_hdr, min_value, max_value, rep_value):
     img, data = nib_load(input_hdr)

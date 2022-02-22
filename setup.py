@@ -191,7 +191,7 @@ def install_soap():
     rsystem(icom)
 
     # Install and upgrade PIP
-    icom = 'sudo pip3 install PyYAML'
+    icom = 'sudo pip3 install -U PyYAML'
     rsystem(icom)
 
 
@@ -214,6 +214,10 @@ def install_soap():
     # Install Pandas
     icom = 'sudo apt install python3-pandas -y -q'
     rsystem(icom)
+    
+    # Install nilearn
+    icom = 'sudo pip3 install -U nilearn'
+    rsystem(icom)
 
     # Install cmake (needed for STIR)
     icom = 'sudo apt install cmake -y -q'
@@ -221,6 +225,10 @@ def install_soap():
 
     # Install swig (needed for STIR)
     icom = 'sudo apt install swig -y -q'
+    rsystem(icom)
+    
+    # Install NIPYPE
+    icom = 'sudo pip3 install nipype'
     rsystem(icom)
 
 def download_resources():
@@ -251,6 +259,8 @@ install_soap()
 simpet_dir = os.getcwd()
 
 
+install_soap()
+
 if not exists(dest_dir):
     os.makedirs(dest_dir)
 os.chdir(dest_dir)
@@ -263,5 +273,4 @@ install_stir(stir_dir, simset_dir, log_file)
 
 os.chdir(simpet_dir)
 update_config(stir_dir,simset_dir)
-
 

@@ -15,7 +15,7 @@ SETUP:
 - Clone the repository
 - Run setup.py
 - Open Python and import the simpet class.
-- Create a simulation object. Sample Data is provided in Data/test: test_simu = simpet.SimPET('Data/test/testParams.yml')
+- Create a simulation object. Sample Data is provided in Data/test: test_simu = simpet.SimPET('Data/test_image/testParams.yml')
 - Run the simulation: test_simu.run()
 
 

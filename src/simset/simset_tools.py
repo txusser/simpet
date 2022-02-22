@@ -5,6 +5,7 @@ from os.path import join, exists
 import nibabel as nib
 import numpy as np
 import pexpect
+import yaml
 
 from utils import tools
 
@@ -241,6 +242,27 @@ def make_simset_bin(config, output_file, simulation_dir, scanner, add_randoms=Fa
         message = "Created bin_file in: %s" % output_file
         tools.log_message(log_file,message,'info')
 
+def make_simset_simp_det(scanner_params, output, sim_dir, det_hf=0, log_file=False):
+    
+    energy_resolution = scanner_params.get("energy_resolution")
+    new_file = open(output, "w")
+    new_file.write(
+        "ENUM detector_type = simple_pet \n\n" +
+        "REAL    reference_energy_keV = 511.0 \n" +
+        "REAL    energy_resolution_percentage = %s \n" % energy_resolution)
+    
+    if det_hf==1:
+        new_file.write('STR     history_file = "' + join(sim_dir, "det_hf.hist" + '"\n'))
+        
+
+    new_file.close()
+
+    if log_file:
+        message = ("Created det_file with:\n" +                  
+                  "Energy resolution: %s" % energy_resolution)
+
+        tools.log_message(log_file,message,'info')
+    
 def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0, log_file=False):
 
     num_rings = scanner_params.get("num_rings")
@@ -307,6 +329,7 @@ def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0, log_file=Fals
         )
     if det_hf==1:
             new_file.write('STR     history_file = "' + join(sim_dir, "det_hf.hist" + '"\n'))
+    
 
     new_file.close()
 
@@ -321,22 +344,6 @@ def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0, log_file=Fals
 
         tools.log_message(log_file,message,'info')
 
-def make_simset_simplepet_det(scanner_params, output):
-    
-    with open(scanner_params, 'rb') as f:
-        params = yaml.load(f.read(), Loader=yaml.FullLoader)
-
-    energy_resolution = params.get("energy_resolution")
-
-    new_file = open(output, "w")
-    
-    new_file.write(
-        "ENUM detector_type = simple_pet \n\n" +
-        "REAL    reference_energy_keV = 511.0 \n" +
-        "REAL    energy_resolution_percentage = %s \n" % energy_resolution
-        )
-
-    new_file.close()
 
 def make_index_file(simulation_dir, simset_dir, log_file=False):
 
@@ -362,7 +369,7 @@ def process_weights(weights_file, output_dir, scanner, add_randoms = 0):
     nangles = scanner.get("num_aa_bins")
     nrings = scanner.get("num_rings")
     nslices = nrings*nrings
-
+    
     Simset_offset = 32768
     block_size = nbins*nangles*nslices*4
 
@@ -446,6 +453,9 @@ def add_randoms(sim_dir, simset_dir, coincidence_window, rebin=True, log_file=Fa
 
     command = "%s %s >> %s" % (addrand_bin, template, log_file)
     tools.osrun(command, log_file)
+    
+    if exists(sorted_file):
+        os.remove(sorted_file)
 
     # The following will replace the existing det-hist file with the new including randoms
 
@@ -472,7 +482,7 @@ def combine_history_files(simset_dir, history_files, output, log_file):
 
     rcommand = '%s %s %s' % (combinehist, history_files, output)
 
-    proc  = sp.Popen(rcommand, universal_newlines=True, shell=True, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE).communicate("No\n")
+    proc  = sp.Popen(rcommand, universal_newlines=True, shell=True, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE).communicate("Yes\n")
 
     #tools.osrun(rcommand, log_file)
 
@@ -484,7 +494,7 @@ def simset_calcattenuation(simset_dir,sim_dir,output,hdr_to_copy,nrays=1,timeout
     os.chdir(sim_dir)
 
     child = pexpect.spawn(calcattenuation,timeout=timeout)
-    child.logfile = sys.stdout.buffer
+    #child.logfile = sys.stdout.buffer #I comment it because it failed when I run the code on the spyder console
     child.expect('Enter name of param file: ')
     child.sendline('phg.rec')
     child.expect('Enter name of output file: ')

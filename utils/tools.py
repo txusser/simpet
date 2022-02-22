@@ -3,8 +3,13 @@ from os.path import join, exists, isfile, isdir, dirname, basename, splitext
 from subprocess import getstatusoutput as getoutput
 import nibabel as nib
 from utils import resources as rsc
+from utils import spm_tools as spm
 import numpy as np
 from operator import itemgetter
+from nilearn import image
+from nipype.interfaces.dcm2nii import Dcm2nii
+from nipype.interfaces import fsl
+import sys
 
 def osrun(command, logfile, catch_out=False):
     """
@@ -122,11 +127,14 @@ def read_analyze_header(header_file,logfile):
     img = nib.load(header_file)
 
     zpix = img.shape[2]
-    zsize = abs(img.get_affine[2,2])
+    #zsize = abs(img.get_affine[2,2])
+    zsize = abs(img.affine[2,2])
     xpix = img.shape[0]
-    xsize = abs(img.get_affine[0,0])
+    #xsize = abs(img.get_affine[0,0])
+    xsize = abs(img.affine[0,0])
     ypix = img.shape[1]
-    ysize = abs(img.get_affine[1,1])
+    #ysize = abs(img.get_affine[1,1])
+    ysize = abs(img.affine[1,1])
 
     return zpix, zsize, xpix, xsize, ypix, ysize
 
@@ -175,36 +183,46 @@ def nii_analyze_convert(image, logfile=False, outfile=False):
     :return:
     """
 
-    if not logfile: logfile = join(dirname(image), 'log_nii_analyze_convert.txt')
+    # if not logfile: logfile = join(dirname(image), 'log_nii_analyze_convert.txt')
 
     ext = os.path.splitext(image)[1]
+    img, data = nib_load(image)
+    data = data.astype(np.float32) #casting to avoid problems when applying nib.save with no float data
+    hdr = nib.AnalyzeHeader()
+    hdr.set_data_dtype(np.float32)
+    hdr.set_data_shape(data.shape)
 
     if ext == '.nii':
-        n2a =  rsc.get_rsc('nii2analyze', 'exe')
+        # n2a =  rsc.get_rsc('nii2analyze', 'exe')
         if outfile:
             cimage = outfile
         else:
             cimage = image.replace('.nii', '.hdr')
-        rcommand = '%s %s %s >> %s' % (n2a, image, cimage, logfile)
-        osrun(rcommand, logfile)
+        # rcommand = '%s %s %s >> %s' % (n2a, image, cimage, logfile)
+        # osrun(rcommand, logfile)
+        imageToWrite = nib.AnalyzeImage(data, img.affine, hdr)
     elif ext == '.hdr':
-        a2n =  rsc.get_rsc('analyze2nii', 'exe')
+        # a2n =  rsc.get_rsc('analyze2nii', 'exe')
         if outfile:
             cimage = outfile
         else:
             cimage = image.replace('.hdr', '.nii')
-        rcommand = '%s %s %s >> %s' % (a2n, image, cimage, logfile)
-        osrun(rcommand, logfile)
+        # rcommand = '%s %s %s >> %s' % (a2n, image, cimage, logfile)
+        # osrun(rcommand, logfile)
+        imageToWrite = nib.Nifti1Image(data, img.affine, hdr)
     else:
-        a2n =  rsc.get_rsc('analyze2nii', 'exe')
+        # a2n =  rsc.get_rsc('analyze2nii', 'exe')
         if outfile:
             cimage = outfile
         else:
             cimage = image.replace('.img', '.nii')
-        image_hdr = str(image).replace(".img", ".hdr")
-        rcommand = '%s %s %s >> %s' % (a2n, image_hdr, cimage, logfile)
-        osrun(rcommand, logfile)
-
+        # image_hdr = str(image).replace(".img", ".hdr")
+        # rcommand = '%s %s %s >> %s' % (a2n, image_hdr, cimage, logfile)
+        # osrun(rcommand, logfile)
+        imageToWrite = nib.Nifti1Image(data, img.affine, hdr)
+    
+    nib.save(imageToWrite, cimage)
+    
     if exists(cimage):
         if outfile:
             shutil.move(cimage, outfile)
@@ -244,7 +262,7 @@ def anything_to_hdr_convert(image, logfile=False, outfile=False ):
         rcommand = '%s %s %s' % (dicom2nii, image, nii)
         osrun(rcommand,logfile)
         if exists(nii):
-            hdr = ap.nii_analyze_convert(nii,logfile=logfile)
+            hdr = nii_analyze_convert(nii,logfile=logfile)
             os.remove(nii)
             if exists(hdr):
                 return hdr
@@ -260,21 +278,27 @@ def anything_to_hdr_convert(image, logfile=False, outfile=False ):
 
         lines = [x.strip() for x in lines]
 
-        pixel_x = lines[13].split()[4]
-        pixel_size_x = lines[14].split()[5]
-        pixel_y = lines[16].split()[4]
-        pixel_size_y = lines[17].split()[5]
-        pixel_z = lines[19].split()[4]
-        pixel_size_z = lines[20].split()[5]
-
-        hdr_header = image[0:-2] + "hdr"
-        img_file = image[0:-2] + "img"
+        pixel_x = lines[16].split()[4]        
+        pixel_size_x = lines[17].split()[5]
+        pixel_y = lines[19].split()[4]
+        pixel_size_y = lines[20].split()[5]
+        pixel_z = lines[22].split()[4]
+        pixel_size_z = lines[23].split()[5]
+        
+        hdr_header = image[0:-2] + "hdr" 
+        # img_file = image[0:-2] + "img"
         data_file = image[0:-2] + "v"
 
         #This will convert .hv to .hdr and copy the data
-        os.system("gen_hdr %s %s %s %s fl %s %s %s 0" % (hdr_header, pixel_x, pixel_y, pixel_z, pixel_size_x, pixel_size_y, pixel_size_z))
-        shutil.copy(data_file, img_file)
-
+        # gen_hdr = rsc.get_rsc("gen_hdr", "fruitcake")
+        # rcommand = "%s %s %s %s %s fl %s %s %s 0" % (gen_hdr, hdr_header[0:-4], pixel_x, pixel_y, pixel_z, pixel_size_x, pixel_size_y, pixel_size_z)
+        # osrun(rcommand, logfile)
+        # shutil.copy(data_file, img_file)
+        create_analyze_from_imgdata(data_file,hdr_header,float(pixel_x),float(pixel_y),float(pixel_z),float(pixel_size_x),float(pixel_size_y),float(pixel_size_z))
+        #nii_analyze_convert("inicial.hdr",logfile,"aux.nii")
+        #nii_analyze_convert("aux.nii",logfile,hdr_header)
+        #os.remove("aux.nii")
+        
         if exists(hdr_header):
             return hdr_header
         else:
@@ -290,26 +314,35 @@ def prepare_input_image(image_hdr, logfile, min_voxel_size=1):
     """
 
     # Tools for image manipulation
-    change_format = rsc.get_rsc('change_format', 'fruitcake')
-    change_matrix = rsc.get_rsc('change_img_matrix', 'fruitcake')
-    erase_negs = rsc.get_rsc('erase_negs', 'fruitcake')
-    erase_nans = rsc.get_rsc('erase_nans', 'fruitcake')
+    # change_format = rsc.get_rsc('change_format', 'fruitcake')
+    # change_matrix = rsc.get_rsc('change_img_matrix', 'fruitcake')
+    # erase_negs = rsc.get_rsc('erase_negs', 'fruitcake')
+    # erase_nans = rsc.get_rsc('erase_nans', 'fruitcake')
 
     # Convert input image to Analyze format and float data type
-    rcommand = '%s %s %s fl >> %s' % (change_format, image_hdr, image_hdr, logfile)
-    osrun(rcommand, logfile)
-
+    # rcommand = '%s %s %s fl >> %s' % (change_format, image_hdr, image_hdr, logfile)
+    # osrun(rcommand, logfile)
+    
+    ## # CONTEMPLAR POSIBILIDAD DE CONVERTIR ESTO EN FUNCIÓN PARA SUSTITUIR AL "cambia_formato_hdr" de fruitcake
+    change_format(image_hdr, "fl", logfile)
+    
+    ###
+    
     # Resize image if necessary
-    ndims = recalculate_matrix(image_hdr, min_voxel_size)
-    rcommand = '%s %s %s %s %s %s novecino >> %s' % (change_matrix, image_hdr, image_hdr,
-                                                     str(ndims[0]), str(ndims[1]), str(ndims[2]), logfile)
-    osrun(rcommand, logfile)
+    # ndims = recalculate_matrix(image_hdr, min_voxel_size)
+    # rcommand = '%s %s %s %s %s %s novecino >> %s' % (change_matrix, image_hdr, image_hdr,
+    #                                                  str(ndims[0]), str(ndims[1]), str(ndims[2]), logfile)
+    # osrun(rcommand, logfile)
+    image_hdr = resampleXYvoxelSizes(image_hdr, min_voxel_size, logfile)
+    image_hdr = resampleZvoxelSize(image_hdr, min_voxel_size, logfile)
 
     # Erase negative and NaN values
-    rcommand = '%s %s %s >> %s' % (erase_negs, image_hdr, image_hdr, logfile)
-    osrun(rcommand, logfile)
-    rcommand = '%s %s %s >> %s' % (erase_nans, image_hdr, image_hdr, logfile)
-    osrun(rcommand, logfile)
+    # rcommand = '%s %s %s >> %s' % (erase_negs, image_hdr, image_hdr, logfile)
+    # osrun(rcommand, logfile)
+    # rcommand = '%s %s %s >> %s' % (erase_nans, image_hdr, image_hdr, logfile)
+    # osrun(rcommand, logfile)
+    remove_neg_nan(image_hdr)
+    
 
     return image_hdr
 
@@ -374,7 +407,8 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     Given an input image, multiply or divide it by a numerical factor
     saving the result as output_image
     :param input_image: image base operation on
-    :param operation: 1 = multiply, 2 = divide
+    #:param operation: 1 = multiply, 2 = divide
+    :param operation: 'mult' = multiply, 'div' = divide
     :param factor: operation factor
     :param output_image: output image file
     :return:
@@ -383,6 +417,7 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     img = nib.load(input_image)
     data = img.get_data()[:,:,:]
     data = np.nan_to_num(data)
+    
 
     if operation == 'mult':
         data = data * float(factor)
@@ -396,10 +431,13 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     hdr1 = nib.AnalyzeHeader()
     hdr1.set_data_dtype(img.get_data_dtype())
     hdr1.set_data_shape(img.shape)
-    hdr1.set_zooms(abs(np.diag(img.affine))[0:3])
+    #hdr1.set_zooms(abs(np.diag(img.affine)))
+    #hdr1.set_zooms(abs(np.diag(img.affine))[0:3])
+    #hdr1.set_zooms(abs(np.diag(img.affine))[0:4])
+    hdr1.set_zooms(abs(np.diag(img.affine))[0:img.ndim])
 
     analyze_img = nib.AnalyzeImage(data, hdr1.get_base_affine(), hdr1)
-
+    
     nib.save(analyze_img,output_image)
 
 def launch_cesga_job(command, sim_folder, cesga_max_time, cesga_cores, cesga_mem):
@@ -447,9 +485,11 @@ def operate_images_analyze(image1, image2, out_image, operation='mult'):
     hdr1 = nib.AnalyzeHeader()
     hdr1.set_data_dtype(img1.get_data_dtype())
     hdr1.set_data_shape(img1.shape)
-    hdr1.set_zooms(abs(np.diag(img1.affine))[0:3])
-
-    analyze_img = nib.AnalyzeImage(res_data, hdr1.get_base_affine(), hdr1)
+    ##hdr1.set_zooms(abs(np.diag(img1.affine))[0:3])
+    ##hdr1.set_zooms(abs(np.diag(img1.affine))[0:4])
+    hdr1.set_zooms(abs(np.diag(img1.affine))[0:img1.ndim])
+    
+    analyze_img = nib.AnalyzeImage(res_data, hdr1.get_base_affine(), hdr1)    
 
     nib.save(analyze_img,out_image)
 
@@ -489,7 +529,33 @@ def log_message(logfile, message, mode='info'):
         with open(logfile, 'w') as lfile:
             lfile.write(stream)
 
-def petmr2maps(pet_image,mri_image,log_file,mode="SimSET"):
+def reorient_dcmtonii(image_path):
+    
+    
+    components=os.path.split(image_path)
+    path = components[0]
+    image = components[1]
+    converter = Dcm2nii()
+    converter.inputs.source_names=[image_path]
+    converter.inputs.reorient_and_crop=True
+    # converter.nii_output=False
+    converter.run()
+    
+    reor_ima_name = "o"+image
+    if exists(join(path,reor_ima_name)):
+        shutil.copy(join(path,reor_ima_name),image_path)
+        os.remove(join(path,reor_ima_name))
+        os.remove(join(path,"co"+image))
+    else:
+    #     converter.inputs_reorient_and_crop=False	
+    #     converter.run()
+    #     shutil.copy(join(path,"f"+image), image_path)
+        os.remove(join(path,"c"+image))
+    #     os.remove(join(path,"f"+image))
+
+    
+    
+def petmr2maps(pet_image, mri_image, ct_image, log_file, spm_run, output_dir, mode="SimSET"):
         """
         It will create act and att maps from PET and MR images.
         Required inputs are:
@@ -497,31 +563,49 @@ def petmr2maps(pet_image,mri_image,log_file,mode="SimSET"):
         mri_image: dicom_dir, nii.gz, nii or Analyze (.hdr or .img)
         mode: Choose STIR or SIMSET. The maps will be different for each simulation.
         The inputs will be stored to Data/simulation_name/Patient as reformatted/corregistered Analyze
-        The maps will be stored on Data/simulation_name/Maps
+        #The maps will be stored on Data/simulation_name/Maps
+        The maps will be stored on Results/output_name/Maps
         """
-        message = "GENERATING ACT AND ATT MAPS FROM PETMR IMAGES"
-        tools.log_message(log_file, message, mode='info')
-
+        message = "GENERATING ACT AND ATT MAPS FROM PET, (CT) and MR IMAGES"
+        log_message(log_file, message, mode='info')
+        
+        reorient_dcmtonii(pet_image)
+        reorient_dcmtonii(mri_image)
+        reorient_dcmtonii(ct_image)
         #First of all lets take all to analyze
-        pet_hdr = tools.anything_to_hdr_convert(pet_image)
-        pet_hdr = tools.copy_analyze(pet_hdr,image2=False,dest_dir=self.patient_dir)
-        pet_hdr = tools.prepare_input_image(pet_hdr,log_file,min_voxel_size=1.5)
+        pet_hdr = anything_to_hdr_convert(pet_image)
+        #pet_hdr = copy_analyze(pet_hdr,image2=False,dest_dir=patient_dir)
+        pet_hdr = prepare_input_image(pet_hdr,log_file,min_voxel_size=1.5)
         pet_img = pet_hdr[0:-3]+"img"
+        
+        if ct_image: #ct_image is not empty
+            ct_hdr = anything_to_hdr_convert(ct_image)
+            ct_hdr = prepare_input_image(ct_hdr,log_file,min_voxel_size=1.5)
+            ct_img = ct_hdr[0:-3]+"img"
 
-        mri_hdr = tools.anything_to_hdr_convert(mri_image)
-        mri_hdr = tools.copy_analyze(mri_hdr,image2=False,dest_dir=self.patient_dir)
-        mri_hdr = tools.prepare_input_image(mri_hdr,log_file,min_voxel_size=1.5)
+        mri_hdr = anything_to_hdr_convert(mri_image)
+        #mri_hdr = copy_analyze(mri_hdr,image2=False,dest_dir=patient_dir)
+        mri_hdr = prepare_input_image(mri_hdr,log_file,min_voxel_size=1.5)
         mri_img = mri_hdr[0:-3]+"img"
 
-        #Performing PET/MR coregister
-        mfile = os.path.join(self.patient_dir,"fusion.m")
-        correg_pet_img = tools.image_fusion(self.spm_run, mfile, mri_img, pet_img, log_file)
+        #make mri image square 
+        makeImageSquare(mri_hdr, log_file)
+
+        #Performing PET-CT/MR coregister
+        mfile = os.path.join(output_dir,"fusion_pet_to_mri.m")
+        # correg_pet_hdr = fsl_flirt(mri_hdr, pet_hdr, log_file)
+        # correg_pet_img =correg_pet_hdr[0:-3]+"img"
+        correg_pet_img = spm.image_fusion(spm_run, mfile, mri_img, pet_img, log_file)
+        correg_ct_img=""
+        if ct_image: #ct_image is not empty
+            mfile = os.path.join(output_dir,"fusion_ct_to_mri.m")
+            correg_ct_img = spm.image_fusion(spm_run, mfile, mri_img, ct_img, log_file)
 
         #Now the map generation
-        from src.patient2maps import patient2maps
+        from utils.patient2maps import patient2maps
 
-        my_map_generation = patient2maps(self.spm_run, self.sim_maps_dir, log_file,
-                                         mri_img, correg_pet_img, mode=mode)
+        my_map_generation = patient2maps(spm_run, output_dir, log_file,
+                                         mri_img, correg_pet_img, correg_ct_img, mode=mode)
         activity_map_hdr, attenuation_map_hdr = my_map_generation.run()
 
         return activity_map_hdr, attenuation_map_hdr
@@ -542,7 +626,8 @@ def convert_map_values(act_map,att_map,output_dir,log_file,mode="SimSET"):
 
         if mode == "SimSET":
 
-            rcommand = '%s %s %s 0.096 1 >> %s' % (cambia_val, att_map, new_att_map, log_file)
+            #rcommand = '%s %s %s 0.096 1 >> %s' % (cambia_val, att_map, new_att_map, log_file)
+            rcommand = '%s %s %s 0.096 4 >> %s' % (cambia_val, att_map, new_att_map, log_file)
             osrun(rcommand, log_file)
             rcommand = '%s %s %s 0.135 3 >> %s' % (cambia_val, new_att_map, new_att_map, log_file)
             osrun(rcommand, log_file)
@@ -580,6 +665,7 @@ def convert_simset_sino_to_stir(input_img, output=False):
 
     n_slices = shape[2]
     nrings = np.sqrt(n_slices)
+    n_x = shape[0]
 
     input_definition = []
 
@@ -592,6 +678,7 @@ def convert_simset_sino_to_stir(input_img, output=False):
 
     output_definition = sorted(input_definition, key=itemgetter(3))
     stir_img_data = np.empty(shape, dtype=float, order='C')
+    stir_img_data_flip_x = np.empty(shape, dtype=float, order='C')
 
     for i in range(n_slices):
 
@@ -599,9 +686,330 @@ def convert_simset_sino_to_stir(input_img, output=False):
         input_slice = simset_img_data[:,:,output_index]
         stir_img_data[:,:,i] = input_slice
 
-    stir_img = nib.AnalyzeImage(stir_img_data, simset_img.affine, simset_img.header)
+    for j in range(n_x):
+        stir_img_data_flip_x[j,:,:] = stir_img_data[n_x-1-j, :, :]
+        
+    #stir_img = nib.AnalyzeImage(stir_img_data, simset_img.affine, simset_img.header)
+    stir_img = nib.AnalyzeImage(stir_img_data_flip_x, simset_img.affine, simset_img.header)
 
     if not output:
         output = input_img [0:-4] + '_stir.hdr'
   
     nib.save(stir_img,output)
+    
+    
+def resampleXYvoxelSizes(image_hdr, xyVoxelSize, log_file):
+    img = nib.load(image_hdr)
+    z_VoxelSize =img.header['pixdim'][3]
+    target_affine = np.diag((xyVoxelSize,xyVoxelSize,z_VoxelSize))
+    res_img=image.resample_img(image_hdr[0:-3]+'img',target_affine)
+    nib.save(res_img,image_hdr)
+    # res_img=image.resample_img(image_hdr,target_affine)
+    # nib.save(res_img,image_hdr[0:-4]+"_resXY.hdr")
+    
+    return image_hdr
+
+
+def resampleZvoxelSize(image_hdr, zOutputvoxelSize, log_file):
+    img = nib.load(image_hdr)
+    x_VoxelSize = img.header['pixdim'][1]
+    y_VoxelSize = img.header['pixdim'][2]
+    target_affine =  np.diag((x_VoxelSize,y_VoxelSize,zOutputvoxelSize))
+    res_img=image.resample_img(image_hdr[0:-3]+'img',target_affine)
+    nib.save(res_img,image_hdr)
+    # res_img=image.resample_img(image_hdr,target_affine)
+    # nib.save(res_img,image_hdr[0:-4]+"_resZ.hdr")
+    
+    return image_hdr
+
+
+def makeImageSquare(image_hdr, log_file):
+    
+    # Tools for image manipulation
+    corta_pega_filcol_hdr = rsc.get_rsc('corta_pega_filcol_hdr', 'fruitcake') 
+    zpix, zsize, xpix, xsize, ypix, ysize = read_analyze_header(image_hdr,log_file)
+    
+    pixDif = abs(xpix-ypix)
+    
+    if pixDif != 0:
+        if pixDif % 2 == 0:
+            oneSide = pixDif/2
+            otherSide = oneSide
+        else:
+            oneSide = np.trunc(pixDif/2)
+            otherSide = oneSide +1
+        
+        if xpix > ypix:  
+            rcommand1 = '%s %s %s peg %s %s >> %s' % (corta_pega_filcol_hdr, image_hdr, image_hdr, "1", str(oneSide), log_file)
+            rcommand2 = '%s %s %s peg %s %s >> %s' % (corta_pega_filcol_hdr, image_hdr, image_hdr, "2", str(otherSide), log_file)
+        elif ypix > xpix:
+            rcommand1 = '%s %s %s peg %s %s >> %s' % (corta_pega_filcol_hdr, image_hdr, image_hdr, "3", str(oneSide), log_file)
+            rcommand2 = '%s %s %s peg %s %s >> %s' % (corta_pega_filcol_hdr, image_hdr, image_hdr, "4", str(otherSide), log_file)
+            
+        osrun(rcommand1, log_file)
+        osrun(rcommand2, log_file)
+
+
+def scalImage(image_hdr, maxValue, log_file):
+    """
+    Given the input image_hdr (analyze format), this function scales their values to the input maxValue
+    
+    """
+    cambia_val_interval = rsc.get_rsc('change_interval', 'fruitcake')
+    img, data =nib_load(image_hdr, log_file)
+    
+    factor = maxValue/np.max(data)
+    
+    mask_hdr="mask.hdr"
+    rcommand = '%s %s %s 0 0.9 0 >> %s' % (cambia_val_interval, image_hdr, mask_hdr, log_file)
+    osrun(rcommand, log_file)
+    rcommand = '%s %s %s 0.9 10000000000 1 >> %s' % (cambia_val_interval, mask_hdr, mask_hdr, log_file)
+    osrun(rcommand, log_file)
+    
+    operate_single_image(image_hdr, "mult", factor, image_hdr, log_file)
+    
+    rcommand = '%s %s %s 0 1 1 >> %s' % (cambia_val_interval, image_hdr, image_hdr, log_file)
+    osrun(rcommand, log_file)
+    
+    operate_images_analyze(image_hdr, mask_hdr, image_hdr, "mult") 
+    
+    os.remove(mask_hdr)
+    os.remove("mask.img")
+    
+def remove_neg_nan(image_hdr):
+    
+    img, data = nib_load(image_hdr)
+    indx = np.where(data<0)
+    data[indx] = 0
+    indx = np.where(np.isnan(data))
+    data[indx] = 0
+    
+    imageToWrite = nib.AnalyzeImage(data,img.affine,img.header)
+    nib.save(imageToWrite, "aux.hdr")
+    copy_analyze("aux.hdr",image_hdr)
+    os.remove("aux.hdr")
+    os.remove("aux.img")
+    
+    #return image_hdr
+    
+def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output_act_map, axialFOV, log_file):
+    
+    output_dir = dirname(output_act_map)
+    # mfileFusion = join(dirname(output_act_map),"fusion.m")
+    
+    # Getting the necesary resources
+    # cambia_formato = rsc.get_rsc('change_format', 'fruitcake')
+    # cambia_val_interval = rsc.get_rsc('change_interval', 'fruitcake') 
+    # operate_image_hdr = rsc.get_rsc('operate_image', 'fruitcake')
+    # remove_nan_hdr = rsc.get_rsc('erase_nans', 'fruitcake')
+    # remove_neg_hdr = rsc.get_rsc('erase_negs', 'fruitcake')
+        
+    # First step is coregistering the output image with the orig pet (coregistered to the mri)
+    #act_map_img = act_map[0:-3]+"img"
+    # simu_pet_img = simu_pet[0:-3]+"img"
+    orig_pet_img = orig_pet[0:-3]+"img"
+    # coreg_simpet_img = spm.image_fusion(spmrun, mfileFusion, orig_pet_img, simu_pet_img, log_file)
+    coreg_simpet_hdr = fsl_flirt(orig_pet, simu_pet, log_file)
+    coreg_simpet_img =coreg_simpet_hdr[0:-3]+"img"
+    
+    act, act_data = nib_load(act_map)
+    
+    
+    # Next, we will do a scaling by the mean
+    norm_factor = proportional_scaling(coreg_simpet_hdr, orig_pet, orig_pet, log_file)
+    operate_single_image(coreg_simpet_hdr,'mult',norm_factor, coreg_simpet_hdr, log_file)
+    
+    # Now we do a smoothing of both data to avoid multiply noise and perform the division
+    mfileSmooth = join(dirname(output_act_map),"smooth.m")
+    division_hdr = join(output_dir, "division.hdr")
+    s_coreg_simpet_img = spm.smoothing(spmrun, mfileSmooth, coreg_simpet_img, 5, "s", log_file)    
+    s_orig_pet_img = spm.smoothing(spmrun, mfileSmooth, orig_pet_img, 5, "s", log_file)
+    
+    s_coreg_simpet_hdr = s_coreg_simpet_img[0:-3]+"hdr"
+    s_orig_pet_hdr = s_orig_pet_img[0:-3]+"hdr"
+    operate_images_analyze(s_orig_pet_hdr, s_coreg_simpet_hdr, division_hdr, 'div')
+    # rcommand = '%s %s %s %s fl divid' % (operate_image_hdr, s_orig_pet_hdr, s_coreg_simpet_hdr, division_hdr)
+    # osrun(rcommand, log_file)
+    
+    # Now we do some stuff on the division image to avoid problems
+    pet_mask_hdr = join(dirname(orig_pet), "pet_mask.hdr")    
+    deleteValuesOutFov(pet_mask_hdr, axialFOV/2, act.shape[2]/2)
+    
+    # rcommand = '%s %s %s %s fl multi' % (operate_image_hdr, division_hdr, pet_mask_hdr, division_hdr)
+    # osrun(rcommand, log_file)
+    # rcommand = '%s %s %s >> %s' % (remove_nan_hdr, division_hdr, division_hdr, log_file)
+    # osrun(rcommand, log_file)
+    # rcommand = '%s %s %s >> %s' % (remove_neg_hdr, division_hdr, division_hdr, log_file)
+    # osrun(rcommand, log_file)
+    fix_4d_image(pet_mask_hdr)
+    operate_images_analyze(division_hdr, pet_mask_hdr, division_hdr, "mult")
+    remove_neg_nan(division_hdr)
+    change_interval_values(division_hdr, division_hdr, 5, 100000000000000000000000000000000000,1)
+    # rcommand = '%s %s %s 5 100000000000000000000000000000000000 1' % (cambia_val_interval, division_hdr, division_hdr)
+    # osrun(rcommand, log_file)
+    
+    #operate_images_analyze(division_hdr, pet_mask_hdr, division_hdr, 'mult')
+    operate_images_analyze(division_hdr, pet_mask_hdr, division_hdr, "mult")
+    # rcommand = '%s %s %s %s fl multi' % (operate_image_hdr, division_hdr, pet_mask_hdr, division_hdr)
+    # osrun(rcommand, log_file)
+    
+    #and finally, we calculate the new activity image 
+    fix_4d_image(act_map)
+    operate_images_analyze(division_hdr, act_map, output_act_map, "mult")
+    # rcommand = '%s %s %s %s fl multi' % (operate_image_hdr, act_map, division_hdr, output_act_map)
+    # osrun(rcommand, log_file)    
+    scalImage(output_act_map, 127, log_file) 
+    change_format(output_act_map,"1B", log_file)
+    # rcommand = '%s %s %s 1B >> %s' % (cambia_formato, output_act_map, output_act_map, log_file)
+    # osrun(rcommand, log_file)  
+    
+def fsl_flirt(reference_hdr, input_hdr, log_file):
+    components = os.path.split(input_hdr)
+    coreg_hdr = os.path.join(components[0], 'r' + components[1])
+    flt = fsl.FLIRT(bins=640, cost_func='mutualinfo')
+    flt.inputs.in_file = input_hdr
+    flt.inputs.reference = reference_hdr
+    flt.out_file = coreg_hdr
+    flt.out_log=log_file
+    flt.save_log=True
+    flt.inputs.output_type = "NIFTI_GZ"
+    flt.cmdline 
+    'flirt -in %s -ref %s -out %s -dof 6 -cost mutualinfo -searchrx -30 30 -searchry -30 30 -searchrz -30 30' %(input_hdr, reference_hdr, coreg_hdr)
+    aux = os.getcwd()
+    os.chdir(components[0])
+    flt.run()
+    os.chdir(aux)
+    
+    anything_to_hdr_convert(input_hdr[0:-4]+"_flirt.nii.gz")
+    copy_analyze(input_hdr[0:-4]+"_flirt.hdr", coreg_hdr)
+    os.system("rm %s*" % input_hdr[0:-4]+"_flirt.*")
+    
+    return coreg_hdr
+    
+      
+def proportional_scaling(img,ref_img,mask_img, log_file):
+
+    img_max, img_mean = compute_vmax_vmean(img, mask_img)
+    ref_max, ref_mean = compute_vmax_vmean(ref_img, mask_img)
+
+    if float(img_mean) != 0:
+        fnorm = ref_mean / img_mean
+        return fnorm
+    else:        
+        message = 'Error scaling image. Image maean value is zero: ' + str(img)
+        log_message(log_file, message, 'error')
+        #print message  
+
+def compute_vmax_vmean(img, mask_img):
+    """
+    Compute maximum and mean intensity values on input image counting 
+    on voxels inside the reference image (brain mask)
+    :param img: (string) input image path
+    :param ref_img: (string) reference image path
+    :return: 
+    """
+
+    img, data = nib_load(img)
+    data = np.nan_to_num(data) 
+
+    ref_img, data_ref = nib_load(mask_img)
+    data_ref = np.nan_to_num(data_ref)
+
+    i_max = np.amax(data_ref)
+
+    super_threshold_indices = data_ref > 0.2*i_max
+    data_ref[super_threshold_indices] = 0
+
+    # Compute values restricted to voxels inside mask (ref image)
+    indx = np.where((data>0) & (data_ref.reshape(data.shape)>0))
+
+    # Maximum intensity value
+    v_max = np.max(data[indx])
+    # Mean intensity value
+    v_mean = np.mean(data[indx])
+
+    return v_max, v_mean 
+
+
+def deleteValuesOutFov(mask_hdr, max_z, central_slice):
+    
+    img, data = nib_load(mask_hdr)
+    data = np.nan_to_num(data)
+    
+    z = img.shape[2]
+    z_size = img.header['pixdim'][3] #mm
+    max_z = int(round((float(max_z)*10)/float(z_size))) 
+    
+    i_min = int(central_slice)-max_z
+    i_max = int(central_slice)+max_z 
+    
+    for i in range(0, i_min):
+        data[:,:,i]=0
+    
+    for i in range(i_max,z):
+        data[:,:,i]=0
+
+    img_to_write = nib.Nifti1Image(data, img.affine, img.header)
+    nib.save(img_to_write,mask_hdr)
+    
+def compute_corr_coeff(img1, img2, log_file):
+    """
+    Compute the correlation coefficiente between img1 and img2 
+    :param img1: (string) input header image1 path
+    :param img2: (string) input header image2 path
+    :return: 
+    """
+    
+    img1_img, img1_data = nib_load(img1, log_file)
+    img2_img, img2_data = nib_load(img2, log_file)
+    corrCoefmtx = np.corrcoef(img1_data.flatten(),img2_data.flatten())
+    
+    return corrCoefmtx[0,1]
+
+def fix_4d_image(image_hdr):
+    img, data = nib_load(image_hdr)
+    shape = data.shape
+   
+    if len(shape) != 3:
+        data_new = data[:,:,:,0]
+        
+        imageToWrite = nib.AnalyzeImage(data_new,img.affine,img.header)
+        nib.save(imageToWrite, "aux.hdr")
+        copy_analyze("aux.hdr",image_hdr)
+        os.remove("aux.hdr")
+        os.remove("aux.img")
+    
+def change_interval_values(input_hdr, output_hdr, min_value, max_value, rep_value):
+    img, data = nib_load(input_hdr)
+    
+    
+    indx = np.where(data<max_value) and np.where(data>min_value)
+    
+    data[indx] = rep_value    
+    
+    imageToWrite = nib.AnalyzeImage(data,img.affine,img.header)
+    nib.save(imageToWrite, "aux.hdr")
+    copy_analyze("aux.hdr",output_hdr)
+    os.remove("aux.hdr")
+    os.remove("aux.img")
+
+def change_format(image_hdr, newFormat, logfile):
+    message=""
+    img, data = nib_load(image_hdr)
+    
+    if newFormat == "fl":
+        form=np.float32
+    elif newFormat == "1B":
+        form=np.uint8
+    else:
+        message = "Error! Invalid format (or not implemented yet): " +str(newFormat)
+        print(message)
+        log_message(logfile, message, 'error')
+    
+    if message=="":
+        data = data.astype(form) 
+        hdr = nib.AnalyzeHeader()
+        hdr.set_data_dtype(form)
+        hdr.set_data_shape(data.shape)
+        imageToWrite = nib.AnalyzeImage(data, img.affine, hdr)    
+        nib.save(imageToWrite, image_hdr)

@@ -3,7 +3,7 @@ from os.path import abspath, join, dirname
 
 # Ablotue paths to folders with resources used
 RESOURCES = abspath(join(dirname(dirname(abspath(__file__))), 'resources'))
-BIN = abspath(join(dirname(dirname(abspath(__file__))), 'include', 'bin'))
+BIN = abspath(join(dirname(dirname(abspath(__file__))), 'include', 'format_converters'))
 FRUTICAKE = abspath(join(dirname(dirname(abspath(__file__))), 'include', 'fruitcake', 'bin'))
 
 def get_rsc(resource, type):
@@ -77,7 +77,17 @@ def get_rsc(resource, type):
             rpath = join(FRUTICAKE, 'generate_SPM_maps')
         elif resource == 'clustering_spm':
             rpath = join(FRUTICAKE, 'generate_SPM_maps')
-
+        elif resource == 'conv_sino2proy':
+            rpath = join(FRUTICAKE, 'conv_sino2proy')
+        elif resource == 'conv_proy2sino':
+            rpath = join(FRUTICAKE, 'conv_proy2sino')
+        elif resource == 'gen_hdr':
+            rpath = join(FRUTICAKE, 'gen_hdr')
+        elif resource == 'convolucion_hdr':
+            rpath = join(FRUTICAKE, 'convolucion_hdr')
+        elif resource == 'corta_pega_filcol_hdr':
+            rpath = join(FRUTICAKE, 'corta_pega_filcol_hdr')
+            
         else:
             rpath = False
 

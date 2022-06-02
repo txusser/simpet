@@ -1,0 +1,52 @@
+scanner_name: "Siemens Biograph mMR"
+# Scanner Description
+simset_material: 18       # LSO
+average_doi: 0.7          # cm
+scanner_radius: 32.8     # Scanner radius
+num_rings: 56 #64            # Number of rings
+axial_fov: 25.8           # Axial FOV max (cm)
+# Crystal Description
+z_crystal_size: 0.4
+transaxial_crystal_size: 0.4 # Transaxial Crystal size (cm)
+crystal_thickness: 2         # Crystal Thickness (cm)
+energy_resolution: 14.5      # Energy resolution (%)
+#timing_resolution:          # nanoseconds. WARNING: TOF_resolution/sqrt(2)
+# Binning parameters
+num_aa_bins:  252         # Number of views (Numero de detectores por anillo divido por 2)
+num_td_bins:  344         # Number of bins
+# Energy window
+min_energy_window:  430
+max_energy_window:  610
+# Used to add randoms to the simulated data
+coincidence_window: 5.86  # nanoseconds. Used only for random simulation (SimSET)
+# Reconstruction
+max_segment:  60         # Maximum Ring difference on the reconstruction
+zoomFactor: 0.91         # Zoom factor in x and y
+xyOutputSize:  344     
+zOutputSize:  127
+zOutputVoxelSize: 2.0   # mm  
+numberOfSubsets:  21     # Number of subsets
+numberOfIterations: 84  # Number of iterations
+savingInterval: 21       # The interval that we want to save intermediate subiterations images
+# Attenuation correction 
+# (Don't set both, set what fits your scanner the best)
+analytical_att_correction: 0    # Performed by SimSET calcattenuation
+stir_recons_att_corr: 1        # Performed in STIR by entering the att image as a normalization map
+# Scatter Correction
+analytic_scatt_corr_factor:  0.15      # 0.15 WILL REMOVE 85% of scatter.0 will remove scatter
+stir_scatt_corr_smoothing:   0      # Will use smoothed SimSET scatter as additive_sinogram.
+stir_scatt_simulation:      0      # Will calculate scatter with STIR scatter simulation
+# Randoms Correction
+analytic_randoms_corr_factor: 0.2     # 0.15 WILL REMOVE 85% of scatter.0 will remove randoms
+stir_randoms_corr_smoothing: 0       # Will include smoothed SimSET randoms in the additive_sinogram.
+recons_type: "OSEM3D"
+
+# Inter-iteration filter
+inter_iteration_filter: 0 #1 for activate, 0 for deactivate
+subiteration_interval: 4
+x_dir_filter_FWHM:  # in mm
+y_dir_filter_FWHM:  # in mm
+z_dir_filter_FWHM:  # in mm
+
+psf_value: 1 #1.125
+add_noise: 0

@@ -3,7 +3,7 @@ scanner_name: "Siemens Biograph mMR"
 simset_material: 18       # LSO
 average_doi: 0.7          # cm
 scanner_radius: 32.8     # Scanner radius
-num_rings: 56 #64            # Number of rings
+num_rings: 64            # Number of rings
 axial_fov: 25.8           # Axial FOV max (cm)
 # Crystal Description
 z_crystal_size: 0.4

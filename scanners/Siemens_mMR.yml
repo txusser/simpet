@@ -12,8 +12,8 @@ crystal_thickness: 2         # Crystal Thickness (cm)
 energy_resolution: 14.5      # Energy resolution (%)
 #timing_resolution:          # nanoseconds. WARNING: TOF_resolution/sqrt(2)
 # Binning parameters
-num_aa_bins:  252         # Number of views (Numero de detectores por anillo divido por 2)
-num_td_bins:  344         # Number of bins
+num_aa_bins:  224         # Number of views (Numero de detectores por anillo divido por 2)
+num_td_bins:  292         # Number of bins
 # Energy window
 min_energy_window:  430
 max_energy_window:  610
@@ -21,13 +21,13 @@ max_energy_window:  610
 coincidence_window: 5.86  # nanoseconds. Used only for random simulation (SimSET)
 # Reconstruction
 max_segment:  60         # Maximum Ring difference on the reconstruction
-zoomFactor: 0.91         # Zoom factor in x and y
+zoomFactor: 1.07 #0.91         # Zoom factor in x and y
 xyOutputSize:  344     
 zOutputSize:  127
 zOutputVoxelSize: 2.0   # mm  
-numberOfSubsets:  21     # Number of subsets
-numberOfIterations: 84  # Number of iterations
-savingInterval: 21       # The interval that we want to save intermediate subiterations images
+numberOfSubsets:  28     # Number of subsets
+numberOfIterations: 112  # Number of iterations
+savingInterval: 28       # The interval that we want to save intermediate subiterations images
 # Attenuation correction 
 # (Don't set both, set what fits your scanner the best)
 analytical_att_correction: 0    # Performed by SimSET calcattenuation

@@ -467,7 +467,7 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
             att_corr_str +
             "prior type := FilterRootPrior \n" +
             "FilterRootPrior Parameters := \n" +
-            "penalisation factor := 0. \n" +
+            "penalisation factor := 0 \n" +
             "Filter type := Median \n" +
             "Median Filter Parameters := \n" +
             "mask radius x := 1 \n" +

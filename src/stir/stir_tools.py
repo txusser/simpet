@@ -290,9 +290,6 @@ def OSEM2D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
     zoom_aux=1
     xyOutputSize_aux=round(xyOutputSize/zoom)
 
-    cesga = config.get("cesga")
-    cesga_max_time = config.get("cesga_max_time")
-    
     if scannerParams.get("analytical_att_correction") == 1:
         att_corr_str = ""
     elif scannerParams.get("stir_recons_att_corr")==1:
@@ -409,10 +406,7 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
     gap_size = (max_z-min_z-z_crystal_size*num_rings)/(num_rings-1)
     zVoxelSize = (z_crystal_size + gap_size)/2
     zOutputSize_aux = (zOutputSize*zOutputVoxelSize)/(zVoxelSize*10)
-    
-    cesga = config.get("cesga")
-    cesga_max_time = config.get("cesga_max_time")
-    
+
     if scannerParams.get("stir_recons_att_corr")==1:
         att_corr_str = (
         "Bin Normalisation type := From ProjData \n" + 

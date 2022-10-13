@@ -1,5 +1,3 @@
-simulation_environment: 0 # Set to 0 for local computer, 1 for Cesga
-
 #Define the simulation type and the environment
 sim_type: "SimSET"        # SimSET, STIR or GATE (only SimSET working)
 do_simulation: 1          # Set to 0 to reconstruction previous simulation

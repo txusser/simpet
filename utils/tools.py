@@ -440,18 +440,6 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     
     nib.save(analyze_img,output_image)
 
-def launch_cesga_job(command, sim_folder, cesga_max_time, cesga_cores, cesga_mem):
-
-    
-    my_script_name = join(sim_folder, "job_script.sh")
-    my_script = open(my_script_name,"w")
-    my_script.write("#!/usr/bin/env bash" + "\n")
-    my_script.write(command + "\n")
-    my_script.write("echo Done > %s/simended_file.log" %  sim_folder + "\n")
-    my_script.close()
-    
-    os.system("sbatch -t %s -c %s --mem=%s --get-user-env --output=%s/job.out %s" % (
-			  cesga_max_time, cesga_cores, cesga_mem, sim_folder, my_script_name))
 
 def operate_images_analyze(image1, image2, out_image, operation='mult'):
     """

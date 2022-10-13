@@ -26,8 +26,6 @@ class SimSET_Simulation(object):
         self.scanner = scanner
 
         self.simset_dir = self.config.get("dir_simset")
-        self.cesga = self.config.get("cesga")
-        self.cesga_max_time = self.config.get("cesga_max_time")
 
         self.act_map = act_map
         self.att_map = att_map
@@ -112,17 +110,7 @@ class SimSET_Simulation(object):
         my_log = join(sim_dir,"simset_s0.log")
 
         command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
-        
-        if self.cesga:
-            print("Launching cesga job...")
-            tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 32)
-        else: 
-            tools.osrun(command, log_file)
-
-        if self.cesga:
-            while not exists("%s/simended_file.log" %  sim_dir):
-                time.sleep(60)
-            os.remove("%s/simended_file.log" %  sim_dir)
+        tools.osrun(command, log_file)
 
         rec_weight = join(sim_dir,"rec.weight")
         det_hf = join(sim_dir, 'det_hf.hist')
@@ -147,16 +135,8 @@ class SimSET_Simulation(object):
             print("Running the sencond simulation with importance sampling...")
 
             command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
-            
-            if self.cesga:
-                print("Launching cesga job...")
-                tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 32)
-            else: 
-                tools.osrun(command, log_file)
+            tools.osrun(command, log_file)
 
-            if self.cesga:
-                while not exists("%s/simended_file.log" %  sim_dir):
-                    time.sleep(60)
 
         if self.add_randoms == 1:
 

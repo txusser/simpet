@@ -36,21 +36,15 @@ class SimPET(object):
         with open(config_file, 'rb') as f:
             self.config = yaml.load(f.read(), Loader=yaml.FullLoader)
 
-        self.cesga = self.config.get("cesga")
 
-        if self.cesga:
-            self.dir_data =  self.config.get("cesga_data_path")
-        else:
-            self.dir_data =  self.config.get("dir_data_path")
-            if not self.dir_data:
-                self.dir_data = join(self.simpet_dir, "Data")
+        self.dir_data =  self.config.get("dir_data_path")
+        if not self.dir_data:
+            self.dir_data = join(self.simpet_dir, "Data")
 
-        if self.cesga:
-            self.dir_results =  self.config.get("cesga_results_path")
-        else:
-            self.dir_results =  self.config.get("dir_results_path")
-            if not self.dir_results:
-                self.dir_results = join(self.simpet_dir, "Results")
+        self.dir_results =  self.config.get("dir_results_path")
+        if not self.dir_results:
+            self.dir_results = join(self.simpet_dir, "Results")
+
         if not exists(self.dir_results):
             os.makedirs(self.dir_results)
 
@@ -191,21 +185,16 @@ class brainviset(object):
         matlab_path = self.config.get("matlab_mcr_path")
         self.spmrun = "sh %s/run_spm12.sh %s batch" % (spm_path, matlab_path)
 
-        self.cesga = self.config.get("cesga")
 
-        if self.cesga:
-            self.dir_data =  self.config.get("cesga_data_path")
-        else:
-            self.dir_data =  self.config.get("dir_data_path")
-            if not self.dir_data:
-                self.dir_data = join(self.simpet_dir, "Data")
+        self.dir_data =  self.config.get("dir_data_path")
+        if not self.dir_data:
+            self.dir_data = join(self.simpet_dir, "Data")
 
-        if self.cesga:
-            self.dir_results =  self.config.get("cesga_results_path")
-        else:
-            self.dir_results =  self.config.get("dir_results_path")
-            if not self.dir_results:
-                self.dir_results = join(self.simpet_dir, "Results")
+
+        self.dir_results =  self.config.get("dir_results_path")
+        if not self.dir_results:
+            self.dir_results = join(self.simpet_dir, "Results")
+
         if not exists(self.dir_results):
             os.makedirs(self.dir_results)
 

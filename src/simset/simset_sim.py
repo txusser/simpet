@@ -376,8 +376,7 @@ class SimSET_Reconstruction(object):
         from src.stir import stir_tools
         
         print("Starting STIR reconstruction")
-        
-        #reconstruction_type = self.scanner.get("recons_type")
+
         recons_algorithm = self.scanner.get("recons_type")
         sinogram_stir = join(self.output_dir, "stir_sinogram.hs")
         additive_sino_stir = join(self.output_dir, "stir_additivesino.hs")
@@ -388,7 +387,6 @@ class SimSET_Reconstruction(object):
             print("Something is not ready for the reconstruction")
         else:
             print("Starting STIR reconstruction")
-
 
             if recons_algorithm == 'FBP2D':
                 reconsFile_hdr = stir_tools.FBP2D_recons(self.config ,self.scanner, sinogram_stir, self.output_dir, self.log_file)

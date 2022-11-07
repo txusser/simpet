@@ -39,6 +39,9 @@ def install_soap():
     icom = 'sudo apt install python3 -y -q'
     rsystem(icom)
 
+    icom = 'sudo apt install unzip -y -q'
+    rsystem(icom)
+
     icom = 'sudo apt install sshpass -y -q'
     rsystem(icom)
 

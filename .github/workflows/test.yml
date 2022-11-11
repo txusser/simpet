@@ -1,0 +1,11 @@
+name: Build and run test simulations
+on:
+  pull_request:
+  push:
+jobs:
+
+  build-and-run-test-simulations:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - run: python setup.py

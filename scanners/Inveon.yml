@@ -1,0 +1,53 @@
+scanner_name: "Inveon"
+# Scanner Description
+simset_material: 29           # LYSO
+average_doi: 0.23             # 23.3 mm (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7239556/)
+scanner_radius: 8         # Scanner radius
+num_rings:  80                # Number of rings
+axial_fov: 12.7              # Axial FOV max (cm)
+# Crystal Description
+z_crystal_size: 0.15           # Axial Crystal size (cm)
+transaxial_crystal_size: 0.15 # Transaxial Crystal size (cm).
+crystal_thickness: 1          # Crystal Thickness (cm)
+energy_resolution: 16          # Energy resolution (%)
+#timing_resolution:            # nanoseconds. WARNING: TOF_resolution/sqrt(2)
+# Binning parameters
+num_aa_bins:  160            # Number of views (Numero de detectores por anillo divido por 2)
+num_td_bins:  120            # Number of bins
+# Energy window
+min_energy_window:  425
+max_energy_window:  600
+# Used to add randoms to the simulated data
+coincidence_window: 2        # nanoseconds. Used only for random simulation (SimSET)
+# Reconstruction
+max_segment: 40             # Maximum Ring difference on the reconstruction
+zoomFactor: 4            # Zoom factor in x and y
+xyOutputSize: 512
+zOutputSize: 240
+zOutputVoxelSize: 0.5          # mm
+numberOfSubsets: 10          # Number of subsets
+numberOfIterations: 100      # Number of iterations
+savingInterval: 10           # The interval that we want to save intermediate subiterations images
+# Attenuation correction 
+# (Don't set both, set what fits your scanner the best)
+analytical_att_correction: 1    # Performed by SimSET calcattenuation
+stir_recons_att_corr: 0        # Performed in STIR by entering the att image as a normalization map
+# Scatter Correction
+analytic_scatt_corr_factor:  0.3      # 0.15 WILL REMOVE 85% of scatter.0 will remove scatter
+stir_scatt_corr_smoothing:   0      # Will use smoothed SimSET scatter as additive_sinogram.
+stir_scatt_simulation:      0      # Will calculate scatter with STIR scatter simulation
+# Randoms Correction
+analytic_randoms_corr_factor: 0.3     # 0.15 WILL REMOVE 85% of scatter.0 will remove randoms
+stir_randoms_corr_smoothing: 0       # Will include smoothed SimSET randoms in the additive_sinogram.
+
+recons_type: "OSEM3D"
+# Inter-iteration filter
+inter_iteration_filter: 0 #1 for activate, 0 for deactivate
+subiteration_interval: 4
+x_dir_filter_FWHM: 0.5 # in mm
+y_dir_filter_FWHM: 0.5 # in mm
+z_dir_filter_FWHM: 0.5 # in mm
+
+psf_value: 0
+add_noise: 0
+

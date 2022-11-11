@@ -341,6 +341,8 @@ print("\nEverything looks good... we will launch a quick simulation now just to 
 print("This can take a bit, maybe 15 min... you may abort it if you are very sure what you are doing.\n")
 
 icom = ('source simpet_paths.sh')
+rsystem(icom)
+
 import simpet
 
 test = simpet.SimPET('Data/test_image/testParams.yml')

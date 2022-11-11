@@ -8,6 +8,9 @@ import datetime
 from utils import tools
 import yaml
 
+icom = ('source simpet_paths.sh')
+os.system(icom)
+
 class SimPET(object):
     """
     This class provides main SimPET functions.

@@ -306,3 +306,109 @@ class brainviset(object):
                 msg = "Maximum number of iterations reached. Final activity map is %s" %(updated_act_map)
                 print(msg)
                 tools.log_message(log_file, msg)
+
+
+class wholebody_simulation(object):
+
+    """
+    This class provides functionalities to simulate several beds.
+    You have to initialize the class with a params file. The class will iteratively call the SimPET class.
+    Before using SimPET, check out the README.
+
+    """
+
+    def __init__(self,param_file,config_file="config.yml", params = False):
+
+        #Initialization
+        self.simpet_dir = dirname(abspath(__file__))
+        self.param_file = param_file
+        self.config_file = config_file
+
+        # The following lines will read the general, scanner and config parameters
+
+        if not params:
+            with open(self.param_file, 'rb') as f:
+                self.params = yaml.load(f.read(), Loader=yaml.FullLoader)
+        else:
+            self.params = params
+
+        self.sim_type = self.params.get("sim_type")
+        self.zmin = self.params.get("z_min")
+        self.zmax = self.params.get("z_max")
+
+        # This will load the scanner params for the selected scanner
+        self.scanner_model = self.params.get("scanner")
+        scanner_parfile = join(self.simpet_dir,"scanners",self.scanner_model + ".yml")
+        with open(scanner_parfile, 'rb') as f:
+            self.scanner = yaml.load(f.read(), Loader=yaml.FullLoader)
+
+        # This will load the environment config
+        with open(config_file, 'rb') as f:
+            self.config = yaml.load(f.read(), Loader=yaml.FullLoader)
+
+        self.cesga = self.config.get("cesga")
+
+        if self.cesga:
+            self.dir_data =  self.config.get("cesga_data_path")
+        else:
+            self.dir_data =  self.config.get("dir_data_path")
+            if not self.dir_data:
+                self.dir_data = join(self.simpet_dir, "Data")
+
+        if self.cesga:
+            self.dir_results =  self.config.get("cesga_results_path")
+        else:
+            self.dir_results =  self.config.get("dir_results_path")
+            if not self.dir_results:
+                self.dir_results = join(self.simpet_dir, "Results")
+        if not exists(self.dir_results):
+            os.makedirs(self.dir_results)
+
+    def run(self):
+
+        patient_dir = self.params.get("patient_dirname")
+        act_map = join(self.dir_data, patient_dir, self.params.get("act_map"))
+        att_map = join(self.dir_data, patient_dir, self.params.get("att_map"))
+        output_name = self.params.get("output_dir")
+        output_dir = join(self.dir_results,output_name)
+        maps_dir = join(output_dir,"Maps")
+
+        # THIS WILL POP UP EVEN IF ONLY RECONSTRUCTION IS DONE. MOVE IT OUT
+        if not exists(output_dir):
+            os.makedirs(output_dir)
+
+        log_file = join(output_dir,"logfile.log")
+
+        beds_cs =  wb_tools.calculate_center_slices(act_map,self.scanner, self.zmin, self.zmax)
+
+        print("The number of beds to simulate is: %s" % len(beds_cs))
+        print("Beds center slides: %s" % beds_cs)
+
+        j = 1
+
+        for cs in beds_cs:
+
+            bed_dir = join(output_dir,"Bed_cs_%s" % cs)
+            if not exists(bed_dir):
+                os.makedirs(bed_dir)
+
+            self.params['center_slice'] = cs
+            self.params['output_dir'] = output_name + "/Bed_cs_%s" % cs
+
+            print("Simulating bed %s with center slice %s" % (j,cs))
+
+            bed_simu = SimPET(self.param_file,self.config_file, params=self.params)
+            bed_simu.run()
+
+        recons_beds = []
+        recons_algorithm = self.scanner.get('recons_type')
+        recons_it = self.scanner.get('numberOfIterations')
+
+        for cs in beds_cs:
+
+            recons_dir = join(output_dir,"Bed_cs_%s" % cs,"%s_Sim_%s" % (self.sim_type,self.scanner_model),recons_algorithm)
+            recons_file = join(recons_dir,'rec_%s_%s.hdr' % (recons_algorithm,recons_it))
+            recons_beds.append(recons_file)
+
+        joint_beds =join(output_dir,'rec_%s_%s.hdr' % (recons_algorithm,recons_it))
+        wb_tools.join_beds_wb(recons_beds,joint_beds)

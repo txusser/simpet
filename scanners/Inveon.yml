@@ -6,14 +6,14 @@ scanner_radius: 8         # Scanner radius (cm)
 num_rings:  80                # Number of rings
 axial_fov: 12.7              # Axial FOV max (cm)
 # Crystal Description
-z_crystal_size: 0.15           # Axial Crystal size (cm)
-transaxial_crystal_size: 0.15 # Transaxial Crystal size (cm).
+z_crystal_size: 0.151           # Axial Crystal size (cm)
+transaxial_crystal_size: 0.151 # Transaxial Crystal size (cm).
 crystal_thickness: 1          # Crystal Thickness (cm)
 energy_resolution: 16          # Energy resolution (%)
 #timing_resolution:            # nanoseconds. WARNING: TOF_resolution/sqrt(2)
 # Binning parameters
-num_aa_bins:  240            # Number of views (Numero de detectores por anillo divido por 2)
-num_td_bins:  240            # Number of bins
+num_aa_bins:  160            # Number of views (Numero de detectores por anillo divido por 2)
+num_td_bins:  160            # Number of bins
 # Energy window
 min_energy_window:  425
 max_energy_window:  600

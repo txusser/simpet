@@ -2,7 +2,7 @@ scanner_name: "Inveon"
 # Scanner Description
 simset_material: 29           # LYSO
 average_doi: 0.23             # 23.3 mm (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7239556/)
-scanner_radius: 8         # Scanner radius
+scanner_radius: 8         # Scanner radius (cm)
 num_rings:  80                # Number of rings
 axial_fov: 12.7              # Axial FOV max (cm)
 # Crystal Description
@@ -12,8 +12,8 @@ crystal_thickness: 1          # Crystal Thickness (cm)
 energy_resolution: 16          # Energy resolution (%)
 #timing_resolution:            # nanoseconds. WARNING: TOF_resolution/sqrt(2)
 # Binning parameters
-num_aa_bins:  160            # Number of views (Numero de detectores por anillo divido por 2)
-num_td_bins:  120            # Number of bins
+num_aa_bins:  240            # Number of views (Numero de detectores por anillo divido por 2)
+num_td_bins:  240            # Number of bins
 # Energy window
 min_energy_window:  425
 max_energy_window:  600
@@ -21,9 +21,9 @@ max_energy_window:  600
 coincidence_window: 2        # nanoseconds. Used only for random simulation (SimSET)
 # Reconstruction
 max_segment: 40             # Maximum Ring difference on the reconstruction
-zoomFactor: 4            # Zoom factor in x and y
-xyOutputSize: 512
-zOutputSize: 240
+zoomFactor: 2              # Zoom factor in x and y
+xyOutputSize: 160
+zOutputSize: 159
 zOutputVoxelSize: 0.5          # mm
 numberOfSubsets: 10          # Number of subsets
 numberOfIterations: 100      # Number of iterations
@@ -43,10 +43,10 @@ stir_randoms_corr_smoothing: 0       # Will include smoothed SimSET randoms in t
 recons_type: "OSEM3D"
 # Inter-iteration filter
 inter_iteration_filter: 0 #1 for activate, 0 for deactivate
-subiteration_interval: 4
-x_dir_filter_FWHM: 0.5 # in mm
-y_dir_filter_FWHM: 0.5 # in mm
-z_dir_filter_FWHM: 0.5 # in mm
+subiteration_interval: 10
+x_dir_filter_FWHM: 0 # in mm
+y_dir_filter_FWHM: 0 # in mm
+z_dir_filter_FWHM: 0 # in mm
 
 psf_value: 0
 add_noise: 0

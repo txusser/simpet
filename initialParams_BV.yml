@@ -1,6 +1,6 @@
 #Define the simulation type and the environment
 sim_type: "SimSET"        # SimSET, STIR or GATE (only SimSET working)
-do_simulation: 1          # Set to 0 to reconstruction previous simulation
+do_simulation: 0          # Set to 0 to reconstruction previous simulation
 do_reconstruction: 1      # Set to 0 to generate adq data only
 divisions: 8              # Number os subprocesses for parallel simulation
 

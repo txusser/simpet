@@ -19,15 +19,19 @@ class SimPET(object):
 
     """
 
-    def __init__(self, param_file, config_file="config.yml"):
+    def __init__(self, param_file, config_file="config.yml", params = False):
 
         # Initialization
         self.simpet_dir = dirname(abspath(__file__))
 
         # The following lines will read the general, scanner and config parameters
-        with open(param_file, 'rb') as f:
-            self.params = yaml.load(f.read(), Loader=yaml.FullLoader)
-            self.sim_type = self.params.get("sim_type")
+        if not params:
+            with open(param_file, 'rb') as f:
+                self.params = yaml.load(f.read(), Loader=yaml.FullLoader)
+        else:
+            self.params = params
+
+        self.sim_type = self.params.get("sim_type")
 
         # This will load the scanner params for the selected scanner
         self.scanner_model = self.params.get("scanner")

@@ -16,7 +16,6 @@ class SimPET(object):
     This class provides main SimPET functions.
     You have to initialize the class with a params file.
     Before using SimPET, check out the README.
-
     """
 
     def __init__(self, param_file, config_file="config.yml", params = False):

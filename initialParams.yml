@@ -16,14 +16,14 @@ att_map: "roby_EMIM_att.hdr"
 output_dir: "Test_WB"         #Name of the Results Dir
 
 #Config your phantom
-z_min: 0
-z_max: 580
+z_min: 100
+z_max: 550
 center_slice:  450      # The slice number to be placed on the center of the scanner. If 0, automatically, the half of the slices will be calculated and used
-total_dose: 0.5            # mCi
+total_dose: 0.2            # mCi
 simulation_time: 600     # secods
 
 #SimSET Parameters (not used by STIR sim)
-sampling_photons: 20000000 # Set to 0 to avoid importance sampling
+sampling_photons: 200000000 # Set to 0 to avoid importance sampling
 photons: 0                  # Set to 0 to do a realistic noise simulation
 add_randoms: 0              # 1 activate Randoms simulation (Will force sampling_photons=0 and photons=0)
 phglistmode: 0              # History Files from the phg module (Needed for LM reconstruction. Potentially very big)

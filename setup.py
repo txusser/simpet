@@ -36,19 +36,10 @@ def install_soap():
     """
     # Install SOAP
 
-    icom = 'sudo apt install python3 -y -q'
-    rsystem(icom)
-
     icom = 'sudo apt install unzip -y -q'
     rsystem(icom)
 
     icom = 'sudo apt install sshpass -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install python3-pip -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install ipython3 -y -q'
     rsystem(icom)
 
     icom = 'sudo apt install libboost-dev libboost-all-dev -y -q'

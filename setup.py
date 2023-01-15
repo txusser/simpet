@@ -51,44 +51,12 @@ def install_soap():
     icom = 'sudo apt install libncurses-dev -y -q'
     rsystem(icom)
 
-    # Install and upgrade PIP
-    icom = 'sudo pip3 install -U PyYAML'
-    rsystem(icom)
-
-    # Install numpy
-    icom = 'sudo apt install python3-numpy -y -q'
-    rsystem(icom)
-
-    # Install Scipy
-    icom = 'sudo apt install python3-scipy -y -q'
-    rsystem(icom)
-
-    # Install Nibabel
-    icom = 'sudo apt install python3-nibabel -y -q'
-    rsystem(icom)
-
-    # Install matplotlib
-    icom = 'sudo apt install python3-matplotlib -y -q'
-    rsystem(icom)
-
-    # Install Pandas
-    icom = 'sudo apt install python3-pandas -y -q'
-    rsystem(icom)
-
-    # Install nilearn
-    icom = 'sudo pip3 install -U nilearn'
-    rsystem(icom)
-
     # Install cmake (needed for STIR)
     icom = 'sudo apt install cmake -y -q'
     rsystem(icom)
 
     # Install swig (needed for STIR)
     icom = 'sudo apt install swig -y -q'
-    rsystem(icom)
-
-    # Install NIPYPE
-    icom = 'sudo pip3 install nipype'
     rsystem(icom)
 
 

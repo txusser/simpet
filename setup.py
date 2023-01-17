@@ -3,7 +3,7 @@ This script installs the necessary files to run simpet, including all the requir
 Don't run this script if you think all the needed dependencies are already fulfilled.
 """
 import os
-from os.path import join, basename, exists
+from os.path import join, basename, exists, abspath
 import shutil
 from multiprocessing import cpu_count
 
@@ -139,7 +139,7 @@ def install_stir(stir_dir, simset_dir, log_file):
     rsystem(icom)
 
     os.chdir(build_dir)
-    rsystem('cmake ../STIR/')
+    rsystem(f"cmake {abspath('../STIR/')}")
 
     makefile = join(build_dir, 'CMakeCache.txt')
     newmakefile = join(stir_dir, 'build', 'new_CMakeCache.txt')
@@ -166,7 +166,7 @@ def install_stir(stir_dir, simset_dir, log_file):
     f_new.close()
 
     shutil.move(newmakefile, makefile)
-    rsystem('cmake ../STIR/')
+    rsystem(f"cmake {abspath('../STIR/')}")
 
     print('Building STIR....')
     icom = 'make -s -j%s & make install' % str(cpu_count())

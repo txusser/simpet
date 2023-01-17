@@ -36,27 +36,27 @@ def install_soap():
     """
     # Install SOAP
 
-    icom = 'sudo apt install unzip -y -q'
+    icom = 'sudo apt-get install unzip -y -q'
     rsystem(icom)
 
-    icom = 'sudo apt install sshpass -y -q'
+    icom = 'sudo apt-get install sshpass -y -q'
     rsystem(icom)
 
-    icom = 'sudo apt install libboost-dev libboost-all-dev -y -q'
+    icom = 'sudo apt-get install libboost-dev libboost-all-dev -y -q'
     rsystem(icom)
 
-    icom = 'sudo apt install libpcre3 libpcre3-dev -y -q'
+    icom = 'sudo apt-get install libpcre3 libpcre3-dev -y -q'
     rsystem(icom)
 
-    icom = 'sudo apt install libncurses-dev -y -q'
+    icom = 'sudo apt-get install libncurses-dev -y -q'
     rsystem(icom)
 
     # Install cmake (needed for STIR)
-    icom = 'sudo apt install cmake -y -q'
+    icom = 'sudo apt-get install cmake -y -q'
     rsystem(icom)
 
     # Install swig (needed for STIR)
-    icom = 'sudo apt install swig -y -q'
+    icom = 'sudo apt-get install swig -y -q'
     rsystem(icom)
 
 

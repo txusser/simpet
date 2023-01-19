@@ -109,3 +109,6 @@ Data
 resources
 Results
 .vscode
+
+# SimPET paths
+simpet_paths.sh

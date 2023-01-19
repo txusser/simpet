@@ -3,7 +3,7 @@ This script installs the necessary files to run simpet, including all the requir
 Don't run this script if you think all the needed dependencies are already fulfilled.
 """
 import os
-from os.path import join, basename, exists
+from os.path import join, basename, exists, abspath
 import shutil
 from multiprocessing import cpu_count
 
@@ -36,68 +36,27 @@ def install_soap():
     """
     # Install SOAP
 
-    icom = 'sudo apt install python3 -y -q'
+    icom = 'sudo apt-get install unzip -y -q'
     rsystem(icom)
 
-    icom = 'sudo apt install unzip -y -q'
+    icom = 'sudo apt-get install sshpass -y -q'
     rsystem(icom)
 
-    icom = 'sudo apt install sshpass -y -q'
+    icom = 'sudo apt-get install libboost-dev libboost-all-dev -y -q'
     rsystem(icom)
 
-    icom = 'sudo apt install python3-pip -y -q'
+    icom = 'sudo apt-get install libpcre3 libpcre3-dev -y -q'
     rsystem(icom)
 
-    icom = 'sudo apt install ipython3 -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install libboost-dev libboost-all-dev -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install libpcre3 libpcre3-dev -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install libncurses-dev -y -q'
-    rsystem(icom)
-
-    # Install and upgrade PIP
-    icom = 'sudo pip3 install -U PyYAML'
-    rsystem(icom)
-
-    # Install numpy
-    icom = 'sudo apt install python3-numpy -y -q'
-    rsystem(icom)
-
-    # Install Scipy
-    icom = 'sudo apt install python3-scipy -y -q'
-    rsystem(icom)
-
-    # Install Nibabel
-    icom = 'sudo apt install python3-nibabel -y -q'
-    rsystem(icom)
-
-    # Install matplotlib
-    icom = 'sudo apt install python3-matplotlib -y -q'
-    rsystem(icom)
-
-    # Install Pandas
-    icom = 'sudo apt install python3-pandas -y -q'
-    rsystem(icom)
-
-    # Install nilearn
-    icom = 'sudo pip3 install -U nilearn'
+    icom = 'sudo apt-get install libncurses-dev -y -q'
     rsystem(icom)
 
     # Install cmake (needed for STIR)
-    icom = 'sudo apt install cmake -y -q'
+    icom = 'sudo apt-get install cmake -y -q'
     rsystem(icom)
 
     # Install swig (needed for STIR)
-    icom = 'sudo apt install swig -y -q'
-    rsystem(icom)
-
-    # Install NIPYPE
-    icom = 'sudo pip3 install nipype'
+    icom = 'sudo apt-get install swig -y -q'
     rsystem(icom)
 
 
@@ -180,7 +139,7 @@ def install_stir(stir_dir, simset_dir, log_file):
     rsystem(icom)
 
     os.chdir(build_dir)
-    rsystem('cmake ../STIR/')
+    rsystem(f"cmake {abspath('../STIR/')}")
 
     makefile = join(build_dir, 'CMakeCache.txt')
     newmakefile = join(stir_dir, 'build', 'new_CMakeCache.txt')
@@ -207,7 +166,7 @@ def install_stir(stir_dir, simset_dir, log_file):
     f_new.close()
 
     shutil.move(newmakefile, makefile)
-    rsystem('cmake ../STIR/')
+    rsystem(f"cmake {abspath('../STIR/')}")
 
     print('Building STIR....')
     icom = 'make -s -j%s & make install' % str(cpu_count())

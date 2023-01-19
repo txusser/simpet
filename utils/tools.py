@@ -689,11 +689,9 @@ def convert_simset_sino_to_stir(input_img, output=False):
 def resampleXYvoxelSizes(image_hdr, xyVoxelSize, log_file):
     img = nib.load(image_hdr)
     z_VoxelSize =img.header['pixdim'][3]
-    target_affine = np.diag((xyVoxelSize,xyVoxelSize,z_VoxelSize))
-    res_img=image.resample_img(image_hdr[0:-3]+'img',target_affine)
+    taget_vsize = (xyVoxelSize,xyVoxelSize,z_VoxelSize)
+    res_img = nib.processing.resample_to_output(img, taget_vsize, out_class=img.__class__)
     nib.save(res_img,image_hdr)
-    # res_img=image.resample_img(image_hdr,target_affine)
-    # nib.save(res_img,image_hdr[0:-4]+"_resXY.hdr")
     
     return image_hdr
 
@@ -702,11 +700,9 @@ def resampleZvoxelSize(image_hdr, zOutputvoxelSize, log_file):
     img = nib.load(image_hdr)
     x_VoxelSize = img.header['pixdim'][1]
     y_VoxelSize = img.header['pixdim'][2]
-    target_affine =  np.diag((x_VoxelSize,y_VoxelSize,zOutputvoxelSize))
-    res_img=image.resample_img(image_hdr[0:-3]+'img',target_affine)
+    taget_vsize =  (x_VoxelSize,y_VoxelSize,zOutputvoxelSize)
+    res_img = nib.processing.resample_to_output(img, taget_vsize, out_class=img.__class__)
     nib.save(res_img,image_hdr)
-    # res_img=image.resample_img(image_hdr,target_affine)
-    # nib.save(res_img,image_hdr[0:-4]+"_resZ.hdr")
     
     return image_hdr
 

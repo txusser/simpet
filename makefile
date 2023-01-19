@@ -8,5 +8,5 @@ packages:
 	libpcre3 \
 	libpcre3-dev \
 	libncurses-dev \
-	#cmake \
+	cmake \
 	swig

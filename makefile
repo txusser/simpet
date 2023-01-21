@@ -25,8 +25,9 @@ SIMSET_LIB = ${SIMSET_PATH}/lib
 SIMSET_PATH_REPLACE_FSLASH = $(shell echo ${SIMSET_PATH} | sed -e 's/\//\\\//g')
 SIMSET_MKFILE = ${SIMSET_PATH}/make.files/simset.make
 SIMSET_MKALL = ${SIMSET_PATH}/make_all.sh
+
 install-simset:
-	if [ ! -d ${SIMSET_DEST_DIR} ]; then \
+	if [ ! -d ${SIMSET_DEST_DIR} ]; then\
 		wget -q -P ${TMPDIR} ${SIMSET_LINK};\
 		mkdir -p ${SIMSET_DEST_DIR} && tar -xvf "${SIMSET_TAR}" --directory=${SIMSET_DEST_DIR} && rm ${SIMSET_TAR};\
 		cd ${SIMSET_DEST_DIR} && patch -s -p0 < ${SIMSET_STIR_PATCH};\

@@ -1,6 +1,11 @@
 SHELL := /bin/bash
-packages: 
+TMPDIR = /tmp
+SIMPET_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+INCLUDE_DIR := ${SIMPET_DIR}include
+
+packages:
 	sudo apt-get install -y -q \
+	wget \
 	unzip \
 	sshpass \
 	libboost-dev \

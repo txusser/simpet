@@ -37,8 +37,20 @@ install-simset:
 		echo "${SIMSET_DEST_DIR} already exists, run clean-simset if you really want to remove it (you will have to intall SimSET again.";\
 	fi
 
+SIMSET_BIN = ${SIMSET_PATH}/bin
+check-simset:
+	declare -a simset_files=(addrandoms bin calcattenuation combinehist makeindexfile phg timesort);\
+	for file in "$${simset_files[@]}"; do\
+		if [ ! -f "${SIMSET_BIN}/$${file}" ]; then\
+			echo "${SIMSET_BIN}/$${file} does not exists, check your installation.";\
+		else\
+			echo "${SIMSET_BIN}/$${file} exists.";\
+		fi;\
+	done
+
 clean-simset:
 	rm -rf ${SIMSET_DEST_DIR}
 
 clean:
 	rm -rf ${INCLUDE_DIR}
+

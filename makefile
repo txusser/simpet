@@ -19,12 +19,13 @@ packages:
 SIMSET_LINK = http://depts.washington.edu/simset/downloads/phg.2.9.2.tar.Z
 SIMSET_TAR = ${TMPDIR}/phg.2.9.2.tar.Z
 SIMSET_DEST_DIR =  ${INCLUDE_DIR}/SimSET
-SIMSET_STIR_PATCH = ${DEST_DIR}src/simset/simset_for_stir.patch
 SIMSET_PATH = ${SIMSET_DEST_DIR}/2.9.2
-SIMSET_LIB = ${SIMSET_PATH}/lib
 SIMSET_PATH_REPLACE_FSLASH = $(shell echo ${SIMSET_PATH} | sed -e 's/\//\\\//g')
-SIMSET_MKFILE = ${SIMSET_PATH}/make.files/simset.make
+SIMSET_BIN = ${SIMSET_PATH}/bin
+SIMSET_LIB = ${SIMSET_PATH}/lib
 SIMSET_MKALL = ${SIMSET_PATH}/make_all.sh
+SIMSET_STIR_PATCH = ${DEST_DIR}src/simset/simset_for_stir.patch
+SIMSET_MKFILE = ${SIMSET_PATH}/make.files/simset.make
 
 install-simset:
 	if [ ! -d ${SIMSET_DEST_DIR} ]; then\
@@ -37,7 +38,6 @@ install-simset:
 		echo "${SIMSET_DEST_DIR} already exists, run clean-simset if you really want to remove it (you will have to intall SimSET again.";\
 	fi
 
-SIMSET_BIN = ${SIMSET_PATH}/bin
 check-simset:
 	declare -a simset_files=(addrandoms bin calcattenuation combinehist makeindexfile phg timesort);\
 	for file in "$${simset_files[@]}"; do\

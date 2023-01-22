@@ -34,7 +34,7 @@ install-simset:
 		cd ${SIMSET_DEST_DIR} && patch -s -p0 < ${SIMSET_STIR_PATCH};\
 		sed -i 's/^\(SIMSET_PATH = \).*$$/\1${SIMSET_PATH_REPLACE_FSLASH}/' ${SIMSET_MKFILE};\
 		cd ${SIMSET_PATH} && mkdir -p ${SIMSET_LIB} && bash ${SIMSET_MKALL};\
-	else \
+	else\
 		echo "${SIMSET_DEST_DIR} already exists, run clean-simset if you really want to remove it (you will have to intall SimSET again.";\
 	fi
 

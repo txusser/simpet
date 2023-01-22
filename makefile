@@ -3,7 +3,7 @@ TMPDIR = /tmp
 DEST_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 INCLUDE_DIR := ${DEST_DIR}include
 
-packages:
+deps:
 	sudo apt-get install -y -q \
 	wget \
 	unzip \

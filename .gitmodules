@@ -1,0 +1,4 @@
+[submodule "STIR"]
+    path = include/STIR
+    url = https://github.com/txusser/STIR.git
+    branch = simset_input

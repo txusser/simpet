@@ -14,13 +14,13 @@ deps:
 	libpcre3-dev \
 	libncurses-dev \
 	cmake \
+	g++ \
 	swig
 
 SIMSET_LINK = http://depts.washington.edu/simset/downloads/phg.2.9.2.tar.Z
 SIMSET_TAR = ${TMPDIR}/phg.2.9.2.tar.Z
 SIMSET_DEST_DIR =  ${INCLUDE_DIR}/SimSET
 SIMSET_PATH = ${SIMSET_DEST_DIR}/2.9.2
-SIMSET_PATH_REPLACE_FSLASH = $(subst /,\/,${SIMSET_PATH})
 SIMSET_BIN = ${SIMSET_PATH}/bin
 SIMSET_LIB = ${SIMSET_PATH}/lib
 SIMSET_MKALL = ${SIMSET_PATH}/make_all.sh
@@ -32,7 +32,7 @@ install-simset:
 		wget -q -P ${TMPDIR} ${SIMSET_LINK};\
 		mkdir -p ${SIMSET_DEST_DIR} && tar -xvf "${SIMSET_TAR}" --directory=${SIMSET_DEST_DIR} && rm ${SIMSET_TAR};\
 		cd ${SIMSET_DEST_DIR} && patch -s -p0 < ${SIMSET_STIR_PATCH};\
-		sed -i 's/^\(SIMSET_PATH = \).*$$/\1${SIMSET_PATH_REPLACE_FSLASH}/' ${SIMSET_MKFILE};\
+		sed -i 's/^\(SIMSET_PATH = \).*$$/\1$(subst /,\/,${SIMSET_PATH})/' ${SIMSET_MKFILE};\
 		cd ${SIMSET_PATH} && mkdir -p ${SIMSET_LIB} && bash ${SIMSET_MKALL};\
 	else\
 		echo "${SIMSET_DEST_DIR} already exists, run clean-simset if you really want to remove it (you will have to intall SimSET again.";\
@@ -51,6 +51,34 @@ check-simset:
 clean-simset:
 	rm -rf ${SIMSET_DEST_DIR}
 
-clean:
-	rm -rf ${INCLUDE_DIR}
+SIMSET_SRC = ${SIMSET_PATH}/src
+SIMSET_LIBSIMSET = ${SIMSET_LIB}/lib/libsimset.so
+STIR_DEST_DIR = ${INCLUDE_DIR}/STIR/STIR
+STIR_BUILD_DIR = ${INCLUDE_DIR}/STIR/build
+STIR_INSTALL_DIR = ${INCLUDE_DIR}/STIR/install
+STIR_MKFILE = ${STIR_BUILD_DIR}/CMakeCache.txt
 
+install-stir:
+	${MAKE} install-simset;\
+	mkdir -p ${STIR_DEST_DIR} ${STIR_BUILD_DIR} ${STIR_INSTALL_DIR};\
+	cd ${STIR_BUILD_DIR} && cmake ${STIR_DEST_DIR};\
+	echo ${STIR_INSTALL_DIR};\
+	sed -i\
+		-e 's/^\(BUILD_SWIG_PYTHON\).*$$/\1:BOOL=OFF/'\
+		-e 's/^\(CMAKE_INSTALL_PREFIX\).*$$/\1:PATH=$(subst /,\/,${STIR_INSTALL_DIR})/'\
+		-e 's/^\(CMAKE_INSTALL_PREFIX\).*$$/\1:PATH=$(subst /,\/,${STIR_INSTALL_DIR})/'\
+		-e 's/^\(SIMSET_INCLUDE_DIRS\).*$$/\1:PATH=$(subst /,\/,${SIMSET_SRC})/'\
+		-e 's/^\(SIMSET_LIBRARY\).*$$/\1:FILEPATH=$(subst /,\/,${SIMSET_LIBSIMSET})/'\
+		-e 's/^\(STIR_OPENMP\).*$$/\1:BOOL=ON/'\
+		${STIR_MKFILE};\
+	cmake ${STIR_DEST_DIR};\
+	make -s -j$${nproc} && make install
+
+clean-stir:
+	rm -rf ${STIR_INSTALL_DIR} ${STIR_BUILD_DIR};\
+	cd ${STIR_DEST_DIR} && git reset --hard HEAD
+
+clean:
+	${MAKE}\
+		clean-simset\
+		clean-stir

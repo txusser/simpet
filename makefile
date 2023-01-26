@@ -52,11 +52,13 @@ clean-simset:
 	rm -rf ${SIMSET_DEST_DIR}
 
 SIMSET_SRC = ${SIMSET_PATH}/src
-SIMSET_LIBSIMSET = ${SIMSET_LIB}/lib/libsimset.so
+SIMSET_LIBSIMSET = ${SIMSET_LIB}/libsimset.so
 STIR_DEST_DIR = ${INCLUDE_DIR}/STIR/STIR
 STIR_BUILD_DIR = ${INCLUDE_DIR}/STIR/build
 STIR_INSTALL_DIR = ${INCLUDE_DIR}/STIR/install
+STIR_INSTALL_BIN = ${STIR_INSTALL_DIR}/bin
 STIR_MKFILE = ${STIR_BUILD_DIR}/CMakeCache.txt
+NPROC = $(shell nproc)
 
 install-stir:
 	${MAKE} install-simset;\
@@ -66,13 +68,23 @@ install-stir:
 	sed -i\
 		-e 's/^\(BUILD_SWIG_PYTHON\).*$$/\1:BOOL=OFF/'\
 		-e 's/^\(CMAKE_INSTALL_PREFIX\).*$$/\1:PATH=$(subst /,\/,${STIR_INSTALL_DIR})/'\
-		-e 's/^\(CMAKE_INSTALL_PREFIX\).*$$/\1:PATH=$(subst /,\/,${STIR_INSTALL_DIR})/'\
 		-e 's/^\(SIMSET_INCLUDE_DIRS\).*$$/\1:PATH=$(subst /,\/,${SIMSET_SRC})/'\
 		-e 's/^\(SIMSET_LIBRARY\).*$$/\1:FILEPATH=$(subst /,\/,${SIMSET_LIBSIMSET})/'\
 		-e 's/^\(STIR_OPENMP\).*$$/\1:BOOL=ON/'\
 		${STIR_MKFILE};\
 	cmake ${STIR_DEST_DIR};\
-	make -s -j$${nproc} && make install
+	make -s -j${NPROC};\
+	make install
+
+check-stir:
+	declare -a stir_files=(FBP2D FBP3DRP forward_project lm_to_projdata OSMAPOSL zoom_image);\
+	for file in "$${stir_files[@]}"; do\
+		if [ ! -f "${STIR_INSTALL_BIN}/$${file}" ]; then\
+			echo "${STIR_INSTALL_BIN}/$${file} does not exists, check your installation.";\
+		else\
+			echo "${STIR_INSTALL_BIN}/$${file} exists.";\
+		fi;\
+	done
 
 clean-stir:
 	rm -rf ${STIR_INSTALL_DIR} ${STIR_BUILD_DIR};\

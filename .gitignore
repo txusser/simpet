@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
 
 # C extensions
 *.so
@@ -89,6 +90,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.vscode
 
 # Spyder project settings
 .spyderproject
@@ -103,12 +105,17 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-*.pyc
-include
+# Files, dependencies, resources, etc.
+**/format_converters
+**/SimSET
+**/fruitcake
+**/STIR/{install,build}
 Data
 resources
 Results
-.vscode
 
 # SimPET paths
 simpet_paths.sh
+
+# vim buffers
+*.swp

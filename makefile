@@ -4,7 +4,9 @@ DEST_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 INCLUDE_DIR := ${DEST_DIR}include
 
 deps:
+	sudo apt-get -y -q update ;\
 	sudo apt-get install -y -q \
+	software-properties-common \
 	wget \
 	unzip \
 	sshpass \
@@ -15,7 +17,11 @@ deps:
 	libncurses-dev \
 	cmake \
 	g++ \
-	swig
+	swig ;\
+	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64 ;\
+	sudo add-apt-repository -y ppa:rmescandon/yq ;\
+	sudo apt-get -y -q update ;\
+	sudo apt-get install -y -q yq
 
 SIMSET_LINK = http://depts.washington.edu/simset/downloads/phg.2.9.2.tar.Z
 SIMSET_TAR = ${TMPDIR}/phg.2.9.2.tar.Z

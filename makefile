@@ -68,19 +68,23 @@ NPROC = $(shell nproc)
 
 install-stir:
 	${MAKE} install-simset;\
-	mkdir -p ${STIR_DEST_DIR} ${STIR_BUILD_DIR} ${STIR_INSTALL_DIR};\
-	cd ${STIR_BUILD_DIR} && cmake ${STIR_DEST_DIR};\
-	echo ${STIR_INSTALL_DIR};\
-	sed -i\
-		-e 's/^\(BUILD_SWIG_PYTHON\).*$$/\1:BOOL=OFF/'\
-		-e 's/^\(CMAKE_INSTALL_PREFIX\).*$$/\1:PATH=$(subst /,\/,${STIR_INSTALL_DIR})/'\
-		-e 's/^\(SIMSET_INCLUDE_DIRS\).*$$/\1:PATH=$(subst /,\/,${SIMSET_SRC})/'\
-		-e 's/^\(SIMSET_LIBRARY\).*$$/\1:FILEPATH=$(subst /,\/,${SIMSET_LIBSIMSET})/'\
-		-e 's/^\(STIR_OPENMP\).*$$/\1:BOOL=ON/'\
-		${STIR_MKFILE};\
-	cmake ${STIR_DEST_DIR};\
-	make -s -j${NPROC};\
-	make install
+	if [ ! -d ${STIR_DEST_DIR} ]; then\
+		mkdir -p ${STIR_DEST_DIR} ${STIR_BUILD_DIR} ${STIR_INSTALL_DIR};\
+		cd ${STIR_BUILD_DIR} && cmake ${STIR_DEST_DIR};\
+		echo ${STIR_INSTALL_DIR};\
+		sed -i\
+			-e 's/^\(BUILD_SWIG_PYTHON\).*$$/\1:BOOL=OFF/'\
+			-e 's/^\(CMAKE_INSTALL_PREFIX\).*$$/\1:PATH=$(subst /,\/,${STIR_INSTALL_DIR})/'\
+			-e 's/^\(SIMSET_INCLUDE_DIRS\).*$$/\1:PATH=$(subst /,\/,${SIMSET_SRC})/'\
+			-e 's/^\(SIMSET_LIBRARY\).*$$/\1:FILEPATH=$(subst /,\/,${SIMSET_LIBSIMSET})/'\
+			-e 's/^\(STIR_OPENMP\).*$$/\1:BOOL=ON/'\
+			${STIR_MKFILE};\
+		cmake ${STIR_DEST_DIR};\
+		make -s -j${NPROC};\
+		make install ;\
+	else \
+		echo "${STIR_DEST_DIR} already exists, run clean-stir if you really want to remove it (you will have to intall STIR again).";\
+	fi
 
 check-stir:
 	declare -a stir_files=(FBP2D FBP3DRP forward_project lm_to_projdata OSMAPOSL zoom_image);\

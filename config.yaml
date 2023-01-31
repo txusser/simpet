@@ -1,19 +1,23 @@
 # Directories to the necesary binaries
-dir_stir: ""
-dir_simset: ""
-matlab_mcr_path: ""
-spm_path: ""
+
+dir_stir:  "/home/yere"
+dir_simset:  "/home/jesus/simpet/include/SimSET/2.9.2"
+matlab_mcr_path:  "/media/usuario3/HDD/SPM_standalone/MCR/v713"
+spm_path:  "/media/usuario3/HDD/SPM_standalone/spm12"
 dir_data_path: ""
 dir_results_path: ""
+
 # If set to one you may see some prompts to prevent you to overwrite existing data
-interactive_mode: 0
+interactive_mode: 123
+
 # SimSET base configuration. Don't change if you don't know what you are doing
 stratification: "true"
 forced_detection: "true"
 forced_non_absortion: "true"
 acceptance_angle: 90.0
-positron_range: "true"
-isotope: "f18"
+positron_range:  "true"
+isotope: "f18"  
+
 # For positron range. Options are f18, c11, n13, o15, ga68, rb82
 non_colinearity: "true"
 minimum_energy: 350.0
@@ -21,3 +25,5 @@ weight_window_ratio: 1.0
 point_source_voxels: "false"
 coherent_scatter_object: "false"
 coherent_scatter_detector: "false"
+
+

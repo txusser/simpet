@@ -100,3 +100,11 @@ clean:
 	${MAKE}\
 		clean-simset\
 		clean-stir
+
+config-git:
+	git config --local filter.config.smudge $$(git root)/scripts/smudge-config.sh
+	git config --local filter.config.clean $$(git root)/scripts/clean-config.sh
+
+clean-git:
+	git config --local --unset filter.config.smudge
+	git config --local --unset filter.config.clean

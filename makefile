@@ -66,9 +66,8 @@ STIR_INSTALL_BIN = ${STIR_INSTALL_DIR}/bin
 STIR_MKFILE = ${STIR_BUILD_DIR}/CMakeCache.txt
 NPROC = $(shell nproc)
 
-install-stir:
-	${MAKE} install-simset;\
-	if [ ! -d ${STIR_DEST_DIR} ]; then\
+install-stir: install-simset
+	if [ ! -d ${STIR_INSTALL_DIR} ]; then\
 		mkdir -p ${STIR_DEST_DIR} ${STIR_BUILD_DIR} ${STIR_INSTALL_DIR};\
 		cd ${STIR_BUILD_DIR} && cmake ${STIR_DEST_DIR};\
 		echo ${STIR_INSTALL_DIR};\

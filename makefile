@@ -139,7 +139,7 @@ config-paths:
 		'PATH=${FORMAT_CONVERTERS_PATH}:$$PATH' \
 	) ;\
 	for path in "$${simpet_paths[@]}"; do \
-		grep -xF $${path} ~/.bashrc || echo $${path} >> ~/.bashrc ;\
+		grep -qxF $${path} ~/.bashrc || echo $${path} >> ~/.bashrc ;\
 	done
 
 clean-paths:

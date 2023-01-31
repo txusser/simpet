@@ -100,15 +100,59 @@ clean-stir:
 	rm -rf ${STIR_INSTALL_DIR} ${STIR_BUILD_DIR};\
 	cd ${STIR_DEST_DIR} && git reset --hard HEAD
 
-clean:
-	${MAKE}\
-		clean-simset\
-		clean-stir
-
 config-git:
-	git config --local filter.config.smudge $$(git root)/scripts/smudge-config.sh
-	git config --local filter.config.clean $$(git root)/scripts/clean-config.sh
+	git config --local filter.config.smudge ${PROJECT_ROOT}scripts/smudge-config.sh
+	git config --local filter.config.clean ${PROJECT_ROOT}scripts/clean-config.sh
 
 clean-git:
 	git config --local --unset filter.config.smudge
 	git config --local --unset filter.config.clean
+
+FRUITCAKE_PATH = ${INCLUDE_DIR}/fruitcake
+FRUITCAKE_BIN = ${FRUITCAKE_PATH}/bin
+FRUITCAKE_LIB = ${FRUITCAKE_PATH}/book/lib
+
+install-fruitcake:
+	echo "Stub."
+
+check-fruitcake:
+	echo "Stub."
+
+clean-fruitcake:
+	echo "Stub."
+
+FORMAT_CONVERTERS_PATH = ${INCLUDE_DIR}/format_converters
+
+install-converters:
+	echo "Stub."
+
+check-converters:
+	echo "Stub."
+
+clean-converters:
+	echo "Stub."
+
+config-paths:
+	declare -a simpet_paths=( \
+		'PATH=${FRUITCAKE_PATH}:$$PATH' \
+		'LD_LIBRARY_PATH=${FRUITCAKE_LIB}:$$LD_LIBRARY_PATH' \
+		'PATH=${FORMAT_CONVERTERS_PATH}:$$PATH' \
+	) ;\
+	for path in "$${simpet_paths[@]}"; do \
+		grep -xF $${path} ~/.bashrc || echo $${path} >> ~/.bashrc ;\
+	done
+
+clean-paths:
+	sed -i \
+		-e '/PATH=$(subst /,\/,${FRUITCAKE_PATH}):$$PATH/d' \
+		-e '/LD_LIBRARY_PATH=$(subst /,\/,${FRUITCAKE_LIB}):$$LD_LIBRARY_PATH/d' \
+		-e '/PATH=$(subst /,\/,${FORMAT_CONVERTERS_PATH}):$$PATH/d' \
+		~/.bashrc
+
+clean:
+	${MAKE}\
+		clean-simset\
+		clean-stir\
+		clean-paths\
+		clean-git
+

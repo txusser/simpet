@@ -1,8 +1,8 @@
 SHELL := /bin/bash
 TMPDIR := /tmp
-DEST_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-ASSETS_DIR := ${DEST_DIR}assets
-INCLUDE_DIR := ${DEST_DIR}include
+ROOT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+ASSETS_DIR := ${ROOT_DIR}assets
+INCLUDE_DIR := ${ROOT_DIR}include
 
 deps:
 	sudo apt-get -y -q update ;\

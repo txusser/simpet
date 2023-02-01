@@ -47,12 +47,12 @@ install-simset:
 
 check-simset:
 	declare -a simset_files=(addrandoms bin calcattenuation combinehist makeindexfile phg timesort) ;\
-	for file in "$${simset_files[@]}"; do\
-		if [ ! -f "${SIMSET_BIN}/$${file}" ]; then\
+	for file in "$${simset_files[@]}"; do \
+		if [ ! -f "${SIMSET_BIN}/$${file}" ]; then \
 			echo "${SIMSET_BIN}/$${file} does not exists, check your installation." ;\
 		else \
 			echo "${SIMSET_BIN}/$${file} exists." ;\
-		fi
+		fi ;\
 	done
 
 clean-simset:

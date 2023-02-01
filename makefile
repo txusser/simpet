@@ -146,6 +146,7 @@ FRUITCAKE_LIB = ${FRUITCAKE_PATH}/book/lib
 FORMAT_CONVERTERS_PATH = ${INCLUDE_DIR}/format_converters
 
 config-paths:
+	touch $${HOME}/.bashrc ;\
 	declare -a simpet_paths=( \
 		'PATH=${FRUITCAKE_BIN}:$$PATH' \
 		'LD_LIBRARY_PATH=${FRUITCAKE_LIB}:$$LD_LIBRARY_PATH' \
@@ -156,14 +157,34 @@ config-paths:
 	done
 
 clean-paths:
+	touch $${HOME}/.bashrc
 	sed -i \
 		-e '/PATH=$(subst /,\/,${FRUITCAKE_BIN}):$$PATH/d' \
 		-e '/LD_LIBRARY_PATH=$(subst /,\/,${FRUITCAKE_LIB}):$$LD_LIBRARY_PATH/d' \
 		-e '/PATH=$(subst /,\/,${FORMAT_CONVERTERS_PATH}):$$PATH/d' \
 		$${HOME}/.bashrc
 
-sample-data:
-	
+DATA_DIR = ${ROOT_DIR}Data
+DATA_ZIP = ${ASSETS_DIR}/Data.zip
+
+dummy-data:
+	if [ ! -d "${DATA_DIR}" ]; then \
+		mkdir -p ${DATA_DIR} && unzip -o ${DATA_ZIP} -d ${DATA_DIR} ;\
+	else \
+		echo "${DATA_DIR} already exists, remove it manually." ;\
+	fi
+
+install:
+	${MAKE} \
+		deps \
+		install-simset \
+		check-simset \
+		install-stir \
+		check-stir \
+		install-resources \
+		check-resources \
+		config-paths \
+		config-git
 
 clean:
 	${MAKE} \

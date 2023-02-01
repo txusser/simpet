@@ -190,7 +190,41 @@ clean:
 	${MAKE} \
 		clean-simset \
 		clean-stir \
-		clean-resources \
-		clean-paths \
-		clean-git
+		clean-resources
+
+help:
+	@echo "Help:"
+	@echo "	-deps: Install the dependencies of the projects via apt."
+	@echo ""
+	@echo "	-install-simset: Install SimSET with STIR patch at directory ${SIMSET_DEST_DIR}."
+	@echo ""
+	@echo "	-check-simset: Check that SIMSet binaries exist."
+	@echo ""
+	@echo "	-clean-simset: Clean SimSET installation (removes ${SIMSET_DEST_DIR} directory)."
+	@echo ""
+	@echo "	-install-stir: Install STIR at directory $(shell dirname ${STIR_DEST_DIR}), install-simset is a prerequisite. Set NPROC=n to use n CPU cores in complation."
+	@echo ""
+	@echo "	-check-stir: Check that STIR binaries exist."
+	@echo ""
+	@echo "	-clean-stir: Clean STIR installation removing ${STIR_INSTALL_DIR} and ${STIR_BUILD_DIR} directories."
+	@echo ""
+	@echo "	-install-resources: Decompress ${RESOURCES_ZIP} and move fruitcake and format_converters to ${INCLUDE_DIR}"
+	@echo ""
+	@echo "	-check-resources: Checks that fruitcake and format_converters are in ${INCLUDE_DIR}."
+	@echo ""
+	@echo "	-clean-resources: Remove fruitcake and format_converters from ${INCLUDE_DIR}."
+	@echo ""
+	@echo "	-config-git: Add project filter drivers to local git configuration and make them executable."
+	@echo ""
+	@echo "	-clean-git : Remove project filter drivers from local git configuration."
+	@echo ""
+	@echo "	-config-paths: Iff not present in .bashrc, the paths of the projects will be appended to the file. If ~/.bashrc does not exists it will be created."
+	@echo ""
+	@echo "	-clean-paths: If the paths of the project are present in .bashrc file, they will be deleted. If ~/.bashrc does not exists it will be created."
+	@echo ""
+	@echo "	-dummy-data: Uncompress ${DATA_ZIP} at ${DATA_DIR} if ${DATA_DIR} does not exists."
+	@echo ""
+	@echo "	-install: Run all install, config and check recipes."
+	@echo ""
+	@echo "	-clean: Run all clean recipes."
 

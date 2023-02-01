@@ -1,2 +1,2 @@
 config.yaml filter=config
-assets/ filter=lfs diff=lfs merge=lfs -text
+assets/** filter=lfs diff=lfs merge=lfs -text

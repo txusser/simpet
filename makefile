@@ -148,9 +148,9 @@ FORMAT_CONVERTERS_PATH = ${INCLUDE_DIR}/format_converters
 config-paths:
 	touch $${HOME}/.bashrc ;\
 	declare -a simpet_paths=( \
-		'PATH=${FRUITCAKE_BIN}:$$PATH' \
-		'LD_LIBRARY_PATH=${FRUITCAKE_LIB}:$$LD_LIBRARY_PATH' \
-		'PATH=${FORMAT_CONVERTERS_PATH}:$$PATH' \
+		'export PATH=${FRUITCAKE_BIN}:$$PATH' \
+		'export LD_LIBRARY_PATH=${FRUITCAKE_LIB}:$$LD_LIBRARY_PATH' \
+		'export PATH=${FORMAT_CONVERTERS_PATH}:$$PATH' \
 	) ;\
 	for path in "$${simpet_paths[@]}"; do \
 		grep -qxF $${path} $${HOME}/.bashrc || echo $${path} >> $${HOME}/.bashrc ;\
@@ -159,9 +159,9 @@ config-paths:
 clean-paths:
 	touch $${HOME}/.bashrc
 	sed -i \
-		-e '/PATH=$(subst /,\/,${FRUITCAKE_BIN}):$$PATH/d' \
-		-e '/LD_LIBRARY_PATH=$(subst /,\/,${FRUITCAKE_LIB}):$$LD_LIBRARY_PATH/d' \
-		-e '/PATH=$(subst /,\/,${FORMAT_CONVERTERS_PATH}):$$PATH/d' \
+		-e '/export PATH=$(subst /,\/,${FRUITCAKE_BIN}):$$PATH/d' \
+		-e '/export LD_LIBRARY_PATH=$(subst /,\/,${FRUITCAKE_LIB}):$$LD_LIBRARY_PATH/d' \
+		-e '/export PATH=$(subst /,\/,${FORMAT_CONVERTERS_PATH}):$$PATH/d' \
 		$${HOME}/.bashrc
 
 DATA_DIR = ${ROOT_DIR}Data

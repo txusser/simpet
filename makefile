@@ -1,12 +1,15 @@
 SHELL := /bin/bash
-TMPDIR = /tmp
-DEST_DIR = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+TMPDIR := /tmp
+DEST_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+ASSETS_DIR := ${DEST_DIR}assets
 INCLUDE_DIR := ${DEST_DIR}include
 
 deps:
 	sudo apt-get -y -q update ;\
 	sudo apt-get install -y -q \
 	software-properties-common \
+	git[all] \
+	git-lfs \
 	wget \
 	unzip \
 	sshpass \
@@ -23,8 +26,7 @@ deps:
 	sudo apt-get -y -q update ;\
 	sudo apt-get install -y -q yq
 
-SIMSET_LINK = http://depts.washington.edu/simset/downloads/phg.2.9.2.tar.Z
-SIMSET_TAR = ${TMPDIR}/phg.2.9.2.tar.Z
+SIMSET_TAR = ${ASSETS_DIR}/phg.2.9.2.tar.Z
 SIMSET_DEST_DIR =  ${INCLUDE_DIR}/SimSET
 SIMSET_PATH = ${SIMSET_DEST_DIR}/2.9.2
 SIMSET_BIN = ${SIMSET_PATH}/bin
@@ -34,24 +36,23 @@ SIMSET_STIR_PATCH = ${DEST_DIR}src/simset/simset_for_stir.patch
 SIMSET_MKFILE = ${SIMSET_PATH}/make.files/simset.make
 
 install-simset:
-	if [ ! -d ${SIMSET_DEST_DIR} ]; then\
-		wget -q -P ${TMPDIR} ${SIMSET_LINK};\
-		mkdir -p ${SIMSET_DEST_DIR} && tar -xvf "${SIMSET_TAR}" --directory=${SIMSET_DEST_DIR} && rm ${SIMSET_TAR};\
-		cd ${SIMSET_DEST_DIR} && patch -s -p0 < ${SIMSET_STIR_PATCH};\
-		sed -i 's/^\(SIMSET_PATH = \).*$$/\1$(subst /,\/,${SIMSET_PATH})/' ${SIMSET_MKFILE};\
-		cd ${SIMSET_PATH} && mkdir -p ${SIMSET_LIB} && bash ${SIMSET_MKALL};\
-	else\
-		echo "${SIMSET_DEST_DIR} already exists, run clean-simset if you really want to remove it (you will have to intall SimSET again.)";\
+	if [ ! -d ${SIMSET_DEST_DIR} ]; then \
+		mkdir -p ${SIMSET_DEST_DIR} && tar -xvf "${SIMSET_TAR}" --directory=${SIMSET_DEST_DIR} ;\
+		cd ${SIMSET_DEST_DIR} && patch -s -p0 < ${SIMSET_STIR_PATCH} ;\
+		sed -i 's/^\(SIMSET_PATH = \).*$$/\1$(subst /,\/,${SIMSET_PATH})/' ${SIMSET_MKFILE} ;\
+		cd ${SIMSET_PATH} && mkdir -p ${SIMSET_LIB} && bash ${SIMSET_MKALL} ;\
+	else \
+		echo "${SIMSET_DEST_DIR} already exists, run clean-simset if you really want to remove it (you will have to intall SimSET again.)" ;\
 	fi
 
 check-simset:
-	declare -a simset_files=(addrandoms bin calcattenuation combinehist makeindexfile phg timesort);\
+	declare -a simset_files=(addrandoms bin calcattenuation combinehist makeindexfile phg timesort) ;\
 	for file in "$${simset_files[@]}"; do\
 		if [ ! -f "${SIMSET_BIN}/$${file}" ]; then\
-			echo "${SIMSET_BIN}/$${file} does not exists, check your installation.";\
-		else\
-			echo "${SIMSET_BIN}/$${file} exists.";\
-		fi;\
+			echo "${SIMSET_BIN}/$${file} does not exists, check your installation." ;\
+		else \
+			echo "${SIMSET_BIN}/$${file} exists." ;\
+		fi
 	done
 
 clean-simset:
@@ -67,69 +68,81 @@ STIR_MKFILE = ${STIR_BUILD_DIR}/CMakeCache.txt
 NPROC = $(shell nproc)
 
 install-stir: install-simset
-	if [ ! -d ${STIR_INSTALL_DIR} ]; then\
-		mkdir -p ${STIR_DEST_DIR} ${STIR_BUILD_DIR} ${STIR_INSTALL_DIR};\
-		cd ${STIR_BUILD_DIR} && cmake ${STIR_DEST_DIR};\
-		echo ${STIR_INSTALL_DIR};\
-		sed -i\
-			-e 's/^\(BUILD_SWIG_PYTHON\).*$$/\1:BOOL=OFF/'\
-			-e 's/^\(CMAKE_INSTALL_PREFIX\).*$$/\1:PATH=$(subst /,\/,${STIR_INSTALL_DIR})/'\
-			-e 's/^\(SIMSET_INCLUDE_DIRS\).*$$/\1:PATH=$(subst /,\/,${SIMSET_SRC})/'\
-			-e 's/^\(SIMSET_LIBRARY\).*$$/\1:FILEPATH=$(subst /,\/,${SIMSET_LIBSIMSET})/'\
-			-e 's/^\(STIR_OPENMP\).*$$/\1:BOOL=ON/'\
-			${STIR_MKFILE};\
-		cmake ${STIR_DEST_DIR};\
-		make -s -j${NPROC};\
-		make install ;\
+	if [ ! -d ${STIR_INSTALL_DIR} ]; then \
+		mkdir -p ${STIR_DEST_DIR} ${STIR_BUILD_DIR} ${STIR_INSTALL_DIR} ;\
+		cd ${STIR_BUILD_DIR} && cmake ${STIR_DEST_DIR} ;\
+		echo ${STIR_INSTALL_DIR} ;\
+		sed -i \
+			-e 's/^\(BUILD_SWIG_PYTHON\).*$$/\1:BOOL=OFF/' \
+			-e 's/^\(CMAKE_INSTALL_PREFIX\).*$$/\1:PATH=$(subst /,\/,${STIR_INSTALL_DIR})/' \
+			-e 's/^\(SIMSET_INCLUDE_DIRS\).*$$/\1:PATH=$(subst /,\/,${SIMSET_SRC})/' \
+			-e 's/^\(SIMSET_LIBRARY\).*$$/\1:FILEPATH=$(subst /,\/,${SIMSET_LIBSIMSET})/' \
+			-e 's/^\(STIR_OPENMP\).*$$/\1:BOOL=ON/' \
+			${STIR_MKFILE} ;\
+		cmake ${STIR_DEST_DIR} ;\
+		make -s -j${NPROC} ;\
+		make install  ;\
 	else \
-		echo "${STIR_DEST_DIR} already exists, run clean-stir if you really want to remove it (you will have to intall STIR again).";\
+		echo "${STIR_DEST_DIR} already exists, run clean-stir if you really want to remove it (you will have to intall STIR again)." ;\
 	fi
 
 check-stir:
-	declare -a stir_files=(FBP2D FBP3DRP forward_project lm_to_projdata OSMAPOSL zoom_image);\
-	for file in "$${stir_files[@]}"; do\
-		if [ ! -f "${STIR_INSTALL_BIN}/$${file}" ]; then\
-			echo "${STIR_INSTALL_BIN}/$${file} does not exists, check your installation.";\
-		else\
-			echo "${STIR_INSTALL_BIN}/$${file} exists.";\
-		fi;\
+	declare -a stir_files=(FBP2D FBP3DRP forward_project lm_to_projdata OSMAPOSL zoom_image) ;\
+	for file in "$${stir_files[@]}"; do \
+		if [ ! -f "${STIR_INSTALL_BIN}/$${file}" ]; then \
+			echo "${STIR_INSTALL_BIN}/$${file} does not exists, check your installation." ;\
+		else \
+			echo "${STIR_INSTALL_BIN}/$${file} exists." ;\
+		fi ;/gc
 	done
 
 clean-stir:
-	rm -rf ${STIR_INSTALL_DIR} ${STIR_BUILD_DIR};\
+	rm -rf ${STIR_INSTALL_DIR} ${STIR_BUILD_DIR} ;\
 	cd ${STIR_DEST_DIR} && git reset --hard HEAD
+
+FRUITCAKE_PATH = ${INCLUDE_DIR}/fruitcake
+FRUITCAKE_BIN = ${FRUITCAKE_PATH}/bin
+FORMAT_CONVERTERS_PATH = ${INCLUDE_DIR}/format_converters
+RESOURCES_TMP = ${TMPDIR}/resources
+
+install-resources:
+	mkdir -p ${RESOURCES_TMP} && unzip -o ${ASSETS_DIR}/fruitcake.zip -d ${RESOURCES_TMP} ;\
+	if [ ! -d "${FRUITCAKE_PATH}" ]; then \
+		mv ${RESOURCES_TMP}/fruitcake ${INCLUDE_DIR} ;\
+		chmod -R +x ${FRUITCAKE_BIN} ;\
+	else \
+		echo 'Resource fruitcake already exists, run make clean-resources in order to clean resources installation (format_converters will be removed as well).' ;\
+	fi ;\
+	if [ ! -d "${FORMAT_CONVERTERS_PATH}" ]; then \
+		mv ${RESOURCES_TMP}/format_converters ${INCLUDE_DIR} ;\
+		chmod -R +x ${FORMAT_CONVERTERS_PATH} ;\
+	else \
+		echo 'Resource format_converters already exists, run make clean-resources in order to clean resources installation (fruitcake will be removed as well).' ;\
+	fi ;\
+	rm -rf ${RESOURCES_TMP}
+
+check-resources:
+	declare -a resources_paths=(${FRUITCAKE_PATH} ${FORMAT_CONVERTERS_PATH}) ;\
+	for path in "$${resources_paths[@]}"; do \
+		if [ ! -d "$${path}" ]; then \
+			echo "$${path} does not exists, clean fruitcake and format_converters with clean-resources and run install-resources." ;\
+		else \
+			echo "$${path} exists." ;\
+		fi ;\
+	done
+
+clean-resources:
+	rm -rf ${INCLUDE_DIR}/fruitcake ${INCLUDE_DIR}/format_converters
 
 config-git:
 	git config --local filter.config.smudge ${PROJECT_ROOT}scripts/smudge-config.sh
 	git config --local filter.config.clean ${PROJECT_ROOT}scripts/clean-config.sh
+	chmod +x -R ${PROJECT_ROOT}scripts
 
 clean-git:
 	git config --local --unset filter.config.smudge
 	git config --local --unset filter.config.clean
 
-FRUITCAKE_PATH = ${INCLUDE_DIR}/fruitcake
-FRUITCAKE_BIN = ${FRUITCAKE_PATH}/bin
-FRUITCAKE_LIB = ${FRUITCAKE_PATH}/book/lib
-
-install-fruitcake:
-	echo "Stub."
-
-check-fruitcake:
-	echo "Stub."
-
-clean-fruitcake:
-	echo "Stub."
-
-FORMAT_CONVERTERS_PATH = ${INCLUDE_DIR}/format_converters
-
-install-converters:
-	echo "Stub."
-
-check-converters:
-	echo "Stub."
-
-clean-converters:
-	echo "Stub."
 
 config-paths:
 	declare -a simpet_paths=( \
@@ -149,9 +162,10 @@ clean-paths:
 		~/.bashrc
 
 clean:
-	${MAKE}\
-		clean-simset\
-		clean-stir\
-		clean-paths\
+	${MAKE} \
+		clean-simset \
+		clean-stir \
+		clean-resources \
+		clean-paths \
 		clean-git
 

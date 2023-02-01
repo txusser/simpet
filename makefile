@@ -32,7 +32,7 @@ SIMSET_PATH = ${SIMSET_DEST_DIR}/2.9.2
 SIMSET_BIN = ${SIMSET_PATH}/bin
 SIMSET_LIB = ${SIMSET_PATH}/lib
 SIMSET_MKALL = ${SIMSET_PATH}/make_all.sh
-SIMSET_STIR_PATCH = ${DEST_DIR}src/simset/simset_for_stir.patch
+SIMSET_STIR_PATCH = ${ASSETS_DIR}/simset_for_stir.patch
 SIMSET_MKFILE = ${SIMSET_PATH}/make.files/simset.make
 
 install-simset:
@@ -160,7 +160,10 @@ clean-paths:
 		-e '/PATH=$(subst /,\/,${FRUITCAKE_BIN}):$$PATH/d' \
 		-e '/LD_LIBRARY_PATH=$(subst /,\/,${FRUITCAKE_LIB}):$$LD_LIBRARY_PATH/d' \
 		-e '/PATH=$(subst /,\/,${FORMAT_CONVERTERS_PATH}):$$PATH/d' \
-		~/.bashrc
+		$${HOME}/.bashrc
+
+sample-data:
+	
 
 clean:
 	${MAKE} \

@@ -93,32 +93,29 @@ check-stir:
 			echo "${STIR_INSTALL_BIN}/$${file} does not exists, check your installation." ;\
 		else \
 			echo "${STIR_INSTALL_BIN}/$${file} exists." ;\
-		fi ;/gc
+		fi ;\
 	done
 
 clean-stir:
 	rm -rf ${STIR_INSTALL_DIR} ${STIR_BUILD_DIR} ;\
 	cd ${STIR_DEST_DIR} && git reset --hard HEAD
 
-FRUITCAKE_PATH = ${INCLUDE_DIR}/fruitcake
-FRUITCAKE_BIN = ${FRUITCAKE_PATH}/bin
-FORMAT_CONVERTERS_PATH = ${INCLUDE_DIR}/format_converters
+RESOURCES_ZIP = ${ASSETS_DIR}/fruitcake.zip
 RESOURCES_TMP = ${TMPDIR}/resources
 
 install-resources:
-	mkdir -p ${RESOURCES_TMP} && unzip -o ${ASSETS_DIR}/fruitcake.zip -d ${RESOURCES_TMP} ;\
-	if [ ! -d "${FRUITCAKE_PATH}" ]; then \
-		mv ${RESOURCES_TMP}/fruitcake ${INCLUDE_DIR} ;\
-		chmod -R +x ${FRUITCAKE_BIN} ;\
-	else \
-		echo 'Resource fruitcake already exists, run make clean-resources in order to clean resources installation (format_converters will be removed as well).' ;\
-	fi ;\
-	if [ ! -d "${FORMAT_CONVERTERS_PATH}" ]; then \
-		mv ${RESOURCES_TMP}/format_converters ${INCLUDE_DIR} ;\
-		chmod -R +x ${FORMAT_CONVERTERS_PATH} ;\
-	else \
-		echo 'Resource format_converters already exists, run make clean-resources in order to clean resources installation (fruitcake will be removed as well).' ;\
-	fi ;\
+	mkdir -p ${RESOURCES_TMP} ${INCLUDE_DIR} && unzip -o ${RESOURCES_ZIP} -d ${RESOURCES_TMP} ;\
+	declare -a resources=(fruitcake format_converters) ;\
+	for rce in "$${resources[@]}"; do \
+		include_path="${INCLUDE_DIR}/$${rce}" ;\
+		tmp_path="${RESOURCES_TMP}/$${rce}" ;\
+		if [ ! -d $${include_path} ]; then \
+			mv $${tmp_path} ${INCLUDE_DIR} ;\
+			chmod -R +x $${include_path} ;\
+		else \
+			echo "$${include_path} already exists, run make clean-resources in order to clean resources installation (fruitcake will be removed as well)." ;\
+		fi ;\
+	done ;\
 	rm -rf ${RESOURCES_TMP}
 
 check-resources:
@@ -143,20 +140,24 @@ clean-git:
 	git config --local --unset filter.config.smudge
 	git config --local --unset filter.config.clean
 
+FRUITCAKE_PATH = ${INCLUDE_DIR}/fruitcake
+FRUITCAKE_BIN = ${FRUITCAKE_PATH}/bin
+FRUITCAKE_LIB = ${FRUITCAKE_PATH}/book/lib
+FORMAT_CONVERTERS_PATH = ${INCLUDE_DIR}/format_converters
 
 config-paths:
 	declare -a simpet_paths=( \
-		'PATH=${FRUITCAKE_PATH}:$$PATH' \
+		'PATH=${FRUITCAKE_BIN}:$$PATH' \
 		'LD_LIBRARY_PATH=${FRUITCAKE_LIB}:$$LD_LIBRARY_PATH' \
 		'PATH=${FORMAT_CONVERTERS_PATH}:$$PATH' \
 	) ;\
 	for path in "$${simpet_paths[@]}"; do \
-		grep -qxF $${path} ~/.bashrc || echo $${path} >> ~/.bashrc ;\
+		grep -qxF $${path} $${HOME}/.bashrc || echo $${path} >> $${HOME}/.bashrc ;\
 	done
 
 clean-paths:
 	sed -i \
-		-e '/PATH=$(subst /,\/,${FRUITCAKE_PATH}):$$PATH/d' \
+		-e '/PATH=$(subst /,\/,${FRUITCAKE_BIN}):$$PATH/d' \
 		-e '/LD_LIBRARY_PATH=$(subst /,\/,${FRUITCAKE_LIB}):$$LD_LIBRARY_PATH/d' \
 		-e '/PATH=$(subst /,\/,${FORMAT_CONVERTERS_PATH}):$$PATH/d' \
 		~/.bashrc

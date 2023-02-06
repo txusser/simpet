@@ -4,6 +4,12 @@ ROOT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 ASSETS_DIR := ${ROOT_DIR}assets
 INCLUDE_DIR := ${ROOT_DIR}include
 
+.PHONY: deps install-simset check-simset clean-simset 
+.PHONY: install-stir check-stir clean-stir 
+.PHONY: install-resources check-resources clean-resources 
+.PHONY: config-git clean-git config-paths clean-paths 
+.PHONY: dummy-data install clean help
+
 deps:
 	sudo apt-get -y -q update ;\
 	sudo apt-get install -y -q \

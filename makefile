@@ -41,7 +41,7 @@ SIMSET_MKALL = ${SIMSET_PATH}/make_all.sh
 SIMSET_STIR_PATCH = ${ASSETS_DIR}/simset_for_stir.patch
 SIMSET_MKFILE = ${SIMSET_PATH}/make.files/simset.make
 
-install-simset:
+install-simset: ${SIMSET_TAR}
 	if [ ! -d ${SIMSET_DEST_DIR} ]; then \
 		mkdir -p ${SIMSET_DEST_DIR} && tar -xvf "${SIMSET_TAR}" --directory=${SIMSET_DEST_DIR} ;\
 		cd ${SIMSET_DEST_DIR} && patch -s -p0 < ${SIMSET_STIR_PATCH} ;\
@@ -73,7 +73,7 @@ STIR_INSTALL_BIN = ${STIR_INSTALL_DIR}/bin
 STIR_MKFILE = ${STIR_BUILD_DIR}/CMakeCache.txt
 NPROC = $(shell nproc)
 
-install-stir: install-simset
+install-stir: install-simset ${STIR_DEST_DIR}
 	if [ ! -d ${STIR_INSTALL_DIR} ]; then \
 		mkdir -p ${STIR_DEST_DIR} ${STIR_BUILD_DIR} ${STIR_INSTALL_DIR} ;\
 		cd ${STIR_BUILD_DIR} && cmake ${STIR_DEST_DIR} ;\
@@ -109,7 +109,7 @@ clean-stir:
 RESOURCES_ZIP = ${ASSETS_DIR}/fruitcake.zip
 RESOURCES_TMP = ${TMPDIR}/resources
 
-install-resources:
+install-resources: ${RESOURCES_ZIP}
 	mkdir -p ${RESOURCES_TMP} ${INCLUDE_DIR} && unzip -o ${RESOURCES_ZIP} -d ${RESOURCES_TMP} ;\
 	declare -a resources=(fruitcake format_converters) ;\
 	for rce in "$${resources[@]}"; do \
@@ -159,7 +159,7 @@ config-paths:
 		'export PATH=${FORMAT_CONVERTERS_PATH}:$$PATH' \
 	) ;\
 	for path in "$${simpet_paths[@]}"; do \
-		grep -qxF $${path} $${HOME}/.bashrc || echo $${path} >> $${HOME}/.bashrc ;\
+		grep -qxF "$${path}" "$${HOME}"/.bashrc || echo "$${path}" >> $${HOME}/.bashrc ;\
 	done
 
 clean-paths:
@@ -173,7 +173,7 @@ clean-paths:
 DATA_DIR = ${ROOT_DIR}Data
 DATA_ZIP = ${ASSETS_DIR}/Data.zip
 
-dummy-data:
+dummy-data: ${DATA_ZIP}
 	if [ ! -d "${DATA_DIR}" ]; then \
 		mkdir -p ${DATA_DIR} && unzip -o ${DATA_ZIP} -d ${DATA_DIR} ;\
 	else \
@@ -190,7 +190,6 @@ install:
 		install-resources \
 		check-resources \
 		config-paths \
-		config-git
 
 clean:
 	${MAKE} \

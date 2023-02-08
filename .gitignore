@@ -105,6 +105,9 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# vim buffers
+*.swp
+
 # Files, dependencies, resources, etc.
 **/format_converters
 **/SimSET
@@ -114,8 +117,3 @@ Data
 resources
 Results
 
-# SimPET paths
-simpet_paths.sh
-
-# vim buffers
-*.swp

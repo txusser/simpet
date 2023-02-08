@@ -3,6 +3,7 @@ TMPDIR := /tmp
 ROOT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 ASSETS_DIR := ${ROOT_DIR}assets
 INCLUDE_DIR := ${ROOT_DIR}include
+SUBMODULES_DIR := ${ROOT_DIR}submodules
 
 .PHONY: deps install-simset check-simset clean-simset 
 .PHONY: install-stir check-stir clean-stir 
@@ -66,18 +67,18 @@ clean-simset:
 
 SIMSET_SRC = ${SIMSET_PATH}/src
 SIMSET_LIBSIMSET = ${SIMSET_LIB}/libsimset.so
-STIR_DEST_DIR = ${INCLUDE_DIR}/STIR/STIR
-STIR_BUILD_DIR = ${INCLUDE_DIR}/STIR/build
-STIR_INSTALL_DIR = ${INCLUDE_DIR}/STIR/install
+STIR_DIR = ${SUBMODULES_DIR}/STIR/STIR
+STIR_BUILD_DIR = ${SUBMODULES_DIR}/STIR/build
+STIR_INSTALL_DIR = ${SUBMODULES_DIR}/STIR/install
 STIR_INSTALL_BIN = ${STIR_INSTALL_DIR}/bin
 STIR_MKFILE = ${STIR_BUILD_DIR}/CMakeCache.txt
+STIR_FINAL_DEST_DIR = ${INCLUDE_DIR}/STIR
 NPROC = $(shell nproc)
 
-install-stir: install-simset ${STIR_DEST_DIR}
-	if [ ! -d ${STIR_INSTALL_DIR} ]; then \
-		mkdir -p ${STIR_DEST_DIR} ${STIR_BUILD_DIR} ${STIR_INSTALL_DIR} ;\
-		cd ${STIR_BUILD_DIR} && cmake ${STIR_DEST_DIR} ;\
-		echo ${STIR_INSTALL_DIR} ;\
+install-stir: install-simset ${STIR_DIR}
+	if [ ! -d ${STIR_FINAL_DEST_DIR} ]; then \
+		mkdir -p ${STIR_BUILD_DIR} ${STIR_INSTALL_DIR} ${STIR_FINAL_DEST_DIR} ;\
+		cd ${STIR_BUILD_DIR} && cmake ${STIR_DIR} ;\
 		sed -i \
 			-e 's/^\(BUILD_SWIG_PYTHON\).*$$/\1:BOOL=OFF/' \
 			-e 's/^\(CMAKE_INSTALL_PREFIX\).*$$/\1:PATH=$(subst /,\/,${STIR_INSTALL_DIR})/' \
@@ -85,11 +86,12 @@ install-stir: install-simset ${STIR_DEST_DIR}
 			-e 's/^\(SIMSET_LIBRARY\).*$$/\1:FILEPATH=$(subst /,\/,${SIMSET_LIBSIMSET})/' \
 			-e 's/^\(STIR_OPENMP\).*$$/\1:BOOL=ON/' \
 			${STIR_MKFILE} ;\
-		cmake ${STIR_DEST_DIR} ;\
+		cmake ${STIR_DIR} ;\
 		make -s -j${NPROC} ;\
-		make install  ;\
+		make install ;\
+		mv ${STIR_BUILD_DIR} ${STIR_INSTALL_DIR} ${STIR_FINAL_DEST_DIR} ;\
 	else \
-		echo "${STIR_DEST_DIR} already exists, run clean-stir if you really want to remove it (you will have to intall STIR again)." ;\
+		echo "${STIR_FINAL_DEST_DIR} already exists, run clean-stir if you really want to remove it (you will have to intall STIR again)." ;\
 	fi
 
 check-stir:
@@ -103,8 +105,8 @@ check-stir:
 	done
 
 clean-stir:
-	rm -rf ${STIR_INSTALL_DIR} ${STIR_BUILD_DIR} ;\
-	cd ${STIR_DEST_DIR} && git reset --hard HEAD
+	rm -rf ${STIR_FINAL_DEST_DIR} ;\
+	cd ${STIR_DIR} && git reset --hard HEAD
 
 RESOURCES_ZIP = ${ASSETS_DIR}/fruitcake.zip
 RESOURCES_TMP = ${TMPDIR}/resources
@@ -175,7 +177,7 @@ DATA_ZIP = ${ASSETS_DIR}/Data.zip
 
 dummy-data: ${DATA_ZIP}
 	if [ ! -d "${DATA_DIR}" ]; then \
-		mkdir -p ${DATA_DIR} && unzip -o ${DATA_ZIP} -d ${DATA_DIR} ;\
+		mkdir -p ${DATA_DIR} && unzip -o ${DATA_ZIP} -d ${ROOT_DIR} ;\
 	else \
 		echo "${DATA_DIR} already exists, remove it manually." ;\
 	fi
@@ -199,37 +201,37 @@ clean:
 
 help:
 	@echo "Help:"
-	@echo "	-deps: Install the dependencies of the projects via apt."
+	@echo "	- deps: Install the dependencies of the projects via apt."
 	@echo ""
-	@echo "	-install-simset: Install SimSET with STIR patch at directory ${SIMSET_DEST_DIR}."
+	@echo "	- install-simset: Install SimSET with STIR patch at directory ${SIMSET_DEST_DIR}."
 	@echo ""
-	@echo "	-check-simset: Check that SIMSet binaries exist."
+	@echo "	- check-simset: Check that SIMSet binaries exist."
 	@echo ""
-	@echo "	-clean-simset: Clean SimSET installation (removes ${SIMSET_DEST_DIR} directory)."
+	@echo "	- clean-simset: Clean SimSET installation (removes ${SIMSET_DEST_DIR} directory)."
 	@echo ""
-	@echo "	-install-stir: Install STIR at directory $(shell dirname ${STIR_DEST_DIR}), install-simset is a prerequisite. Set NPROC=n to use n CPU cores in complation."
+	@echo "	- install-stir: Install STIR at directory $(shell dirname ${STIR_DIR}), install-simset is a prerequisite. Set NPROC=n to use n CPU cores in compilation."
 	@echo ""
-	@echo "	-check-stir: Check that STIR binaries exist."
+	@echo "	- check-stir: Check that STIR binaries exist."
 	@echo ""
-	@echo "	-clean-stir: Clean STIR installation removing ${STIR_INSTALL_DIR} and ${STIR_BUILD_DIR} directories."
+	@echo "	- clean-stir: Clean STIR installation removing ${STIR_INSTALL_DIR} and ${STIR_BUILD_DIR} directories."
 	@echo ""
-	@echo "	-install-resources: Decompress ${RESOURCES_ZIP} and move fruitcake and format_converters to ${INCLUDE_DIR}"
+	@echo "	- install-resources: Decompress ${RESOURCES_ZIP} and move fruitcake and format_converters to ${INCLUDE_DIR}"
 	@echo ""
-	@echo "	-check-resources: Checks that fruitcake and format_converters are in ${INCLUDE_DIR}."
+	@echo "	- check-resources: Checks that fruitcake and format_converters are in ${INCLUDE_DIR}."
 	@echo ""
-	@echo "	-clean-resources: Remove fruitcake and format_converters from ${INCLUDE_DIR}."
+	@echo "	- clean-resources: Remove fruitcake and format_converters from ${INCLUDE_DIR}."
 	@echo ""
-	@echo "	-config-git: Add project filter drivers to local git configuration and make them executable."
+	@echo "	- config-git: Add project filter drivers to local git configuration and make them executable."
 	@echo ""
-	@echo "	-clean-git : Remove project filter drivers from local git configuration."
+	@echo "	- clean-git : Remove project filter drivers from local git configuration."
 	@echo ""
-	@echo "	-config-paths: Iff not present in .bashrc, the paths of the projects will be appended to the file. If ~/.bashrc does not exists it will be created."
+	@echo "	- config-paths: Iff not present in .bashrc, the paths of the projects will be appended to the file. If ~/.bashrc does not exists it will be created."
 	@echo ""
-	@echo "	-clean-paths: If the paths of the project are present in .bashrc file, they will be deleted. If ~/.bashrc does not exists it will be created."
+	@echo "	- clean-paths: If the paths of the project are present in .bashrc file, they will be deleted. If ~/.bashrc does not exists it will be created."
 	@echo ""
-	@echo "	-dummy-data: Uncompress ${DATA_ZIP} at ${DATA_DIR} if ${DATA_DIR} does not exists."
+	@echo "	- dummy-data: Uncompress ${DATA_ZIP} at ${DATA_DIR} if ${DATA_DIR} does not exists."
 	@echo ""
-	@echo "	-install: Run all install, config and check recipes."
+	@echo "	- install: Run all install, config and check recipes."
 	@echo ""
-	@echo "	-clean: Run all clean recipes."
+	@echo "	- clean: Run all clean recipes."
 

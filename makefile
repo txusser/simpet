@@ -165,12 +165,12 @@ config-paths:
 	done
 
 clean-paths:
-	touch $${HOME}/.bashrc
+	touch "$${HOME}/.bashrc"
 	sed -i \
 		-e '/export PATH=$(subst /,\/,${FRUITCAKE_BIN}):$$PATH/d' \
 		-e '/export LD_LIBRARY_PATH=$(subst /,\/,${FRUITCAKE_LIB}):$$LD_LIBRARY_PATH/d' \
 		-e '/export PATH=$(subst /,\/,${FORMAT_CONVERTERS_PATH}):$$PATH/d' \
-		$${HOME}/.bashrc
+		"$${HOME}/.bashrc"
 
 DATA_DIR = ${ROOT_DIR}Data
 DATA_ZIP = ${ASSETS_DIR}/Data.zip

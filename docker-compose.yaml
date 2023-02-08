@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  simpet:
+    container_name: simpet
+    stdin_open: true
+    tty: true
+    image: simpet
+    volumes:
+      - ./:/home/simpet
+    build:
+      context: .
+      dockerfile: Dockerfile

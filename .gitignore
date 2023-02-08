@@ -109,10 +109,7 @@ venv.bak/
 *.swp
 
 # Files, dependencies, resources, etc.
-**/format_converters
-**/SimSET
-**/fruitcake
-**/STIR/{install,build}
+**/include/*
 Data
 resources
 Results

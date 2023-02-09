@@ -369,7 +369,6 @@ class SimSET_Reconstruction(object):
             
         if self.scanner.get('add_noise') != 0:
             stir_tools.add_noise(self.config, self.scanner, sinogram_stir, self.log_file)
-                
 
     def run_recons(self):
 

@@ -3,7 +3,6 @@ from os.path import join, exists, isfile, isdir, dirname, basename, splitext
 from subprocess import getstatusoutput as getoutput
 import nibabel as nib
 from utils import resources as rsc
-from utils import spm_tools as spm
 import numpy as np
 from operator import itemgetter
 from nilearn import image
@@ -440,7 +439,6 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     
     nib.save(analyze_img,output_image)
 
-
 def operate_images_analyze(image1, image2, out_image, operation='mult'):
     """
     Given the input images, calculate the multiplication image or the ratio between them
@@ -517,86 +515,6 @@ def log_message(logfile, message, mode='info'):
         with open(logfile, 'w') as lfile:
             lfile.write(stream)
 
-def reorient_dcmtonii(image_path):
-    
-    
-    components=os.path.split(image_path)
-    path = components[0]
-    image = components[1]
-    converter = Dcm2nii()
-    converter.inputs.source_names=[image_path]
-    converter.inputs.reorient_and_crop=True
-    # converter.nii_output=False
-    converter.run()
-    
-    reor_ima_name = "o"+image
-    if exists(join(path,reor_ima_name)):
-        shutil.copy(join(path,reor_ima_name),image_path)
-        os.remove(join(path,reor_ima_name))
-        os.remove(join(path,"co"+image))
-    else:
-    #     converter.inputs_reorient_and_crop=False	
-    #     converter.run()
-    #     shutil.copy(join(path,"f"+image), image_path)
-        os.remove(join(path,"c"+image))
-    #     os.remove(join(path,"f"+image))
-
-    
-    
-def petmr2maps(pet_image, mri_image, ct_image, log_file, spm_run, output_dir, mode="SimSET"):
-        """
-        It will create act and att maps from PET and MR images.
-        Required inputs are:
-        pet_image: dicom_dir, nii.gz, nii or Analyze (.hdr or .img)
-        mri_image: dicom_dir, nii.gz, nii or Analyze (.hdr or .img)
-        mode: Choose STIR or SIMSET. The maps will be different for each simulation.
-        The inputs will be stored to Data/simulation_name/Patient as reformatted/corregistered Analyze
-        #The maps will be stored on Data/simulation_name/Maps
-        The maps will be stored on Results/output_name/Maps
-        """
-        message = "GENERATING ACT AND ATT MAPS FROM PET, (CT) and MR IMAGES"
-        log_message(log_file, message, mode='info')
-        
-        reorient_dcmtonii(pet_image)
-        reorient_dcmtonii(mri_image)
-        reorient_dcmtonii(ct_image)
-        #First of all lets take all to analyze
-        pet_hdr = anything_to_hdr_convert(pet_image)
-        #pet_hdr = copy_analyze(pet_hdr,image2=False,dest_dir=patient_dir)
-        pet_hdr = prepare_input_image(pet_hdr,log_file,min_voxel_size=1.5)
-        pet_img = pet_hdr[0:-3]+"img"
-        
-        if ct_image: #ct_image is not empty
-            ct_hdr = anything_to_hdr_convert(ct_image)
-            ct_hdr = prepare_input_image(ct_hdr,log_file,min_voxel_size=1.5)
-            ct_img = ct_hdr[0:-3]+"img"
-
-        mri_hdr = anything_to_hdr_convert(mri_image)
-        #mri_hdr = copy_analyze(mri_hdr,image2=False,dest_dir=patient_dir)
-        mri_hdr = prepare_input_image(mri_hdr,log_file,min_voxel_size=1.5)
-        mri_img = mri_hdr[0:-3]+"img"
-
-        #make mri image square 
-        makeImageSquare(mri_hdr, log_file)
-
-        #Performing PET-CT/MR coregister
-        mfile = os.path.join(output_dir,"fusion_pet_to_mri.m")
-        # correg_pet_hdr = fsl_flirt(mri_hdr, pet_hdr, log_file)
-        # correg_pet_img =correg_pet_hdr[0:-3]+"img"
-        correg_pet_img = spm.image_fusion(spm_run, mfile, mri_img, pet_img, log_file)
-        correg_ct_img=""
-        if ct_image: #ct_image is not empty
-            mfile = os.path.join(output_dir,"fusion_ct_to_mri.m")
-            correg_ct_img = spm.image_fusion(spm_run, mfile, mri_img, ct_img, log_file)
-
-        #Now the map generation
-        from utils.patient2maps import patient2maps
-
-        my_map_generation = patient2maps(spm_run, output_dir, log_file,
-                                         mri_img, correg_pet_img, correg_ct_img, mode=mode)
-        activity_map_hdr, attenuation_map_hdr = my_map_generation.run()
-
-        return activity_map_hdr, attenuation_map_hdr
 
 def convert_map_values(act_map,att_map,output_dir,log_file,mode="SimSET"):
 
@@ -684,8 +602,7 @@ def convert_simset_sino_to_stir(input_img, output=False):
         output = input_img [0:-4] + '_stir.hdr'
   
     nib.save(stir_img,output)
-    
-    
+
 def resampleXYvoxelSizes(image_hdr, xyVoxelSize, log_file):
     img = nib.load(image_hdr)
     z_VoxelSize =img.header['pixdim'][3]
@@ -696,7 +613,6 @@ def resampleXYvoxelSizes(image_hdr, xyVoxelSize, log_file):
     # nib.save(res_img,image_hdr[0:-4]+"_resXY.hdr")
     
     return image_hdr
-
 
 def resampleZvoxelSize(image_hdr, zOutputvoxelSize, log_file):
     img = nib.load(image_hdr)
@@ -709,7 +625,6 @@ def resampleZvoxelSize(image_hdr, zOutputvoxelSize, log_file):
     # nib.save(res_img,image_hdr[0:-4]+"_resZ.hdr")
     
     return image_hdr
-
 
 def makeImageSquare(image_hdr, log_file):
     

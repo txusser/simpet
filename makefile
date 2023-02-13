@@ -205,7 +205,7 @@ help:
 	@echo ""
 	@echo "	- install-simset: Install SimSET with STIR patch at directory ${SIMSET_DEST_DIR}."
 	@echo ""
-	@echo "	- check-simset: Check that SIMSet binaries exist."
+	@echo "	- check-simset: Check that SimSET binaries exist."
 	@echo ""
 	@echo "	- clean-simset: Clean SimSET installation (removes ${SIMSET_DEST_DIR} directory)."
 	@echo ""

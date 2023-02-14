@@ -3,6 +3,7 @@ FROM ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV HOME=/home
 ENV SIMPET_DIR=$HOME/simpet
+ENV STIR_DIR=$SIMPET_DIR/submodules/STIR/STIR
 
 COPY . $SIMPET_DIR
 
@@ -16,8 +17,10 @@ RUN apt-get update && \
 	python3-pip && \
 	git clone https://github.com/YerePhy/dotfiles.git $HOME/dotfiles && \
 	cp $HOME/dotfiles/.vimrc $HOME/.vimrc && rm -rf $HOME/dotfiles && \
-	pip install -r $SIMPET_DIR/requirements.txt && \
-	cd $SIMPET_DIR && make deps && make install && \
-	mv $SIMPET_DIR/include $HOME && rm -rf $SIMPET_DIR
+    git config --global --add safe.directory $SIMPET_DIR && \
+    git config --global --add safe.directory $STIR_DIR && \
+    pip install -r $SIMPET_DIR/requirements.txt && \
+    cd $SIMPET_DIR && make install && \
+    mv $SIMPET_DIR/include $HOME && rm -rf $SIMPET_DIR
 
 ENTRYPOINT bash

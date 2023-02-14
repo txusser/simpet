@@ -105,8 +105,7 @@ check-stir:
 	done
 
 clean-stir:
-	rm -rf ${STIR_FINAL_DEST_DIR} ;\
-	cd ${STIR_DIR} && git reset --hard HEAD
+	rm -rf ${STIR_FINAL_DEST_DIR}
 
 RESOURCES_ZIP = ${ASSETS_DIR}/fruitcake.zip
 RESOURCES_TMP = ${TMPDIR}/resources
@@ -140,9 +139,9 @@ clean-resources:
 	rm -rf ${INCLUDE_DIR}/fruitcake ${INCLUDE_DIR}/format_converters
 
 config-git:
-	git config --local filter.config.smudge ${PROJECT_ROOT}scripts/smudge-config.sh
-	git config --local filter.config.clean ${PROJECT_ROOT}scripts/clean-config.sh
-	chmod +x -R ${PROJECT_ROOT}scripts
+	git config --local filter.config.smudge ${ROOT_DIR}scripts/smudge-config.sh
+	git config --local filter.config.clean ${ROOT_DIR}scripts/clean-config.sh
+	chmod +x -R ${ROOT_DIR}scripts
 
 clean-git:
 	git config --local --unset filter.config.smudge
@@ -154,14 +153,14 @@ FRUITCAKE_LIB = ${FRUITCAKE_PATH}/book/lib
 FORMAT_CONVERTERS_PATH = ${INCLUDE_DIR}/format_converters
 
 config-paths:
-	touch $${HOME}/.bashrc ;\
+	touch "$${HOME}"/.bashrc ;\
 	declare -a simpet_paths=( \
 		'export PATH=${FRUITCAKE_BIN}:$$PATH' \
 		'export LD_LIBRARY_PATH=${FRUITCAKE_LIB}:$$LD_LIBRARY_PATH' \
 		'export PATH=${FORMAT_CONVERTERS_PATH}:$$PATH' \
 	) ;\
 	for path in "$${simpet_paths[@]}"; do \
-		grep -qxF "$${path}" "$${HOME}"/.bashrc || echo "$${path}" >> $${HOME}/.bashrc ;\
+		grep -qxF "$${path}" "$${HOME}"/.bashrc || echo "$${path}" >> "$${HOME}"/.bashrc ;\
 	done
 
 clean-paths:

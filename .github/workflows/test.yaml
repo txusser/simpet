@@ -11,4 +11,4 @@ jobs:
           lfs: true
           submodules: recursive
       - run: make install
-      - run: python3.9 test.py
+      - run: make dummy-data && python3.9 test.py

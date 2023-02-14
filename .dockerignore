@@ -106,7 +106,7 @@
 
 # big files
 **/*.pyc
-**/include/*
+include/*
 **/Data
 **/resources
 **/Results

@@ -289,8 +289,6 @@ def OSEM2D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
     td_bins = scannerParams.get("num_td_bins")
     bin_size = (2*scan_radius)/float(td_bins)
     xyVoxelSize = round(10*(bin_size/zoom),2) #in mm
-    zoom_aux=1
-    xyOutputSize_aux=round(xyOutputSize/zoom)
 
     if scannerParams.get("analytical_att_correction") == 1:
         att_corr_str = ""
@@ -355,8 +353,8 @@ def OSEM2D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
             "End Median Filter Parameters:= \n" +
             "END FilterRootPrior Parameters := \n\n" +
             scatt_corr_str +
-            "zoom := " + str(zoom_aux) + "\n" +
-            "xy output image size (in pixels) := " + str(xyOutputSize_aux) + "\n" 
+            "zoom := " + str(zoom) + "\n" +
+            "xy output image size (in pixels) := " + str(xyVoxelSize) + "\n" 
             "Z output image size (in pixels) := " + str(zOutputSize) + "\n\n" +
             "end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters := \n\n" +
             "number of subsets := " + str(numberOfSubsets) + "\n" +
@@ -375,8 +373,6 @@ def OSEM2D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
 
     output = recFileName + "_" + str(scannerParams.get("numberOfIterations")) + ".hv"
     output = tools.anything_to_hdr_convert(output,log_file)
-    if zoom!=zoom_aux:
-        output = tools.resampleXYvoxelSizes(output, xyVoxelSize, log_file)
 
     return output
 
@@ -395,7 +391,8 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
 
     scan_radius = scannerParams.get("scanner_radius")
     td_bins = scannerParams.get("num_td_bins")
-    bin_size = (2*scan_radius)/float(td_bins)
+    transaxial_fov = scannerParams.get("transaxial_fov")
+    bin_size = (transaxial_fov)/float(td_bins)
     xyVoxelSize = 10*(bin_size/zoom) #in mm
     zoom_aux=1
     xyOutputSize_aux = xyOutputSize/zoom

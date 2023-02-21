@@ -65,11 +65,11 @@ numberOfIterations: 100      # Number of iterations
 savingInterval: 20           # The interval that we want to save intermediate subiterations images
 
 # Filter
-inter_iteration_filter: 0 #1 for activate, 0 for deactivate
+inter_iteration_filter: 1 #1 for activate, 0 for deactivate
 subiteration_interval: 10
-x_dir_filter_FWHM: 0 # in mm
-y_dir_filter_FWHM: 0 # in mm
-z_dir_filter_FWHM: 0 # in mm
+x_dir_filter_FWHM: 1 # in mm
+y_dir_filter_FWHM: 1 # in mm
+z_dir_filter_FWHM: 1@ # in mm
 
 
 

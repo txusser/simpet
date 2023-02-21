@@ -83,11 +83,6 @@ def make_simset_phg(config, output_file, simulation_dir, act,
     z_offset = abs(act.affine[2,2]*center_slice/10 + 0.5*act.affine[2,2]/10) #cm
     zMin, zMax = round(-z_offset,2), round(act_fov[2,2]/10 - z_offset,2)
 
-    print('Activity Field of View:')
-    print('xMin, xMax = %s, %s' % (xMin, xMax))
-    print('yMin, yMax = %s, %s' % (yMin, yMax))
-    print('zMin, zMax = %s, %s' % (zMin, zMax))
-
     dz = round((zMax-zMin)/nslices,2)
 
     max_z_target = scanner_axial_fov/2

@@ -1,0 +1,33 @@
+#Define the simulation type and the environment
+sim_type: "SimSET"        # SimSET, STIR or GATE (only SimSET working)
+do_simulation: 1          # Set to 0 to reconstruction previous simulation
+do_reconstruction: 1      # Set to 0 to generate adq data only
+divisions: 6              # Number os subprocesses for parallel simulation
+
+# PET system (Vereos, Siemens_mCT, Discovery_ST, Discovery_STE, GE_Advance)
+scanner: "Inveon"
+# Scanner Model (simple_pet, cylindrical)
+model_type: "cylindrical"
+
+#Patient Variables
+patient_dirname: "lesion_HER3"
+act_map: "act_map_lesHER3_24H.hdr"
+att_map: "att_map.hdr"
+output_dir: "HER3_24H"         #Name of the Results Dir
+
+#Config your phantom
+z_min: 100
+z_max: 550
+center_slice:  450          # The slice number to be placed in the center of the scanner. If 0, automatically, the half of the slices will be calculated and used
+total_dose: 0.0749          # mCi
+simulation_time: 600        # secods
+
+#SimSET Parameters (not used by STIR sim)
+sampling_photons: 0         # Set to 0 to avoid importance sampling
+photons: 0                  # Set to 0 to do a realistic noise simulation
+add_randoms: 0              # 1 activate Randoms simulation (Will force sampling_photons=0 and photons=0)
+phglistmode: 0              # History Files from the phg module (Needed for LM reconstruction. Potentially very big)
+detlistmode: 0              # History Files from the detector module (You need this for adding randoms. If add_randoms=1 will be forced)
+
+#BrainVISET Iterations (Iterations: 1 will run a conventional simulation)
+maximumIteration: 1

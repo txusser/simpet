@@ -389,22 +389,6 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
     numberOfIterations = scannerParams.get("numberOfIterations")
     savingInterval = scannerParams.get("savingInterval")
 
-    scan_radius = scannerParams.get("scanner_radius")
-    td_bins = scannerParams.get("num_td_bins")
-    transaxial_fov = scannerParams.get("transaxial_fov")
-    bin_size = (transaxial_fov)/float(td_bins)
-    xyVoxelSize = 10*(bin_size/zoom) #in mm
-    zoom_aux=1
-    xyOutputSize_aux = xyOutputSize/zoom
-
-    zOutputVoxelSize = scannerParams.get("zOutputVoxelSize")
-    num_rings = scannerParams.get("num_rings")
-    max_z = scannerParams.get("axial_fov")/2
-    min_z = -scannerParams.get("axial_fov")/2
-    z_crystal_size = scannerParams.get("z_crystal_size")
-    gap_size = (max_z-min_z-z_crystal_size*num_rings)/(num_rings-1)
-    zVoxelSize = (z_crystal_size + gap_size)/2
-    zOutputSize_aux = (zOutputSize*zOutputVoxelSize)/(zVoxelSize*10)
 
     if scannerParams.get("stir_recons_att_corr")==1:
         att_corr_str = (
@@ -469,9 +453,9 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
             "End Median Filter Parameters:= \n" +
             "END FilterRootPrior Parameters := \n\n" +
             scatt_corr_str +
-            "zoom := " + str(zoom_aux) + "\n" +
-            "xy output image size (in pixels) := " + str(xyOutputSize_aux) + "\n" 
-            "Z output image size (in pixels) := " + str(zOutputSize_aux) + "\n\n" +
+            "zoom := " + str(zoom) + "\n" +
+            "xy output image size (in pixels) := " + str(xyOutputSize) + "\n" 
+            "Z output image size (in pixels) := " + str(zOutputSize) + "\n\n" +
             "end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters := \n\n" +
             "number of subsets := " + str(numberOfSubsets) + "\n" +
             "number of subiterations := " + str(numberOfIterations) + "\n" +
@@ -490,18 +474,7 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
     output = recFileName + "_" + str(scannerParams.get("numberOfIterations")) + ".hv"
 
     output = tools.anything_to_hdr_convert(output,log_file)
-    # tools.prepare_input_image(output, log_file, min_voxel_size=1.5)
 
-    # if zoom!=zoom_aux:
-    #     output = tools.resampleXYvoxelSizes(output, xyVoxelSize, log_file)
-    #
-    #
-    # if zOutputVoxelSize != zVoxelSize:
-    #     output = tools.resampleZvoxelSize(output, zOutputVoxelSize, log_file)
-
-    # output = tools.nii_analyze_convert(output)    
-    # tools.reorient_dcmtonii(output)
-    # output = tools.nii_analyze_convert(output) 
     return output
 
 

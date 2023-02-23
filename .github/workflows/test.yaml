@@ -24,5 +24,6 @@ jobs:
           pip3.9 install -r requirements.txt
       - name: Test Simulation
         run: |
+          make config-git
           git checkout config.yaml
           cat config.yaml

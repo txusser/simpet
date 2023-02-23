@@ -10,11 +10,9 @@ jobs:
           lfs: true
           submodules: recursive
       - name: Build
-        run: |
-          make deps
-          make config-paths
+        run: make install
       - name: Test Simulation Data
-        run: echo dummy-data
+        run: make dummy-data
       - name: python3.9 Installation
         run: |
           sudo apt-get update
@@ -27,6 +25,4 @@ jobs:
         run: |
           yq -i e '.dir_stir = "${{ github.workspace }}/include/STIR/install"' config.yaml
           yq -i e '.dir_simset = "${{ github.workspace }}/include/SimSET/2.9.2"' config.yaml
-          cat ./config.yaml
-          cat ~/.bashrc
-          
+          python3.9 ./test.py

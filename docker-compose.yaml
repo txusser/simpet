@@ -4,7 +4,7 @@ services:
     container_name: simpet
     stdin_open: true
     tty: true
-    image: simpet
+    image: yerephy/simpet:0.1.0
     build:
       context: .
       dockerfile: Dockerfile

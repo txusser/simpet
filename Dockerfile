@@ -1,5 +1,7 @@
 FROM ubuntu:22.04
 
+ARG NPROC=4
+
 ENV DEBIAN_FRONTEND=noninteractive
 ENV HOME=/home
 ENV SIMPET_DIR=$HOME/simpet
@@ -20,7 +22,6 @@ RUN apt-get update && \
     git config --global --add safe.directory $SIMPET_DIR && \
     git config --global --add safe.directory $STIR_DIR && \
     pip install -r $SIMPET_DIR/requirements.txt && \
-    cd $SIMPET_DIR && make install && \
-    mv $SIMPET_DIR/include $HOME && rm -rf $SIMPET_DIR
+    cd $SIMPET_DIR && make install NRPROC=$NPROC
 
 ENTRYPOINT bash

@@ -10,7 +10,11 @@ jobs:
           lfs: true
           submodules: recursive
       - name: Build
-        run: make install
+        run: |
+          make deps
+          make config-paths
+          source ~/.bashrc
+          echo $LD_LIBRARY_PATH
       - name: Test Simulation Data
         run: make dummy-data
       - name: python3.9 Installation

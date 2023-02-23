@@ -1,7 +1,6 @@
 name: Build and run test simulations
 on:
   pull_request:
-  push:
 jobs:
   build-and-run-test-simulations:
     runs-on: ubuntu-22.04
@@ -11,9 +10,9 @@ jobs:
           lfs: true
           submodules: recursive
       - name: Build
-        run: make deps
+        run: make install
       - name: Test Simulation Data
-        run: echo dummy-data
+        run: make dummy-data
       - name: python3.9 Installation
         run: |
           sudo apt-get update
@@ -25,4 +24,4 @@ jobs:
       - name: Test Simulation
         run: |
           cat ./config.yaml | ./scripts/smudge-config.sh > config.yaml
-          cat ./config.yaml
+          python3.9 ./test.py

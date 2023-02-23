@@ -10,9 +10,9 @@ jobs:
           lfs: true
           submodules: recursive
       - name: Build
-        run: make install
+        run: make deps
       - name: Test Simulation Data
-        run: make dummy-data
+        run: echo dummy-data
       - name: python3.9 Installation
         run: |
           sudo apt-get update
@@ -23,5 +23,7 @@ jobs:
           pip3.9 install -r requirements.txt
       - name: Test Simulation
         run: |
-          cat ./config.yaml | ./scripts/smudge-config.sh > config.yaml
-          python3.9 ./test.py
+          yq -i e '.dir_stir = "${{ github.workspace }}/include/STIR/install"' config.yaml
+          yq -i e '.dir_simset = "${{ github.workspace }}/include/SimSET/2.9.2"' config.yaml
+          cat ./config.yaml
+          

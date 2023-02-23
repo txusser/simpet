@@ -13,6 +13,7 @@ RUN apt-get update && \
     apt-get -y -q install \
     sudo \
     git[all] \
+    git-lfs \
     vim \
     wget \
 	make \
@@ -22,6 +23,9 @@ RUN apt-get update && \
     git config --global --add safe.directory $SIMPET_DIR && \
     git config --global --add safe.directory $STIR_DIR && \
     pip install -r $SIMPET_DIR/requirements.txt && \
-    cd $SIMPET_DIR && make install NRPROC=$NPROC
+    cd $SIMPET_DIR && \
+    git config --local --unset user.name && \
+    git config --local --unset user.email && \
+    && make install NRPROC=$NPROC
 
 ENTRYPOINT bash

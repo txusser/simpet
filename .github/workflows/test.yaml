@@ -10,12 +10,12 @@ jobs:
         with:
           lfs: true
           submodules: recursive
-      - run: make install
-      - run: make dummy-data
+      - run: echo install
+      - run: echo dummy-data
       - run: |
-          apt-get update
-          apt-get install software-properties-common
-          add-apt-repository -y ppa:deadsnakes/ppa
-          apt-get -y -q install python3.9 python3.9-distutils python3-pip
+          sudo apt-get update
+          sudo apt-get install software-properties-common
+          sudo add-apt-repository -y ppa:deadsnakes/ppa
+          sudo apt-get -y -q install python3.9 python3.9-distutils python3-pip
           python3.9 -m pip install --upgrade pip
           pip3.9 install -r requirements.txt

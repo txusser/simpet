@@ -10,7 +10,9 @@ jobs:
           lfs: true
           submodules: recursive
       - name: Build
-        run: make deps
+        run: |
+          make deps
+          make config-paths
       - name: Test Simulation Data
         run: echo dummy-data
       - name: python3.9 Installation

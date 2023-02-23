@@ -26,4 +26,5 @@ jobs:
           yq -i e '.dir_stir = "${{ github.workspace }}/include/STIR/install"' config.yaml
           yq -i e '.dir_simset = "${{ github.workspace }}/include/SimSET/2.9.2"' config.yaml
           cat ./config.yaml
+          cat ~/.bashrc
           

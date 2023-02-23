@@ -24,5 +24,6 @@ jobs:
           pip3.9 install -r requirements.txt
       - name: Test Simulation
         run: |
-          cat config.yaml | scripts/smudge-config.sh > config.yaml
+          cat ./config.yaml | ./scripts/smudge-config.sh > config.yaml
+          cat hola
           cat config.yaml

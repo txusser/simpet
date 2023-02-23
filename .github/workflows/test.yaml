@@ -11,7 +11,7 @@ jobs:
           lfs: true
           submodules: recursive
       - name: Build
-        run: echo install
+        run: make deps
       - name: Test Simulation Data
         run: echo dummy-data
       - name: python3.9 Installation
@@ -24,6 +24,5 @@ jobs:
           pip3.9 install -r requirements.txt
       - name: Test Simulation
         run: |
-          make config-git
-          git checkout config.yaml
+          config.yaml | scripts/smudge-config.sh > config.yaml
           cat config.yaml

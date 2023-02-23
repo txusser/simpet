@@ -17,15 +17,18 @@ RUN apt-get update && \
     vim \
     wget \
 	make \
-	python3-pip && \
+    software-properties-common && \
+    add-apt-repository -y ppa:deadsnakes/ppa && \
+    apt-get -y -q install python3.9 python3.9-distutils python3-pip && \
+    python3.9 -m pip install --upgrade pip && \
 	git clone https://github.com/YerePhy/dotfiles.git $HOME/dotfiles && \
 	cp $HOME/dotfiles/.vimrc $HOME/.vimrc && rm -rf $HOME/dotfiles && \
     git config --global --add safe.directory $SIMPET_DIR && \
     git config --global --add safe.directory $STIR_DIR && \
-    pip install -r $SIMPET_DIR/requirements.txt && \
+    pip3.9 install -r $SIMPET_DIR/requirements.txt && \
     cd $SIMPET_DIR && \
     git config --local --unset user.name && \
     git config --local --unset user.email && \
-    && make install NRPROC=$NPROC
+    make install NRPROC=$NPROC
 
 ENTRYPOINT bash

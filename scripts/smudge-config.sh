@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export GIT_DIR="$(git root)"
+export GIT_DIR="$(git rev-parse --show-toplevel)"
 export INCLUDE_DIR="${GIT_DIR}/include"
 export SIMSET_DIR="${INCLUDE_DIR}/SimSET/2.9.2"
 export STIR_DIR="${INCLUDE_DIR}/STIR/install"

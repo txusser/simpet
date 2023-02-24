@@ -16,7 +16,7 @@ class SimPET(object):
 
     """
 
-    def __init__(self,param_file,config_file="config.yml"):
+    def __init__(self,param_file,config_file="config.yaml"):
 
         #Initialization
         self.simpet_dir = dirname(abspath(__file__))

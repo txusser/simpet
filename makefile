@@ -97,10 +97,10 @@ install-stir: install-simset ${STIR_DIR}
 check-stir:
 	declare -a stir_files=(FBP2D FBP3DRP forward_project lm_to_projdata OSMAPOSL zoom_image) ;\
 	for file in "$${stir_files[@]}"; do \
-		if [ ! -f "${STIR_INSTALL_BIN}/$${file}" ]; then \
-			echo "${STIR_INSTALL_BIN}/$${file} does not exists, check your installation." ;\
+		if [ ! -f "${STIR_FINAL_DEST_DIR}/install/bin/$${file}" ]; then \
+			echo "${STIR_FINAL_DEST_DIR}/install/bin/$${file} does not exists, check your installation." ;\
 		else \
-			echo "${STIR_INSTALL_BIN}/$${file} exists." ;\
+			echo "${STIR_FINAL_DEST_DIR}/install/bin/$${file} exists." ;\
 		fi ;\
 	done
 

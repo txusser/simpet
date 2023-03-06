@@ -6,3 +6,4 @@ pandas==1.5.2
 pyaml==21.10.1
 nipype==1.8.4
 nilearn==0.10.0
+pexpect==4.8.0

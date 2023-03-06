@@ -1,13 +1,14 @@
 #!/bin/bash
 
 yq eval \
-    '.interactive_mode = 0 | 
-    .dir_stir = "" | 
-    .dir_simset = "" | 
+    '.defaults[0].params = "test" |
+    .interactive_mode = 0 | 
+    .dir_stir = null | 
+    .dir_simset = null | 
     .matlab_mcr_path = "" | 
     .spm_path = "" | 
-    .dir_data_path = "" | 
-    .dir_results_path = "" | 
+    .dir_data_path = null | 
+    .dir_results_path = null | 
     .interactive_mode = 0 | 
     .stratification = "true" | 
     .forced_detection = "true" | 

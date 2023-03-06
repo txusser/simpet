@@ -1,0 +1,16 @@
+scanner_name: "GE Advance"
+simset_material: 10
+average_doi: 0.0
+scanner_radius: 46.35
+num_rings: 18
+axial_fov: 15.2
+z_crystal_size: 0.81
+transaxial_crystal_size: 0.4
+crystal_thickness: 3
+energy_resolution: 20
+num_aa_bins: 336
+num_td_bins: 281
+min_energy_window: 375
+max_energy_window: 675
+coincidence_window: 12.5
+reconstruction: ge_advance

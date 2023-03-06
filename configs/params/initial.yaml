@@ -1,0 +1,21 @@
+defaults:
+ - scanner: vereos
+
+sim_type: "SimSET"
+do_simulation: 1
+do_reconstruction: 1
+divisions: 12
+model_type: "simple_pet"
+patient_dirname: "C3_w413"
+act_map: "xnewMap_roi5_0.8_flipLR.hdr"
+att_map: "xCtrl_3_flipLR.att.hdr"
+output_dir: "C3"
+center_slice: 153
+total_dose: 1
+simulation_time: 30
+sampling_photons: 2000000
+photons: 15000000
+add_randoms: 1
+phglistmode: 0
+detlistmode: 1
+maximumIteration: 1

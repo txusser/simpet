@@ -1,0 +1,23 @@
+defaults:
+ - scanner: discovery_st
+
+simulation_environment: 0
+sim_type: "SimSET"
+do_simulation: 1
+do_reconstruction: 1
+divisions: 2
+model_type: "cylindrical"
+patient_dirname: "test_image"
+act_map: "act.hdr"
+att_map: "att.hdr"
+output_dir: "Test"
+center_slice: 7
+total_dose: 0.1
+simulation_time: 30
+sampling_photons: 0
+photons: 0
+add_randoms: 1
+phglistmode: 0
+detlistmode: 1
+recons_type: 1
+maximumIteration: 1

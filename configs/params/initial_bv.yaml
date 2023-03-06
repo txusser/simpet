@@ -1,0 +1,21 @@
+defaults:
+ - scanner: discovery_st
+
+sim_type: "SimSET"
+do_simulation: 1
+do_reconstruction: 1
+divisions: 8
+model_type: "simple_pet"
+patient_dirname: "brainViset_prueba"
+pet_image: "pet.nii"
+mri_image: "mri.nii"
+output_dir: "prueba_BV"
+center_slice: 0
+total_dose: 1.25
+simulation_time: 186
+sampling_photons: 10000000
+photons: 0
+add_randoms: 0
+phglistmode: 0
+detlistmode: 0
+maximumIteration: 2

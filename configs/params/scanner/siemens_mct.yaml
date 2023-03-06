@@ -1,0 +1,18 @@
+defaults:
+  -reconstruction@_here_: siements_mct
+
+scanner_name: "Siemens Biograph mCT"
+simset_material: 18
+average_doi: 0.1
+scanner_radius: 42.1
+num_rings: 52
+axial_fov: 21.8
+z_crystal_size: 0.4
+transaxial_crystal_size: 0.4
+crystal_thickness: 2
+energy_resolution: 11.5
+num_aa_bins: 312
+num_td_bins: 312
+min_energy_window: 435
+max_energy_window: 650
+coincidence_window: 4.1

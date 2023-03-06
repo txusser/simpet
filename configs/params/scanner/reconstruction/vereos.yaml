@@ -1,0 +1,22 @@
+max_segment: 39
+zoomFactor: 1
+xyOutputSize: 256
+zOutputSize: 79
+numberOfSubsets: 9
+numberOfIterations: 10
+savingInterval: 10
+analytical_att_correction: 1
+stir_recons_att_corr: 0
+analytic_scatt_corr_factor: 1
+stir_scatt_corr_smoothing: 1
+stir_scatt_simulation: 0
+analytic_randoms_corr_factor: 1
+stir_randoms_corr_smoothing: 1
+recons_type: "OSEM3D"
+inter_iteration_filter: 0
+subiteration_interval:
+x_dir_filter_FWHM:
+y_dir_filter_FWHM:
+z_dir_filter_FWHM:
+psf_value: 0
+add_noise: 0

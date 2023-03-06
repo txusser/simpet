@@ -1,0 +1,19 @@
+defaults:
+  - reconstruction@_here_: vereos
+
+scanner_name: "Philips Vereos"
+simset_material: 29
+average_doi: 1.1
+scanner_radius: 38.2
+num_rings: 40
+axial_fov: 16.4
+z_crystal_size: 0.4
+transaxial_crystal_size: 0.4
+crystal_thickness: 1.9
+energy_resolution: 11.3
+timing_resolution: 0.230
+num_aa_bins: 306
+num_td_bins: 306
+min_energy_window: 450
+max_energy_window: 613
+coincidence_window: 4

@@ -1,0 +1,18 @@
+defaults:
+  - reconstruction@_here_: siemens_mmr
+
+scanner_name: "Siemens Biograph mMR"
+simset_material: 18
+average_doi: 0.7
+scanner_radius: 32.8
+num_rings: 64
+axial_fov: 25.8
+z_crystal_size: 0.4
+transaxial_crystal_size: 0.4
+crystal_thickness: 2
+energy_resolution: 14.5
+num_aa_bins: 224
+num_td_bins: 292
+min_energy_window: 430
+max_energy_window: 610
+coincidence_window: 5.86

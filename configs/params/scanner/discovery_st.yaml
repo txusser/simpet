@@ -1,0 +1,18 @@
+defaults:
+  - reconstruction@_here_: discovery_st
+
+scanner_name: "GE Discovery ST"
+simset_material: 10
+average_doi: 0.84
+scanner_radius: 44.31
+num_rings: 24
+axial_fov: 15.7
+z_crystal_size: 0.63
+transaxial_crystal_size: 0.63
+crystal_thickness: 3
+energy_resolution: 16
+num_aa_bins: 210
+num_td_bins: 249
+min_energy_window: 375
+max_energy_window: 675
+coincidence_window: 11.7

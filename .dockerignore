@@ -110,3 +110,6 @@ include/*
 **/Data
 **/resources
 **/Results
+
+# hydra
+**/outputs

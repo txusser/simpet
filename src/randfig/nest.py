@@ -39,10 +39,19 @@ class Nest(ConfigTransform):
     def __call__(self, cfg: Mapping) -> Mapping:
         """
         Nests ``keys`` under ``root``.
+
+        Raises:
+            ValueError: when :py:attr:`self.root` already
+                exists in ``cfg`` as a key.
         """
         self._check_mapping(cfg)
         self._check_keys(cfg)
-        leaves = {k: v for k, v in cfg.items() if k in self.keys}
-        cfg = {k: v for k, v in cfg.items() if k not in self.keys}
-        cfg[self.root] = leaves
+        
+        if self.root not in cfg.keys():
+            leaves = {k: v for k, v in cfg.items() if k in self.keys}
+            cfg = {k: v for k, v in cfg.items() if k not in self.keys}
+            cfg[self.root] = leaves
+        else:
+            raise ValueError(f"``root``: {self.root} already exists in ``cfg`` as a key.")
+
         return cfg

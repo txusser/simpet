@@ -13,16 +13,17 @@ class Formula(ConfigTransform):
     .. exec_code::
 
         # --- hide: start ---
-        from randfig.formula import Formula
+        from src.randfig.formula import Formula
         # --- hide: stop ---
 
-        init_config = {"value_0": 1}
-        form = Formula(keys=["value_1"], formula: lambda cfg: 2 * cfg["value_0"])
+        init_config = {"param_0": 1}
+        form = Formula(keys=["param_1"], formula: lambda cfg: 2 * cfg["param_0"])
 
         # --- hide: start ---
-        expected = {"value_0": 1, "value_1", 2}
-        assert form == expected, f":py:class:`randfig.Formula is not giving: {expected}, but {form}"
-        print(form)
+        expected = {"param_0": 1, "param_1", 2}
+        out = form(init_config)
+        assert out == expected, f":py:class:`src.randfig.Formula is not giving: {expected}, but {out}"
+        print(out)
         # --- hide: stop ---
     """
 
@@ -32,7 +33,7 @@ class Formula(ConfigTransform):
             formula: a callable for computing ``keys``, the signature must be the
                 one specified in the type hints, that is ``typing.Callable[[Mapping], Mapping]``.
                 In order to follow that signature, ``functools.partial`` might help
-                in most of cases.
+                in most cases.
         """
         super().__init__(keys)
         self.formula = formula

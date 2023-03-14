@@ -13,15 +13,16 @@ class Nest(ConfigTransform):
     .. exec_code::
 
         # --- hide: start ---
-        from randfig.nest import Nest
+        from src.randfig import Nest
         # --- hide: stop ---
 
-        init_config = {"value_0": 1, "value_1": 2, "value_2": 3}
-        nested = Nest(keys=["value_0", "value_1"], root="root")
+        init_config = {"param_0": 1, "param_1": 2, "param_2": 3}
+        nest = Nest(keys=["param_0", "param_1"], root="root")
 
         # --- hide: start ---
-        expected = {"root": {"value_0": 1, "value_1": 2}, "value_2": 3}
-        assert nested == expected, f":py:class:`randfig.Nest` is not giving: {expected}, but {nested}"
+        expected = {"root": {"param_0": 1, "param_1": 2}, "param_2": 3}
+        nested = nest(init_config)
+        assert nested == expected, f":py:class:`src.randfig.Nest` is not giving: {expected}, but {nested}"
         print(nested)
         # --- hide: stop ---
     """
@@ -38,8 +39,6 @@ class Nest(ConfigTransform):
 
     def __call__(self, cfg: Mapping) -> Mapping:
         """
-        Nests ``keys`` under ``root``.
-
         Raises:
             ValueError: when :py:attr:`self.root` already
                 exists in ``cfg`` as a key.

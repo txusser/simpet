@@ -8,7 +8,7 @@ __all__ = ["ConfigTransform"]
 class ConfigTransform(ABC):
     """
     Interface for tranformations that
-    act on ``dict``-like configurations.
+    act on ``typing.Mapping``-like configurations.
     """
 
     def __init__(self, keys: Sequence[str]) -> None:
@@ -23,7 +23,7 @@ class ConfigTransform(ABC):
 
     def _check_keys(self, cfg: Mapping[str, Any]) -> None:
         """
-        Checks the existance of :py:attr:`self.keys` in 
+        Checks the existance of :py:attr:`self.keys` in
         ``cfg``.
 
         Args:
@@ -42,7 +42,7 @@ class ConfigTransform(ABC):
         Checks if ``cfg`` follows ``typing.Mapping`` interface.
 
         Args:
-            cfg: a ``dict``-like configuration.
+            cfg: a ``typing.Mapping``-like configuration.
 
         Raises:
             TypeError: if ``cfg`` does not follows ``typing.Mapping`` interface.
@@ -59,6 +59,6 @@ class ConfigTransform(ABC):
         ``cfg`` is transformed.
 
         Args:
-            cfg: a ``dict``-like configuration.
+            cfg: a ``typing.Mapping``-like configuration.
         """
         pass

@@ -72,15 +72,14 @@ class Save(ConfigTransform):
         Raises:
             KeyError: if any of the (nested) :py:attr:`self.keys` does not
                 exists in ``cfg``.
-            ValueError: if the retrived value (the one associated with the last nested key) is not a ``typing.Mapping``.
+            TypeError: if the retrived value (the one associated with the last nested key) is not a ``typing.Mapping``.
 
         Returns:
             Input configuration without modifications.
         """
+        self._check_mapping(cfg)
         nested_val = get_nested_value(cfg, self.keys)
-
-        if not isinstance(nested_val, Mapping):
-            raise ValueError(f"Trying to save something that does not look like a ``typing.Mapping``: {nested_val}.")
+        self._check_mapping(nested_val)
 
         self.save_path.unlink(missing_ok=True)
 

@@ -63,5 +63,5 @@ def test_value_is_not_mapping(tmp_path):
     not_nested_cfg = {"param_root": 0}
     save = Save(keys=["param_root"], save_dir=tmp_path, filename=filename)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         save(not_nested_cfg)

@@ -58,13 +58,13 @@ class Save(ConfigTransform):
         self._filename = Path(value)
 
         if self._filename.parent.name:
-            raise ValueError("It seems like provided filename is a path: {str(self._filename)}.")
+            raise ValueError(f"It seems like provided filename is a path: {str(self._filename)}.")
 
         file_ext = self._filename.suffix
         expected_ext = ".yaml"
 
         if file_ext != expected_ext:
-            raise ValueError("Provided filename has extension {file_ext}, but expected {expected_ext}.")
+            raise ValueError(f"Provided filename has extension {file_ext}, but expected {expected_ext}.")
         return self._filename
 
     def __call__(self, cfg: Mapping) -> Mapping:
@@ -80,7 +80,7 @@ class Save(ConfigTransform):
         nested_val = get_nested_value(cfg, self.keys)
 
         if not isinstance(nested_val, Mapping):
-            raise ValueError("Trying to save something that does not look like a ``typing.Mapping``: {nested_val}.")
+            raise ValueError(f"Trying to save something that does not look like a ``typing.Mapping``: {nested_val}.")
 
         self.save_path.unlink(missing_ok=True)
 

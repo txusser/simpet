@@ -1,4 +1,4 @@
-from typing import Callable, Mapping, Sequence
+from typing import Callable, Mapping, Sequence, Any
 from .config_transform import ConfigTransform
 
 
@@ -7,7 +7,7 @@ __all__ = ["Formula"]
 
 class Formula(ConfigTransform):
     """
-    Compute a configuration value from a ``Callable[[Mapping], Mapping]``.
+    Compute a configuration value from a ``Callable[[Mapping], Any]``.
     For example:
 
     .. exec_code::
@@ -27,11 +27,11 @@ class Formula(ConfigTransform):
         # --- hide: stop ---
     """
 
-    def __init__(self, keys: Sequence[str], formula: Callable[[Mapping], Mapping]) -> None:
+    def __init__(self, keys: Sequence[str], formula: Callable[[Mapping], Any]) -> None:
         """
         Args:
             formula: a callable for computing ``keys``, the signature must be the
-                one specified in the type hints, that is ``typing.Callable[[Mapping], Mapping]``.
+                one specified in the type hints, that is ``typing.Callable[[Mapping], Any]``.
                 In order to follow that signature, ``functools.partial`` might help
                 in most cases.
         """

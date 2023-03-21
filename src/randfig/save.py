@@ -1,4 +1,4 @@
-import yaml
+import ruamel.yaml as yaml
 from pathlib import Path
 from typing import Sequence, Mapping, List, Union, Optional
 from .config_transform import ConfigTransform
@@ -14,12 +14,20 @@ class Save(ConfigTransform):
     as a YAML file, such value must be a ``typing.Mapping``.
     """
 
-    def __init__(self, save_dir: Union[str, Path], filename: str, keys: Optional[Sequence[str]] = None) -> None:
+    def __init__(self,
+        save_dir: Union[str, Path],
+        filename: str,
+        keys: Optional[Sequence[str]] = None,
+        sequence: int = 2,
+        offset: int = 4
+    ) -> None:
         """
         Args:
             save_dir: path to dir where the configuration will be saved as YAML.
             filename: name of the file where the configuration will be saved. It
                 must have ``".yaml"`` extension.
+            sequence: ``ruamel.yaml`` parameter for ``YAML.indend`` method (avoid bad indents in lists).
+            offset: ``ruamel.yaml`` parameter for ``YAML.indend`` method (avoid bad indents in lists).
 
         Raises:
             ValueError: ``filename`` has a path structure,
@@ -31,6 +39,8 @@ class Save(ConfigTransform):
         self.save_dir = save_dir
         self.filename = filename
         self.save_path = self.save_dir.joinpath(self.filename)
+        self.sequence = sequence
+        self.offset = offset
 
     @property
     def save_dir(self):
@@ -72,6 +82,8 @@ class Save(ConfigTransform):
         self.save_path.unlink(missing_ok=True)
 
         with open(self.save_path, 'w') as nested_cfg_file:
-            yaml.dump(nested_val, nested_cfg_file, sort_keys=False)
+            yml = yaml.YAML()
+            yml.indent(sequence=self.sequence, offset=self.offset)
+            yml.dump(nested_val, nested_cfg_file)
 
         return cfg

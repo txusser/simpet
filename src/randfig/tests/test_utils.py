@@ -149,3 +149,44 @@ def test_update_nested_key(cfg, expected, keys, value):
 def test_raise_error_nested_key(cfg, keys):
     with pytest.raises(TypeError):
         utils.insert_nested_key(cfg, keys, "value")
+
+
+@pytest.mark.parametrize('cfg,expected,keys', [
+    [
+        {"param_root_0": "value_0"},
+        {},
+        ["param_root_0"],
+    ],
+    [
+        {"param_root_0": {"param_00": "value_00", "param_01": "value_01"}},
+        {"param_root_0": {"param_00": "value_00"}},
+        ["param_root_0", "param_01"]
+    ],
+    [
+        {"param_root_0": {"param_00": {"param_000": "value_000", "param_001": "value_001"}}},
+        {"param_root_0": {"param_00": {"param_000": "value_000"}}},
+        ["param_root_0", "param_00", "param_001"]
+    ]
+])
+def test_remove_nested_key(cfg, expected, keys):
+    utils.remove_nested_key(cfg, keys)
+    assert cfg == expected
+
+
+@pytest.mark.parametrize('cfg,keys', [
+    [
+        "not_mapping_root_0",
+        ["not_mapping_root_0"],
+    ],
+    [
+        {"param_root_0": "not_mapping_0"},
+        ["param_root_0", "param_01"]
+    ],
+    [
+        {"param_root_0": {"param_00": "not_mapping_00"}},
+        ["param_root_0", "param_00", "param_001"]
+    ]
+])
+def test_remove_nested_key(cfg, keys):
+    with pytest.raises(TypeError):
+        utils.remove_nested_key(cfg, keys)

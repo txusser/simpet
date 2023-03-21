@@ -100,3 +100,37 @@ def insert_nested_key(cfg: Dict[str, Dict], keys: Sequence[str], value: Any) -> 
         raise TypeError(f"Got: {cfg} for one of the nested values, which is {type(cfg)}, expected a``Mapping``.")
 
 
+def remove_nested_key(cfg: Dict[str, Dict], keys: Sequence[str]) -> None:
+    """
+    Remove a key, value pair of a nested ``Mapping``.
+
+    .. exec-code::
+
+        # --- hide: start ---
+        from src.randfig.utils import remove_nested_key
+        # --- hide: stop ---
+
+        cfg = {"param_root_0": {"param_00": "value_00", "param_01": "value_01"}}
+        remove_nested_key(cfg, ["param_root_0", "param_01"])
+
+        # --- hide: start ---
+        print(cfg)
+        # --- hide: stop ---
+
+    Args:
+        cfg: nested ``Mapping``.
+        keys: sequence of nested keys, the last one will be removed.
+
+    Raises:
+        TypeError: if one of the values of the nested keys is not a ``Mapping``.
+    """
+    if isinstance(cfg, Mapping):
+        key = keys.pop(0)
+
+        if not keys:
+            cfg.pop(key)
+        else:
+            remove_nested_key(cfg[key], keys)
+    else:
+        raise TypeError(f"Got: {cfg} for one of the nested values, which is {type(cfg)}, expected a``Mapping``.")
+

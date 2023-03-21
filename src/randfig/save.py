@@ -72,6 +72,6 @@ class Save(ConfigTransform):
         self.save_path.unlink(missing_ok=True)
 
         with open(self.save_path, 'w') as nested_cfg_file:
-            yaml.dump(nested_val, nested_cfg_file)
+            yaml.dump(nested_val, nested_cfg_file, sort_keys=False)
 
         return cfg

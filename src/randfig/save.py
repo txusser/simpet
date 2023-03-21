@@ -12,13 +12,6 @@ class Save(ConfigTransform):
     """
     Saves the value of a sequence of nested keys
     as a YAML file, such value must be a ``typing.Mapping``.
-
-    .. code-block::
-
-        nested_config = {"param_root" : {"param_nested": {"param_0": 0, "param_1": 1}}}
-        save = Save(keys=["param_root", "param_nested"], save_dir="/configs", filename="config.yaml")
-
-        # {"param_0": 0, "param_1": 1} will be saved as YAML at "/configs/config.yaml".
     """
 
     def __init__(self, keys: Sequence[str], save_dir: Union[str, Path], filename: str) -> None:

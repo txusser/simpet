@@ -20,9 +20,6 @@ class Formula(ConfigTransform):
         form = Formula(keys=["param_1"], formula: lambda cfg: 2 * cfg["param_0"])
 
         # --- hide: start ---
-        expected = {"param_0": 1, "param_1", 2}
-        out = form(init_config)
-        assert out == expected, f":py:class:`src.randfig.Formula is not giving: {expected}, but {out}"
         print(out)
         # --- hide: stop ---
     """

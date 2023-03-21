@@ -27,7 +27,7 @@ class Save(ConfigTransform):
                 is not valid.
             ValueError: if ``filename`` has an extension different from ``".yaml"``.
         """
-        self.keys = keys
+        super().__init__(keys)
         self.save_dir = save_dir
         self.filename = filename
         self.save_path = self.save_dir.joinpath(self.filename)

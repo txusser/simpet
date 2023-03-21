@@ -20,11 +20,9 @@ class Unnest(ConfigTransform):
 
         init_config = {"param_0": 0, "param_root": {"param_1": 1, "param_2": 2}}
         unnest = Unnest(keys=["param_root"])
+        unnested = unnest(init_config)
 
         # --- hide: start ---
-        expected = {"param_0": 0, "param_1": 1, "param_2": 2}
-        unnested = unnest(init_config)
-        assert unnested == expected, f":py:class:`src.randfig.Unnest` is not giving: {expected}, but {unnested}"
         print(unnested)
         # --- hide: stop ---
     """

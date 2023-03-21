@@ -1,5 +1,5 @@
 defaults:
-  -reconstruction@_here_: siements_mct
+  - reconstruction@_here_: siements_mct
 
 scanner_name: "Siemens Biograph mCT"
 simset_material: 18

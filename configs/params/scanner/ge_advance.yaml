@@ -1,3 +1,5 @@
+defaults:
+  - reconstruction@_here_: ge_advance
 scanner_name: "GE Advance"
 simset_material: 10
 average_doi: 0.0
@@ -13,4 +15,3 @@ num_td_bins: 281
 min_energy_window: 375
 max_energy_window: 675
 coincidence_window: 12.5
-reconstruction: ge_advance

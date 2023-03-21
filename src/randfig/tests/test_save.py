@@ -65,3 +65,9 @@ def test_value_is_not_mapping(tmp_path):
 
     with pytest.raises(TypeError):
         save(not_nested_cfg)
+
+
+def test_keys_is_not_sequence(config, tmp_path):
+    with pytest.raises(TypeError):
+        Save(keys={}, save_dir=tmp_path, filename=tmp_path.joinpath("test.yaml"))
+

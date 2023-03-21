@@ -18,8 +18,23 @@ class ConfigTransform(ABC):
                 interface will act on the keys
                 given by this argument, leaving
                 the rest of keys untransformed.
+
+        Raises:
+            TypeError: if ``keys`` is nor ``None`` nor a ``Sequence``.
         """
         self.keys = keys
+
+    @property
+    def keys(self):
+        return self._keys
+
+    @keys.setter
+    def keys(self, value):
+        if value is not None:
+            if not isinstance(value, Sequence):
+                raise TypeError(f"Expected keys to be a {Sequence} but got: {value}, which is type: {type(value)}.")
+        self._keys = value
+        return self._keys
 
     def _check_keys(self, cfg: Mapping[str, Any]) -> None:
         """

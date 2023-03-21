@@ -1,6 +1,6 @@
 import yaml
 from pathlib import Path
-from typing import Sequence, Mapping, List, Union
+from typing import Sequence, Mapping, List, Union, Optional
 from .config_transform import ConfigTransform
 from src.randfig.utils import get_nested_value
 
@@ -14,7 +14,7 @@ class Save(ConfigTransform):
     as a YAML file, such value must be a ``typing.Mapping``.
     """
 
-    def __init__(self, keys: Sequence[str], save_dir: Union[str, Path], filename: str) -> None:
+    def __init__(self, save_dir: Union[str, Path], filename: str, keys: Optional[Sequence[str]] = None) -> None:
         """
         Args:
             save_dir: path to dir where the configuration will be saved as YAML.
@@ -22,12 +22,12 @@ class Save(ConfigTransform):
                 must have ``".yaml"`` extension.
 
         Raises:
-            ValueError: if :py:attr:`self.filename` has a path structure,
+            ValueError: ``filename`` has a path structure,
                 that is it has parents: ``configs.yaml`` is valid, ``configs/config.yaml``
                 is not valid.
-            ValueError: if :py:attr:`self.filename` has an extension different from ``".yaml"``.
+            ValueError: if ``filename`` has an extension different from ``".yaml"``.
         """
-        super().__init__(keys)
+        self.keys = keys
         self.save_dir = save_dir
         self.filename = filename
         self.save_path = self.save_dir.joinpath(self.filename)
@@ -62,16 +62,11 @@ class Save(ConfigTransform):
 
     def __call__(self, cfg: Mapping) -> Mapping:
         """
-        Raises:
-            KeyError: if any of the (nested) :py:attr:`self.keys` does not
-                exists in ``cfg``.
-            TypeError: if the retrived value (the one associated with the last nested key) is not a ``typing.Mapping``.
-
         Returns:
             Input configuration without modifications.
         """
         self._check_mapping(cfg)
-        nested_val = get_nested_value(cfg, self.keys)
+        nested_val = get_nested_value(cfg, self.keys) if self.keys is not None else cfg
         self._check_mapping(nested_val)
 
         self.save_path.unlink(missing_ok=True)

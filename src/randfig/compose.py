@@ -14,7 +14,7 @@ class Compose:
         """
         Args:
             transforms: a sequence of configuration
-                tranforms that implement the 
+                tranforms that implement the
                 :py:class:`randfig.config_transform.ConfigTransform`
                 interface.
         """

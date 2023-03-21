@@ -1,5 +1,6 @@
 from typing import Sequence, Mapping, Any
 from .config_transform import ConfigTransform
+from src.randfig.utils import insert_nested_key
 
 
 __all__ = ["Insert"]
@@ -8,6 +9,8 @@ __all__ = ["Insert"]
 class Insert(ConfigTransform):
     """
     Insert key, value pairs in the input configuration.
+    This class relies in :py:func:`src.randfig.utils.insert_nested_key`,
+    see its documentation for detailed info.
 
     .. exec_code::
 
@@ -16,25 +19,23 @@ class Insert(ConfigTransform):
         # --- hide: stop ---
 
         init_config = {"param_0": 0, "param_1": 1}
-        insert = Insert(keys=["param_2"], values=[2])
+        inserted = Insert(keys=["param_2"], value=2)
 
         # --- hide: start ---
-        expected = {"param_0": 0, "param_1": 1, "param_2": 2}
-        inserted = insert(init_config)
-        assert inserted == expected, f":py:class:`src.randfig.Unnest` is not giving: {expected}, but {inserted}"
         print(inserted)
         # --- hide: stop ---
     """
 
-    def __init__(self, keys: Sequence[str], values: Sequence[Any]) -> None:
+    def __init__(self, keys: Sequence[str], value: Any) -> None:
         """
         Args:
-            values: values associated to :py:attr:`self.keys`.
-                There must be one value per key.
+            keys: sequence of nested keys.
+            value: value that will be inserted.
         """
         super().__init__(keys)
-        self.values = values
+        self.value = value
 
     def __call__(self, cfg: Mapping) -> Mapping:
-        return {}
+        insert_nested_key(cfg, self.keys, self.value)
+        return cfg
 

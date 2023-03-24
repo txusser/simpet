@@ -1,9 +1,0 @@
-_target_: src.randfig.Formula
-keys: ["axial_fov"]
-formula:
-  _target_: src.randfig.decorators.accept_cfg
-  _args_:
-    - _target_: hydra.utils.get_method
-      path: random.uniform
-    - 1
-    - 10

@@ -8,7 +8,7 @@ SUBMODULES_DIR := ${ROOT_DIR}submodules
 .PHONY: deps install-simset check-simset clean-simset 
 .PHONY: install-stir check-stir clean-stir 
 .PHONY: install-resources check-resources clean-resources 
-.PHONY: config-git clean-git config-paths clean-paths 
+.PHONY: config-git clean-git smudge-filer config-paths clean-paths 
 .PHONY: dummy-data install clean help
 
 deps:
@@ -147,6 +147,10 @@ clean-git:
 	git config --local --unset filter.config.smudge
 	git config --local --unset filter.config.clean
 
+smudge-filter:
+	rm -f ${ROOT_DIR}configs/config.yaml 2> /dev/null
+	git checkout HEAD -- ${ROOT_DIR}configs/config.yaml
+
 FRUITCAKE_PATH = ${INCLUDE_DIR}/fruitcake
 FRUITCAKE_BIN = ${FRUITCAKE_PATH}/bin
 FRUITCAKE_LIB = ${FRUITCAKE_PATH}/book/lib
@@ -222,7 +226,9 @@ help:
 	@echo ""
 	@echo "	- config-git: Add project filter drivers to local git configuration and make them executable."
 	@echo ""
-	@echo "	- clean-git : Remove project filter drivers from local git configuration."
+	@echo "	- clean-git: Remove project filter drivers from local git configuration."
+	@echo ""
+	@echo "	- smudge-filer: Apply smudge filter to config file (updates paths)."
 	@echo ""
 	@echo "	- config-paths: Iff not present in .bashrc, the paths of the projects will be appended to the file. If ~/.bashrc does not exists it will be created."
 	@echo ""

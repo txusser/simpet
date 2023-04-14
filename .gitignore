@@ -114,6 +114,7 @@ venv.bak/
 Data
 resources
 Results
+Subjects/
 
 # hydra
 **/outputs

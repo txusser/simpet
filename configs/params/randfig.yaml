@@ -6,12 +6,12 @@ sim_type: "SimSET"
 do_simulation: 1
 do_reconstruction: 1
 divisions: 12
-model_type: "cylindrical"
+model_type: "simple_pet"
 patient_dirname: "0"
 act_map: "S1_actMap.nii"
 att_map: "S1_attMap.nii"
 output_dir: "0"
-center_slice: 7
+center_slice: 153
 total_dose: 1
 simulation_time: 30
 sampling_photons: 2000000
@@ -19,5 +19,4 @@ photons: 15000000
 add_randoms: 1
 phglistmode: 0
 detlistmode: 1
-recons_type: 1
 maximumIteration: 1

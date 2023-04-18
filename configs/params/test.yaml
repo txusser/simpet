@@ -5,8 +5,8 @@ simulation_environment: 0
 sim_type: "SimSET"
 do_simulation: 1
 do_reconstruction: 1
-divisions: 2
-model_type: "cylindrical"
+divisions: 12
+model_type: "simple_pet"
 patient_dirname: "test_image"
 act_map: "act.hdr"
 att_map: "att.hdr"
@@ -14,8 +14,8 @@ output_dir: "Test"
 center_slice: 7
 total_dose: 0.1
 simulation_time: 30
-sampling_photons: 0
-photons: 0
+sampling_photons: 2000000
+photons: 15000000
 add_randoms: 1
 phglistmode: 0
 detlistmode: 1

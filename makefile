@@ -139,13 +139,13 @@ clean-resources:
 	rm -rf ${INCLUDE_DIR}/fruitcake ${INCLUDE_DIR}/format_converters
 
 config-git:
-	git config --local filter.config.smudge ${ROOT_DIR}scripts/smudge-config.sh
-	git config --local filter.config.clean ${ROOT_DIR}scripts/clean-config.sh
+	git config --local filter.config-test.smudge ${ROOT_DIR}scripts/smudge-config_test.sh
+	git config --local filter.config-test.clean ${ROOT_DIR}scripts/clean-config_test.sh
 	chmod +x -R ${ROOT_DIR}scripts
 
 clean-git:
-	git config --local --unset filter.config.smudge
-	git config --local --unset filter.config.clean
+	git config --local --unset filter.config-test.smudge
+	git config --local --unset filter.config-test.clean
 
 smudge-filter:
 	rm -f ${ROOT_DIR}configs/config.yaml 2> /dev/null

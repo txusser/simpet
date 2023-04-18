@@ -1,10 +1,13 @@
 #!/bin/bash
 
+export DIR_STIR='${root_path:root}/include/STIR/install'
+export DIR_SIMSET='${root_path:root}/include/SimSET/2.9.2'
+
 yq eval \
     '.defaults[0].params = "test" |
     .interactive_mode = 0 | 
-    .dir_stir = null | 
-    .dir_simset = null | 
+    .dir_stir = "$DIR_STIR" | 
+    .dir_simset = "$DIR_SIMSET" | 
     .matlab_mcr_path = "" | 
     .spm_path = "" | 
     .dir_data_path = null | 

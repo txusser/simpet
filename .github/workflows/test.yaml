@@ -25,7 +25,5 @@ jobs:
         env:
           LD_LIBRARY_PATH: "${{ github.workspace }}/include/fruitcake/book/lib"
         run: |
-          yq -i e '.dir_stir = "${{ github.workspace }}/include/STIR/install"' config.yaml
-          yq -i e '.dir_simset = "${{ github.workspace }}/include/SimSET/2.9.2"' config.yaml
           echo "${{ github.workspace }}/include/format_converters" >> $GITHUB_PATH
           python3.9 ./test.py

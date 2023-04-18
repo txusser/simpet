@@ -1,7 +1,7 @@
 defaults:
   - params: test
-dir_stir: $DIR_STIR
-dir_simset: $DIR_SIMSET
+dir_stir: ${root_path:root}/include/STIR/install
+dir_simset: ${root_path:root}/include/SimSET/2.9.2
 matlab_mcr_path: ""
 spm_path: ""
 dir_data_path: null

@@ -5,7 +5,7 @@ export DIR_SIMSET='${root_path:root}/include/SimSET/2.9.2'
 
 yq eval \
     '.defaults[0].params = "test" |
-    .only_log: "true" |
+    .only_log = "true" |
     .interactive_mode = 0 | 
     .dir_stir = strenv(DIR_STIR) | 
     .dir_simset = strenv(DIR_SIMSET) | 

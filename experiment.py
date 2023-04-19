@@ -15,12 +15,9 @@ from pyprojroot import here
 from omegaconf import DictConfig, OmegaConf
 
 
-# TODO: collor paletter and docstrings
-
-
 class ImageExtension(Enum):
     """
-    # TODO
+    Image files extensions.
     """
     NIFTI = '.nii'
     NIFTI_GZ = '.nii.gz'
@@ -29,7 +26,7 @@ class ImageExtension(Enum):
 
 class LogFileExtension(Enum):
     """
-    # TODO
+    Log files extensions.
     """
     LOG = '.log'
     TXT = '.txt'
@@ -37,12 +34,17 @@ class LogFileExtension(Enum):
 
 def get_central_slices(path: Union[str, Path]) -> OrderedDict[str, np.ndarray]:
     """
-    Stub.
+    Find all images in a given path recursively (according to
+    :py:class:`ImageExtension`) and return the central
+    slices in a ``dict``.
 
     Args:
-        path:
+        path: path to a directory having images (the
+        the images are searched recursively).
 
     Returns:
+        ``dict`` with filenames as keys
+        and central slices as values.
     """
     path_ = Path(path)
 
@@ -61,12 +63,15 @@ def get_central_slices(path: Union[str, Path]) -> OrderedDict[str, np.ndarray]:
 
 def get_table(slices: Mapping[str, np.ndarray]) -> wandb.Table:
     """
-    Stub.
+    Get a Weights & Biases table where
+    each column is a central slice
+    and has the filename as name.
 
     Args:
-        slices:
+        slices: 2D slices.
 
     Returns:
+        Weights and Biases table object.
     """
     plots = {}
     for name, sl in slices.items():
@@ -81,16 +86,18 @@ def get_table(slices: Mapping[str, np.ndarray]) -> wandb.Table:
 
 def get_logs(path: Union[str, Path]) -> List[Path]:
     """
-    Stub.
+    Find all logfiles recursively based on file extension
+    (extensions taken into account are provided by
+    :py:class:`LogFileExtension`).
 
     Args:
-        path:
+        path: path to directory having logs.
 
     Returns:
+        List with paths to logs.
     """
     return [logfile for logfile in Path(path).rglob("**/*") if logfile.suffix in [ext.value for ext in LogFileExtension]]
 
-        
 
 try:
     OmegaConf.register_new_resolver("root_path", lambda s: str(here()))

@@ -118,3 +118,6 @@ Subjects/
 
 # hydra
 **/outputs
+
+# Weights & Biases
+**/wandb

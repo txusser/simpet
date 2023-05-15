@@ -111,30 +111,33 @@ def simulate(cfg: DictConfig) -> None:
     OmegaConf.resolve(cfg)
 
     just_log = cfg["only_log"]
+    log = cfg["log"]
 
     if not just_log:
         test = simpet.SimPET(cfg)
         test.run()
 
     cfg = OmegaConf.to_container(cfg)
-    run = wandb.init(project="SimPET-Randfigs-Simulations", config=cfg, name=cfg["params"]["scanner"]["scanner_name"])
 
-    data_central_slices = get_central_slices(cfg["dir_data_path"])
-    outputs_central_slices = get_central_slices(cfg["dir_results_path"])
-    
-    data_table = get_table(data_central_slices)
-    outputs_table = get_table(outputs_central_slices)
-    run.log({"Data": data_table, "Outputs": outputs_table})
+    if log:
+        run = wandb.init(project="SimPET-Randfigs-Simulations", config=cfg, name=cfg["params"]["scanner"]["scanner_name"])
 
-    logs_data = get_logs(cfg["dir_data_path"])
-    logs_outputs = get_logs(cfg["dir_results_path"])
-    logs = logs_data + logs_outputs
+        data_central_slices = get_central_slices(cfg["dir_data_path"])
+        outputs_central_slices = get_central_slices(cfg["dir_results_path"])
+        
+        data_table = get_table(data_central_slices)
+        outputs_table = get_table(outputs_central_slices)
+        run.log({"Data": data_table, "Outputs": outputs_table})
 
-    logs_artifact = wandb.Artifact(name="Logs", type="Text-Files")
-    for logf in logs:
-        logs_artifact.add_file(local_path=logf, name=logf.name)
+        logs_data = get_logs(cfg["dir_data_path"])
+        logs_outputs = get_logs(cfg["dir_results_path"])
+        logs = logs_data + logs_outputs
 
-    run.log_artifact(logs_artifact)
+        logs_artifact = wandb.Artifact(name="Logs", type="Text-Files")
+        for logf in logs:
+            logs_artifact.add_file(local_path=logf, name=logf.name)
+
+        run.log_artifact(logs_artifact)
 
 
 if __name__ == "__main__":

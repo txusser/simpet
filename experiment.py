@@ -134,7 +134,7 @@ def simulate(cfg: DictConfig) -> None:
         logs = logs_data + logs_outputs
 
         logs_artifact = wandb.Artifact(name="Logs", type="Text-Files")
-        for logf in logs:
+        for logf in set(logs):
             logs_artifact.add_file(local_path=logf, name=logf.name)
 
         run.log_artifact(logs_artifact)

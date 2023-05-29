@@ -108,6 +108,7 @@ venv.bak/
 
 # vim buffers
 *.swp
+*.swo
 
 # Files, dependencies, resources, etc.
 **/include/*

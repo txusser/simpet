@@ -2,6 +2,8 @@
 
 export DIR_STIR='${root_path:root}/include/STIR/install'
 export DIR_SIMSET='${root_path:root}/include/SimSET/2.9.2'
+export DIR_DATA='${root_path:root}/Data'
+export DIR_RESULTS='${root_path:root}/Results'
 
 yq eval \
     '.defaults[0].params = "test" |
@@ -10,8 +12,8 @@ yq eval \
     .dir_simset = strenv(DIR_SIMSET) | 
     .matlab_mcr_path = "" | 
     .spm_path = "" | 
-    .dir_data_path = null | 
-    .dir_results_path = null | 
+    .dir_data_path = strenv(DIR_DATA) | 
+    .dir_results_path = strenv(DIR_RESULTS) | 
     .interactive_mode = 0 | 
     .stratification = "true" | 
     .forced_detection = "true" | 

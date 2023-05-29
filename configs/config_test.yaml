@@ -7,8 +7,8 @@ dir_stir: ${root_path:root}/include/STIR/install
 dir_simset: ${root_path:root}/include/SimSET/2.9.2
 matlab_mcr_path: ""
 spm_path: ""
-dir_data_path: null
-dir_results_path: null
+dir_data_path: ${root_path:root}/Data
+dir_results_path: ${root_path:root}/Results
 stratification: "true"
 forced_detection: "true"
 forced_non_absortion: "true"

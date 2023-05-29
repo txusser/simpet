@@ -26,4 +26,4 @@ jobs:
           LD_LIBRARY_PATH: "${{ github.workspace }}/include/fruitcake/book/lib"
         run: |
           echo "${{ github.workspace }}/include/format_converters" >> $GITHUB_PATH
-          python3.9 ./test.py
+          python3.9 ./experiment.py only_log=False log=False

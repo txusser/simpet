@@ -131,22 +131,24 @@ def get_logs(path: Union[str, Path]) -> List[Path]:
     return [logfile for logfile in Path(path).rglob("**/*") if logfile.suffix in [ext.value for ext in LogFileExtension]]
 
 
-def save_scanner_cfg(cfg: Mapping[str, Any], path: Union[str, Path]) -> None:
+def save_cfg(cfg: Mapping[str, Any], path: Union[str, Path]) -> None:
     """
-    Save the scanner config part of the input
+    Save the config part of the input
     config at given path.
 
     Args:
         cfg: ``dict``-like configuration.
         path: path to save the config.
     """
-    if path_.suffix not in set([".yaml", ".yml"]):
-        scanner_cfg_save_path = Path(path).joinpath("scanner_config.yaml")
-    else:
-        scanner_cfg_save_path = Path(path)
+    path_ = Path(path)
 
-    with open(scanner_cfg_save_path, 'r') as s_cfg_path:
-        yaml.dump(cfg["scanner"], s_cfg_path, default_flow_style=False)
+    if path_.suffix not in set([".yaml", ".yml"]):
+        scanner_cfg_save_path = path_.joinpath("config.yaml")
+    else:
+        scanner_cfg_save_path = path_
+
+    with open(scanner_cfg_save_path, 'w') as s_cfg_path:
+        yaml.dump(cfg, s_cfg_path, default_flow_style=False)
 
 
 def copy_recon(cfg: Mapping[str, Any], path: Union[str, Path]) -> None:
@@ -215,7 +217,9 @@ def simulate(cfg: DictConfig) -> None:
     results_path = Path(cfg["dir_results_path"])
     recon_name = [p.parents[1].name for p in results_path.rglob("**/rec_*.img") if p.name.startswith("rec_")].pop()
     recon_path = SAVE_IMAGE_PATH.joinpath(recon_name)
+
     copy_recon(cfg, recon_path)
+    save_cfg(cfg, recon_path)
 
 
 if __name__ == "__main__":

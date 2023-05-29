@@ -2,17 +2,23 @@ import os
 import simpet
 import hydra
 import wandb
+import shutil
+import yaml
 import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
 from PIL import Image
 from matplotlib import cm
 from collections import OrderedDict
-from typing import List, Union, Sequence, Mapping
+from typing import List, Union, Sequence, Mapping, Any
 from enum import Enum
 from pathlib import Path
 from pyprojroot import here
 from omegaconf import DictConfig, OmegaConf
+
+
+SAVE_IMAGE_PATH = here().parent.joinpath("Experiments")
+SAVE_IMAGE_PATH.mkdir(parents=True, exist_ok=True)
 
 
 class ImageExtension(Enum):
@@ -30,6 +36,18 @@ class LogFileExtension(Enum):
     """
     LOG = '.log'
     TXT = '.txt'
+
+
+class BeginWithVariableFileNames(Enum):
+    rec_OSEM = "recon.img"
+    rec_FBP3D = "recon.img"
+
+
+class EndsWithVariableFilenames(Enum):
+    Act_Map_NIfTI = "actMap.nii"
+    Act_Map_Analyze = "actMap.img"
+    Att_Map_NIfTI = "attMap.nii"
+    Att_Map_Analyze = "attMap.img"
 
 
 def get_central_slices(path: Union[str, Path]) -> OrderedDict[str, np.ndarray]:
@@ -52,8 +70,22 @@ def get_central_slices(path: Union[str, Path]) -> OrderedDict[str, np.ndarray]:
     image_files = [(file_.name, file_) for file_ in path_.rglob("**/*") if "".join(file_.suffixes) in image_extensions]
     images = [(filename, nib.load(img_file).get_fdata()) for filename, img_file in image_files]
 
+    images_with_corrected_names = []
+    for filename, img in images:
+        name_img = (filename, img)
+
+        for variable_name in BeginWithVariableFileNames:
+            if filename.startswith(variable_name.name):
+                name_img = (variable_name.value, img)
+
+        for variable_name in EndsWithVariableFilenames:
+            if filename.endswith(variable_name.value):
+                name_img = (variable_name.name, img)
+
+        images_with_corrected_names.append(name_img)
+
     central_slices = []
-    for filename, arr in images:
+    for filename, arr in images_with_corrected_names:
         sq_arr = np.squeeze(arr)
         z_half = sq_arr.shape[-1] // 2
         central_slices.append((filename, sq_arr[..., z_half]))
@@ -99,6 +131,47 @@ def get_logs(path: Union[str, Path]) -> List[Path]:
     return [logfile for logfile in Path(path).rglob("**/*") if logfile.suffix in [ext.value for ext in LogFileExtension]]
 
 
+def save_scanner_cfg(cfg: Mapping[str, Any], path: Union[str, Path]) -> None:
+    """
+    Save the scanner config part of the input
+    config at given path.
+
+    Args:
+        cfg: ``dict``-like configuration.
+        path: path to save the config.
+    """
+    if path_.suffix not in set([".yaml", ".yml"]):
+        scanner_cfg_save_path = Path(path).joinpath("scanner_config.yaml")
+    else:
+        scanner_cfg_save_path = Path(path)
+
+    with open(scanner_cfg_save_path, 'r') as s_cfg_path:
+        yaml.dump(cfg["scanner"], s_cfg_path, default_flow_style=False)
+
+
+def copy_recon(cfg: Mapping[str, Any], path: Union[str, Path]) -> None:
+    """
+    Save the reconstruction image at the
+    given path.
+
+    Args:
+        cfg: ``dict``-like configuration.
+        path: path to save the config.
+    """
+    results_path = Path(cfg["dir_results_path"])
+
+    try:
+        recon_path = [p for p in results_path.rglob("**/rec_*.img") if p.name.startswith("rec_")].pop()
+    except IndexError as ex:
+        raise ex("Not reconstruction file found.")
+
+    save_path = Path(path).joinpath(recon_path.name)
+    save_path.parent.mkdir(exist_ok=True, parents=True)
+
+    shutil.copy(recon_path, save_path)
+    shutil.copy(recon_path.with_suffix(".hdr"), save_path.with_suffix(".hdr"))
+
+
 try:
     OmegaConf.register_new_resolver("root_path", lambda s: str(here()))
 except ValueError:
@@ -120,7 +193,7 @@ def simulate(cfg: DictConfig) -> None:
     cfg = OmegaConf.to_container(cfg)
 
     if log:
-        run = wandb.init(project="SimPET-Randfigs-Simulations", config=cfg, name=cfg["params"]["scanner"]["scanner_name"])
+        run = wandb.init(project="SimPET-Randfigs-Simulations", config=cfg, name=cfg["params"]["scanner"]["scanner_name"], job_type="Debugging Randomized configuration")
 
         data_central_slices = get_central_slices(cfg["dir_data_path"])
         outputs_central_slices = get_central_slices(cfg["dir_results_path"])
@@ -138,6 +211,11 @@ def simulate(cfg: DictConfig) -> None:
             logs_artifact.add_file(local_path=logf, name=logf.name)
 
         run.log_artifact(logs_artifact)
+
+    results_path = Path(cfg["dir_results_path"])
+    recon_name = [p.parents[1].name for p in results_path.rglob("**/rec_*.img") if p.name.startswith("rec_")].pop()
+    recon_path = SAVE_IMAGE_PATH.joinpath(recon_name)
+    copy_recon(cfg, recon_path)
 
 
 if __name__ == "__main__":

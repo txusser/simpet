@@ -185,8 +185,9 @@ def simulate(cfg: DictConfig) -> None:
 
     OmegaConf.resolve(cfg)
 
-    just_log = cfg["only_log"]
-    log = cfg["log"]
+    just_log = cfg.get("only_log")
+    log = cfg.get("log")
+    job_type = cfg.get("job_type_wandb")
 
     if not just_log:
         test = simpet.SimPET(cfg)
@@ -195,8 +196,7 @@ def simulate(cfg: DictConfig) -> None:
     cfg = OmegaConf.to_container(cfg)
 
     if log:
-        run = wandb.init(project="SimPET-Randfigs-Simulations", config=cfg, name=cfg["params"]["scanner"]["scanner_name"], job_type="Debugging Randomized configuration")
-
+        run = wandb.init(project="SimPET-Randfigs-Simulations", config=cfg, name=cfg["params"]["scanner"]["scanner_name"], job_type=job_type)
         data_central_slices = get_central_slices(cfg["dir_data_path"])
         outputs_central_slices = get_central_slices(cfg["dir_results_path"])
         

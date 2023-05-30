@@ -2,6 +2,7 @@ import os,shutil, datetime
 from os.path import join, exists, isfile, isdir, dirname, basename, splitext
 from subprocess import getstatusoutput as getoutput
 import nibabel as nib
+import nibabel.processing as nibp
 from utils import resources as rsc
 from utils import spm_tools as spm
 import numpy as np
@@ -690,7 +691,7 @@ def resampleXYvoxelSizes(image_hdr, xyVoxelSize, log_file):
     img = nib.load(image_hdr)
     z_VoxelSize =img.header['pixdim'][3]
     taget_vsize = (xyVoxelSize,xyVoxelSize,z_VoxelSize)
-    res_img = nib.processing.resample_to_output(img, taget_vsize, out_class=img.__class__)
+    res_img = nibp.resample_to_output(img, taget_vsize, out_class=img.__class__)
     nib.save(res_img,image_hdr)
     
     return image_hdr
@@ -701,7 +702,7 @@ def resampleZvoxelSize(image_hdr, zOutputvoxelSize, log_file):
     x_VoxelSize = img.header['pixdim'][1]
     y_VoxelSize = img.header['pixdim'][2]
     taget_vsize =  (x_VoxelSize,y_VoxelSize,zOutputvoxelSize)
-    res_img = nib.processing.resample_to_output(img, taget_vsize, out_class=img.__class__)
+    res_img = nibp.resample_to_output(img, taget_vsize, out_class=img.__class__)
     nib.save(res_img,image_hdr)
     
     return image_hdr

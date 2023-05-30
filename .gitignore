@@ -72,6 +72,7 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+**/notebooks
 
 # pyenv
 .python-version
@@ -107,10 +108,17 @@ venv.bak/
 
 # vim buffers
 *.swp
+*.swo
 
 # Files, dependencies, resources, etc.
 **/include/*
 Data
 resources
 Results
+Subjects/
 
+# hydra
+**/outputs
+
+# Weights & Biases
+**/wandb

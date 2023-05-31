@@ -181,7 +181,7 @@ except ValueError:
     pass
 
 
-@hydra.main(version_base=None, config_path="configs", config_name="config_test")
+@hydra.main(version_base=None, config_path=str(here().joinpath("configs")), config_name="config_test")
 def simulate(cfg: DictConfig) -> None:
 
     OmegaConf.resolve(cfg)

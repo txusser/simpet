@@ -473,8 +473,3 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
     output = tools.anything_to_hdr_convert(output,log_file)
 
     return output
-
-
-
-
-        

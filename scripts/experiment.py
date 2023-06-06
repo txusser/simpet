@@ -1,4 +1,3 @@
-import os
 import sys
 import hydra
 import wandb
@@ -7,15 +6,15 @@ import yaml
 import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
-from PIL import Image
-from matplotlib import cm
 from collections import OrderedDict
-from typing import List, Union, Sequence, Mapping, Any
+from typing import List, Union, Mapping, Any
 from enum import Enum
 from pathlib import Path
 from pyprojroot import here
 from omegaconf import DictConfig, OmegaConf
-sys.path.append(str(here())); import simpet
+
+sys.path.append(str(here()))
+import simpet
 
 
 SAVE_IMAGE_PATH = here().parent.joinpath("Experiments")
@@ -49,6 +48,21 @@ class EndsWithVariableFilenames(Enum):
     Act_Map_Analyze = "actMap.img"
     Att_Map_NIfTI = "attMap.nii"
     Att_Map_Analyze = "attMap.img"
+
+
+def remove_dir_contents(dirpath: Union[str, Path]) -> None:
+    """
+    Remove the contents of a dir but not the dir itself.
+
+    Args:
+        dirpath: path to the dir.
+    """
+    results_dir = Path(dirpath)
+    for content in results_dir.iterdir():
+        if content.is_file():
+            content.unlink()
+        elif content.is_dir():
+            shutil.rmtree(content)
 
 
 def get_central_slices(path: Union[str, Path]) -> OrderedDict[str, np.ndarray]:
@@ -189,6 +203,17 @@ def simulate(cfg: DictConfig) -> None:
     just_log = cfg.get("only_log")
     log = cfg.get("log")
     job_type = cfg.get("job_type_wandb")
+    patient_dirname = cfg.get("params")["patient_dirname"]
+    results_dir = Path(cfg["dir_results_path"])
+    patient_dir = results_dir.joinpath(patient_dirname)
+
+    try:
+        remove_results_subdirs = cfg["params"]["remove_previous_patient_dir"]
+    except KeyError:
+        remove_results_subdirs = False
+
+    if remove_results_subdirs:
+        remove_dir_contents(patient_dir)
 
     if not just_log:
         test = simpet.SimPET(cfg)
@@ -215,8 +240,7 @@ def simulate(cfg: DictConfig) -> None:
 
         run.log_artifact(logs_artifact)
 
-    results_path = Path(cfg["dir_results_path"])
-    recon_name = [p.parents[1].name for p in results_path.rglob("**/rec_*.img") if p.name.startswith("rec_")].pop()
+    recon_name = [p.parents[1].name for p in patient_dir.rglob("**/rec_*.img") if p.name.startswith("rec_")].pop()
     recon_path = SAVE_IMAGE_PATH.joinpath(recon_name)
 
     copy_recon(cfg, recon_path)

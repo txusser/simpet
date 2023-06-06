@@ -1,14 +1,8 @@
 import argparse
 import yaml
-from typing import Union, Dict, Mapping, Any
+from typing import Dict, Mapping, Any
 from pathlib import Path
 from enum import Enum, auto
-
-
-parser = argparse.ArgumentParser(description='Reorder SIMPET hydra-based configurations.')
-parser.add_argument("config", type=Path)
-
-args = vars(parser.parse_args())
 
 
 class SIMPETConfig(Enum):
@@ -118,15 +112,16 @@ def flatten(d):
 
 def dump_config_as_ordered(config: Mapping[str, Any], order: Enum, ordered_config_path: str) -> Dict[str, Any]:
     """
-    # TODO
+    Dump a config as a YAML file with
+    the order specified by the input ``Enum``
 
     Args:
-        config_path:
-        order:
-        config_name:
+        config: ``dict``-like config.
+        order: ``Enum`` specifiying the order.
+        ordered_config_path: full filepath fot storing the ordered config.
 
     Returns:
-        # TODO
+        The ordered config as ``dict``.
     """
     ordered_config_path = Path(ordered_config_path)
 
@@ -148,6 +143,9 @@ def dump_config_as_ordered(config: Mapping[str, Any], order: Enum, ordered_confi
     return ordered_cfg
 
 
+parser = argparse.ArgumentParser(description='Reorder SIMPET hydra-based configurations.')
+parser.add_argument("config", type=Path)
+args = vars(parser.parse_args())
 config_path = args["config"].resolve()
 
 

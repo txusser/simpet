@@ -175,7 +175,6 @@ config = {}
 for name, kw in zip(config_names, dump_config_as_ordered_kwargs):
     config[name] = dump_config_as_ordered(**kw)
 
-breakpoint()
 reordered_config = {}
 reordered_config = config["config"]
 reordered_config["params"] = config["params"]

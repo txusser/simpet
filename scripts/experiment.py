@@ -191,6 +191,7 @@ def copy_recon(cfg: Mapping[str, Any], path: Union[str, Path]) -> None:
 
 try:
     OmegaConf.register_new_resolver("root_path", lambda s: str(here()))
+    OmegaConf.register_new_resolver("mibiolab_home_path", lambda s: "/home/mibiolab")
 except ValueError:
     pass
 

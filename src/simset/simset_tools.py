@@ -1,15 +1,13 @@
 import random
-import os, shutil, time, sys
+import os
+import shutil
 import subprocess as sp
 from os.path import join, exists
-import nibabel as nib
-import numpy as np
 import pexpect
-import yaml
-
 from utils import tools
 
-def make_simset_act_table (act_table_factor, my_act_table, log_file=False):
+
+def make_simset_act_table(act_table_factor, my_act_table, log_file=False):
 
     with open(my_act_table, 'w') as f:
         f.write("256\n")
@@ -21,6 +19,7 @@ def make_simset_act_table (act_table_factor, my_act_table, log_file=False):
     if log_file:
         message = "Wrote act_table with factor %s" % act_table_factor
         tools.log_message(log_file,message,'info')
+
 
 def make_simset_phg(config, output_file, simulation_dir, act,
                     scanner_radius, scanner_axial_fov, center_slice,
@@ -49,8 +48,8 @@ def make_simset_phg(config, output_file, simulation_dir, act,
         stratification = config.get("stratification")
         forced_detection = config.get("forced_detection")
         non_absortion = config.get("forced_non_absortion")
-        sim_PET_coinc_only = "true"
-        sim_PET_coinc_plus_singles = "false"
+        sim_PET_coinc_only = "false"
+        sim_PET_coinc_plus_singles = "true"
 
     # Configuration of photons an simulation time
 
@@ -181,6 +180,7 @@ def make_simset_phg(config, output_file, simulation_dir, act,
         message = "Created phg_file in: %s" % output_file
         tools.log_message(log_file,message,'info')
 
+
 def make_simset_bin(config, output_file, simulation_dir, scanner, add_randoms=False, log_file=False):
 
     stir_identifier = "# Hello, I am a SimSET BIN file!\n"
@@ -242,6 +242,7 @@ def make_simset_bin(config, output_file, simulation_dir, scanner, add_randoms=Fa
         message = "Created bin_file in: %s" % output_file
         tools.log_message(log_file,message,'info')
 
+
 def make_simset_simp_det(scanner_params, output, sim_dir, det_hf=0, log_file=False):
     
     energy_resolution = scanner_params.get("energy_resolution")
@@ -263,6 +264,7 @@ def make_simset_simp_det(scanner_params, output, sim_dir, det_hf=0, log_file=Fal
 
         tools.log_message(log_file,message,'info')
     
+
 def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0, log_file=False):
 
     num_rings = scanner_params.get("num_rings")
@@ -363,6 +365,7 @@ def make_index_file(simulation_dir, simset_dir, log_file=False):
         message = 'printf "%s" | %s > %s' % (prompts, make_index_file, output)
         tools.log_message(log_file,message,'info')
 
+
 def process_weights(weights_file, output_dir, scanner, add_randoms = 0):
 
     nbins = scanner.get("num_td_bins")
@@ -412,6 +415,7 @@ def process_weights(weights_file, output_dir, scanner, add_randoms = 0):
         output = join(output_dir,"randoms.hdr")
         tools.create_analyze_from_imgdata(randoms_file,output,nbins,nangles,nslices,1,1,1,"fl")
         os.remove(randoms_file)
+
 
 def add_randoms(sim_dir, simset_dir, coincidence_window, rebin=True, log_file=False):
 
@@ -476,6 +480,7 @@ def add_randoms(sim_dir, simset_dir, coincidence_window, rebin=True, log_file=Fa
         command = command = "%s %s >> %s" % (phgbin, binfile, log_file)
         tools.osrun(command, log_file)
 
+
 def combine_history_files(simset_dir, history_files, output, log_file):
 
     combinehist = join(simset_dir, "bin", "combinehist")
@@ -485,6 +490,7 @@ def combine_history_files(simset_dir, history_files, output, log_file):
     proc  = sp.Popen(rcommand, universal_newlines=True, shell=True, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE).communicate("Yes\n")
 
     #tools.osrun(rcommand, log_file)
+
 
 def simset_calcattenuation(simset_dir,sim_dir,output,hdr_to_copy,nrays=1,timeout=36000):
 

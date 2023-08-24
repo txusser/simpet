@@ -231,7 +231,7 @@ def verify_stir_install(stir_dir):
 
 def download_resources(dest_dir):
     print('Downloading resources from Onedrive...')
-    icom = 'sshpass -p simpet_dummy sftp -P 49166 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null simpet_install@mibiolab.synology.me:SIMPET/simpet_resources/Data.zip'
+    icom = 'wget https://github.com/txusser/simpet/raw/develop/assets/Data.zip'
     rsystem(icom)
     icom = 'unzip -o Data.zip'
     rsystem(icom)
@@ -239,7 +239,7 @@ def download_resources(dest_dir):
     if exists('Data.zip'):
         os.remove('Data.zip')
 
-    icom = 'sshpass -p simpet_dummy sftp -P 49166 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null simpet_install@mibiolab.synology.me:SIMPET/simpet_resources/fruitcake.zip'
+    icom = 'wget https://github.com/txusser/simpet/raw/develop/assets/fruitcake.zip'
     rsystem(icom)
     icom = 'unzip -o fruitcake.zip'
     rsystem(icom)

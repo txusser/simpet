@@ -131,7 +131,7 @@ class patient2maps(object):
         #Preparing PET_mask
         pet_mask = join(self.analysis_path, "pet_mask.hdr")
         img = nib.load(pet_hdr)
-        data = img.get_data()[:, :, :]
+        data = img.get_fdata()[:, :, :]
         patient_vmax = np.amax(data)
         patient_vmin = np.amin(data)
 

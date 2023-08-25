@@ -24,9 +24,10 @@ max_segment: 23             # Maximum Ring difference on the reconstruction
 zoomFactor: 1               # Zoom factor in x and y
 xyOutputSize: 256
 zOutputSize: 47
+zOutputVoxelSize: 3.27      # mm
 numberOfSubsets: 7          # Number of subsets
 numberOfIterations: 32      # Number of iterations
-savingInterval: 32           # The interval that we want to save intermediate subiterations images
+savingInterval: 8           # The interval that we want to save intermediate subiterations images
 # Attenuation correction 
 # (Don't set both, set what fits your scanner the best)
 analytical_att_correction: 0    # Performed by SimSET calcattenuation
@@ -41,12 +42,12 @@ stir_randoms_corr_smoothing: 0       # Will include smoothed SimSET randoms in t
 
 recons_type: "OSEM3D"
 # Inter-iteration filter
-inter_iteration_filter: 1
+inter_iteration_filter: 0 #1 for activate, 0 for deactivate
 subiteration_interval: 4
 x_dir_filter_FWHM: 0 # in mm
 y_dir_filter_FWHM: 0 # in mm
 z_dir_filter_FWHM: 0 # in mm
 
-psf_value: 0 #1.125
+psf_value: 1.125
 add_noise: 0
 

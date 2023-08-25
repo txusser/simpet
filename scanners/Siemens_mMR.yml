@@ -1,33 +1,33 @@
-scanner_name: "Siemens Biograph mCT"
+scanner_name: "Siemens Biograph mMR"
 # Scanner Description
 simset_material: 18       # LSO
-average_doi: 0.1          # cm
-scanner_radius: 42.1     # Scanner radius
-num_rings:  52            # Number of rings
-axial_fov: 21.8           # Axial FOV max (cm)
+average_doi: 0.7          # cm
+scanner_radius: 32.8     # Scanner radius
+num_rings: 64            # Number of rings
+axial_fov: 25.8           # Axial FOV max (cm)
 # Crystal Description
 z_crystal_size: 0.4
 transaxial_crystal_size: 0.4 # Transaxial Crystal size (cm)
 crystal_thickness: 2         # Crystal Thickness (cm)
-energy_resolution: 11.5      # Energy resolution (%)
+energy_resolution: 14.5      # Energy resolution (%)
 #timing_resolution:          # nanoseconds. WARNING: TOF_resolution/sqrt(2)
 # Binning parameters
-num_aa_bins:  312         # Number of views (Numero de detectores por anillo divido por 2)
-num_td_bins:  312         # Number of bins
+num_aa_bins:  224         # Number of views (Numero de detectores por anillo divido por 2)
+num_td_bins:  292         # Number of bins
 # Energy window
-min_energy_window:  435
-max_energy_window:  650
+min_energy_window:  430
+max_energy_window:  610
 # Used to add randoms to the simulated data
-coincidence_window: 4.1  # nanoseconds. Used only for random simulation (SimSET)
+coincidence_window: 5.86  # nanoseconds. Used only for random simulation (SimSET)
 # Reconstruction
-max_segment:  49         # Maximum Ring difference on the reconstruction
-zoomFactor: 2.65         # Zoom factor in x and y
-xyOutputSize:  400     
-zOutputSize:  148
-zOutputVoxelSize: 1.50   # mm  
-numberOfSubsets:  26     # Number of subsets
-numberOfIterations: 130  # Number of iterations
-savingInterval: 26       # The interval that we want to save intermediate subiterations images
+max_segment:  60         # Maximum Ring difference on the reconstruction
+zoomFactor: 1.07 #0.91         # Zoom factor in x and y
+xyOutputSize:  344     
+zOutputSize:  127
+zOutputVoxelSize: 2.0   # mm  
+numberOfSubsets:  28     # Number of subsets
+numberOfIterations: 112  # Number of iterations
+savingInterval: 28       # The interval that we want to save intermediate subiterations images
 # Attenuation correction 
 # (Don't set both, set what fits your scanner the best)
 analytical_att_correction: 0    # Performed by SimSET calcattenuation

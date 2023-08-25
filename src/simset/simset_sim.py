@@ -10,6 +10,7 @@ import yaml
 import numpy as np
 import src.simset.simset_tools as simset_tools
 import subprocess
+import nibabel as nib
 
 
 class SimSET_Simulation(object):
@@ -25,14 +26,16 @@ class SimSET_Simulation(object):
         self.scanner = scanner
 
         self.simset_dir = self.config.get("dir_simset")
-        self.cesga = self.config.get("cesga")
-        self.cesga_max_time = self.config.get("cesga_max_time")
 
         self.act_map = act_map
         self.att_map = att_map
         self.output_dir = projections_dir
         self.center_slice = params.get("center_slice")
-
+        
+        if self.center_slice== 0: #we calculate the half of the total z voxels
+            img = nib.load(act_map)            
+            self.center_slice = img.shape[2]/2
+            
         self.sim_dose = params.get("total_dose")
         self.s_photons = params.get("sampling_photons")
         self.photons = params.get("photons")
@@ -110,17 +113,7 @@ class SimSET_Simulation(object):
         my_log = join(sim_dir,"simset_s0.log")
 
         command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
-        
-        if self.cesga:
-            print("Launching cesga job...")
-            tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 4)
-        else: 
-            tools.osrun(command, log_file)
-
-        if self.cesga:
-            while not exists("%s/simended_file.log" %  sim_dir):
-                time.sleep(60)
-            #os.remove("%s/simended_file.log" %  sim_dir)
+        tools.osrun(command, log_file)
 
         rec_weight = join(sim_dir,"rec.weight")
         det_hf = join(sim_dir, 'det_hf.hist')
@@ -145,17 +138,8 @@ class SimSET_Simulation(object):
             print("Running the sencond simulation with importance sampling...")
 
             command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
-            print(command)
-            
-            if self.cesga:
-                print("Launching cesga job...")
-                tools.launch_cesga_job(command, sim_dir, self.cesga_max_time, 1, 32)
-            else: 
-                tools.osrun(command, log_file)
+            tools.osrun(command, log_file)
 
-            if self.cesga:
-                while not exists("%s/simended_file.log" %  sim_dir):
-                    time.sleep(60)
 
         if self.add_randoms == 1:
 
@@ -171,6 +155,7 @@ class SimSET_Simulation(object):
 
         log_file = join(sim_dir, "logging.log")
         # Establishing necessary parameters
+        model_type = self.params.get("model_type")
         scanner_radius = self.scanner.get("scanner_radius")
         scanner_axial_fov = self.scanner.get("axial_fov")
 
@@ -195,7 +180,10 @@ class SimSET_Simulation(object):
                                      sim_photons, sim_time, add_randoms, self.phglistmode, sampling, log_file=log_file)
 
         my_det_file = join(sim_dir,"det.rec")
-        simset_tools.make_simset_cyl_det(self.scanner, my_det_file, sim_dir, det_listmode, log_file=log_file)
+        if model_type=="simple_pet":
+            simset_tools.make_simset_simp_det(self.scanner, my_det_file, sim_dir, det_listmode, log_file=log_file)
+        elif model_type=="cylindrical":
+            simset_tools.make_simset_cyl_det(self.scanner, my_det_file, sim_dir, det_listmode, log_file=log_file)
 
         my_bin_file = join(sim_dir,"bin.rec")
         simset_tools.make_simset_bin(self.config, my_bin_file, sim_dir, self.scanner, add_randoms, log_file=log_file)
@@ -384,14 +372,14 @@ class SimSET_Reconstruction(object):
             
         if self.scanner.get('add_noise') != 0:
             stir_tools.add_noise(self.config, self.scanner, sinogram_stir, self.log_file)
+                
 
     def run_recons(self):
 
         from src.stir import stir_tools
         
         print("Starting STIR reconstruction")
-        
-        #reconstruction_type = self.scanner.get("recons_type")
+
         recons_algorithm = self.scanner.get("recons_type")
         sinogram_stir = join(self.output_dir, "stir_sinogram.hs")
         additive_sino_stir = join(self.output_dir, "stir_additivesino.hs")
@@ -402,7 +390,6 @@ class SimSET_Reconstruction(object):
             print("Something is not ready for the reconstruction")
         else:
             print("Starting STIR reconstruction")
-
 
             if recons_algorithm == 'FBP2D':
                 reconsFile_hdr = stir_tools.FBP2D_recons(self.config ,self.scanner, sinogram_stir, self.output_dir, self.log_file)

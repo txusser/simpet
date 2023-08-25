@@ -7,10 +7,6 @@ from os.path import join, basename, exists
 import shutil
 from multiprocessing import cpu_count
 
-simpet_dir = os.getcwd()
-
-dest_dir = join(os.getcwd(), 'include')
-log_file = join('log_setup.txt')
 
 def rsystem(command):
     """
@@ -32,8 +28,8 @@ def rsystem(command):
         with open(log_file, 'a') as w_file:
             w_file.write(message)
 
-def install_simset(simset_dir, log_file):
 
+def install_simset(simset_dir, log_file):
     if exists(simset_dir):
         shutil.rmtree(simset_dir)
     os.makedirs(simset_dir)
@@ -42,23 +38,23 @@ def install_simset(simset_dir, log_file):
     print('Downloading SimSET source from Washington University repos...')
     icom = 'wget -q http://depts.washington.edu/simset/downloads/phg.2.9.2.tar.Z > %s' % log_file
     rsystem(icom)
-    icom = 'tar -xvf %s/phg.2.9.2.tar.Z --directory=SimSET > %s' % (dest_dir,log_file)
+    icom = 'tar -xvf %s/phg.2.9.2.tar.Z --directory=SimSET > %s' % (dest_dir, log_file)
     rsystem(icom)
     os.remove('phg.2.9.2.tar.Z')
 
     os.chdir(simset_dir)
 
-    #Let's Apply the SimSET patch for SimPET
+    # Let's Apply the SimSET patch for SimPET
     print('Applying modification patch for SimSET-STIR interface...')
     icom = 'patch -s -p0 < %s/src/simset/simset_for_stir.patch' % simpet_dir
     rsystem(icom)
 
-    makefile = join(simset_dir, '2.9.2','make.files','simset.make')
-    newmakefile = join(simset_dir, '2.9.2','make.files','simset.make.new')
+    makefile = join(simset_dir, '2.9.2', 'make.files', 'simset.make')
+    newmakefile = join(simset_dir, '2.9.2', 'make.files', 'simset.make.new')
 
     # Replacing the current directory into the makefile
-    f_old = open(makefile,'r')
-    f_new = open(newmakefile,'w')
+    f_old = open(makefile, 'r')
+    f_new = open(newmakefile, 'w')
 
     lines = f_old.readlines()
     for line in lines:
@@ -67,40 +63,38 @@ def install_simset(simset_dir, log_file):
     f_old.close()
     f_new.close()
 
-    shutil.move(newmakefile,makefile)
+    shutil.move(newmakefile, makefile)
 
-    #Now we can compile
-    os.chdir(join(simset_dir,'2.9.2'))
+    # Now we can compile
+    os.chdir(join(simset_dir, '2.9.2'))
     os.makedirs('lib')
     print('Compiling SimSET...')
     icom = './make_all.sh'
     rsystem(icom)
 
-    print('Verifying installation...')
-    verify_simset_install(simset_dir)
 
 def verify_simset_install(simset_dir):
-
-    if exists(join(simset_dir,'2.9.2','lib','libsimset.so')):
+    print('\nVerifying SIMSET installation...')
+    if exists(join(simset_dir, '2.9.2', 'lib', 'libsimset.so')):
         print('SimSET library: OK')
     else:
         raise Exception('Failed to build SimSET')
 
-    bin_dir = join(simset_dir,'2.9.2','bin')
+    bin_dir = join(simset_dir, '2.9.2', 'bin')
 
     checks = ['addrandoms', 'bin', 'calcattenuation', 'combinehist', 'makeindexfile', 'phg', 'timesort']
 
     for i in checks:
 
-        if exists(join(bin_dir,i)):
+        if exists(join(bin_dir, i)):
             print('%s: OK' % i)
         else:
-           raise Exception('Failed to build %s' % i)
+            raise Exception('Failed to build %s' % i)
+
 
 def install_stir(stir_dir, simset_dir, log_file):
-
-    build_dir = join(stir_dir,'build')
-    install_dir = join(stir_dir,'install')
+    build_dir = join(stir_dir, 'build')
+    install_dir = join(stir_dir, 'install')
 
     if exists(stir_dir):
         shutil.rmtree(stir_dir)
@@ -116,12 +110,12 @@ def install_stir(stir_dir, simset_dir, log_file):
     os.chdir(build_dir)
     rsystem('cmake ../STIR/')
 
-    makefile = join(build_dir,'CMakeCache.txt')
-    newmakefile = join(stir_dir, 'build','new_CMakeCache.txt')
+    makefile = join(build_dir, 'CMakeCache.txt')
+    newmakefile = join(stir_dir, 'build', 'new_CMakeCache.txt')
 
     # Replacing the current directory into the makefile
-    f_old = open(makefile,'r')
-    f_new = open(newmakefile,'w')
+    f_old = open(makefile, 'r')
+    f_new = open(newmakefile, 'w')
 
     lines = f_old.readlines()
     for line in lines:
@@ -140,134 +134,146 @@ def install_stir(stir_dir, simset_dir, log_file):
     f_old.close()
     f_new.close()
 
-    shutil.move(newmakefile,makefile)
+    shutil.move(newmakefile, makefile)
     rsystem('cmake ../STIR/')
 
     print('Building STIR....')
     icom = 'make -s -j%s & make install' % str(cpu_count())
     rsystem(icom)
 
-def update_config(stir_dir,simset_dir):
 
+def verify_stir_install(stir_dir):
+    print('\nVerifying STIR installation...')
+
+    bin_dir = join(stir_dir, 'install', 'bin')
+
+    checks = ['FBP2D', 'FBP3DRP', 'forward_project', 'lm_to_projdata', 'OSMAPOSL', 'zoom_image']
+
+    for i in checks:
+
+        if exists(join(bin_dir, i)):
+            print('%s: OK' % i)
+        else:
+            raise Exception('Failed to build %s' % i)
+
+
+def download_resources(dest_dir):
+    print('Downloading resources from Onedrive...')
+    icom = 'wget https://github.com/txusser/simpet/raw/develop/assets/Data.zip'
+    rsystem(icom)
+    icom = 'unzip -o Data.zip'
+    rsystem(icom)
+
+    if exists('Data.zip'):
+        os.remove('Data.zip')
+
+    icom = 'wget https://github.com/txusser/simpet/raw/develop/assets/fruitcake.zip'
+    rsystem(icom)
+    icom = 'unzip -o fruitcake.zip'
+    rsystem(icom)
+    shutil.move("fruitcake", '%s/fruitcake' % dest_dir)
+    shutil.move("format_converters", '%s/format_converters' % dest_dir)
+
+    if exists('fruitcake.zip'):
+        os.remove('fruitcake.zip')
+
+
+def update_config(stir_dir, simset_dir, dest_dir):
     configfile = 'config.yml'
     newconfigfile = 'newconfig.yml'
 
     # Replacing the current directory into the makefile
-    f_old = open(configfile,'r')
-    f_new = open(newconfigfile,'w')
+    f_old = open(configfile, 'r')
+    f_new = open(newconfigfile, 'w')
 
     lines = f_old.readlines()
     for line in lines:
         if line.startswith('dir_stir'):
-            line = ('dir_stir:  "%s"\n' % join(stir_dir,'install'))
+            line = ('dir_stir:  "%s"\n' % join(stir_dir, 'install'))
         if line.startswith('dir_simset'):
-            line = ('dir_simset:  "%s"\n' % join(simset_dir,'2.9.2'))
+            line = ('dir_simset:  "%s"\n' % join(simset_dir, '2.9.2'))
         f_new.write(line)
     f_old.close()
     f_new.close()
 
-    shutil.move(newconfigfile,configfile)
+    shutil.move(newconfigfile, configfile)
 
-def install_soap():
-    """
-    Execute installation of all dependencies
-    :return:
-    """
-    # Install SOAP
+    pathfile = 'simpet_paths.sh'
+    f_paths = open(pathfile, 'w')
+    f_paths.write("export PATH=%s/fruitcake/bin:$PATH\n" % dest_dir)
+    f_paths.write("export LD_LIBRARY_PATH=%s/fruitcake/book/lib:$LD_LIBRARY_PATH\n" % dest_dir)
+    f_paths.write("export PATH=%s/format_converters:$PATH\n" % dest_dir)
 
-    icom = 'sudo apt install python3 -y -q'
+    f_paths.close()
+
+    icom = 'chmod +x %s/fruitcake/bin/*' % dest_dir
     rsystem(icom)
-
-    icom = 'sudo apt install python3-pip -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install libboost-dev libboost-all-dev -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install libpcre3 libpcre3-dev -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install libncurses-dev -y -q'
-    rsystem(icom)
-
-    # Install and upgrade PIP
-    icom = 'sudo pip3 install -U PyYAML'
+    icom = 'chmod +x %s/format_converters' % dest_dir
     rsystem(icom)
 
 
-    # Install numpy
-    icom = 'sudo apt install python3-numpy -y -q'
-    rsystem(icom)
+def verify_test_simulation(simpet_dir):
+    print('\nVerifying test simulation...')
+    import nibabel as nib
+    import numpy as np
 
-    # Install Scipy
-    icom = 'sudo apt install python3-scipy -y -q'
-    rsystem(icom)
-
-    # Install Nibabel
-    icom = 'sudo apt install python3-nibabel -y -q'
-    rsystem(icom)
-
-    # Install matplotlib
-    icom = 'sudo apt install python3-matplotlib -y -q'
-    rsystem(icom)
-
-    # Install Pandas
-    icom = 'sudo apt install python3-pandas -y -q'
-    rsystem(icom)
+    results_dir = join(simpet_dir, 'Results', 'Test', 'SimSET_Sim_Discovery_ST', 'division_0')
     
-    # Install nilearn
-    icom = 'sudo pip3 install -U nilearn'
-    rsystem(icom)
+    checks = ['trues.hdr', 'scatter.hdr', 'randoms.hdr']
 
-    # Install cmake (needed for STIR)
-    icom = 'sudo apt install cmake -y -q'
-    rsystem(icom)
+    for i in checks:
+        file_ = join(results_dir, i)
+        if exists(file_):
+            img_d = nib.load(file_).get_fdata()
+            counts = np.sum(img_d)
+            print("Counts in %s: %s" % (i,counts))
 
-    # Install swig (needed for STIR)
-    icom = 'sudo apt install swig -y -q'
-    rsystem(icom)
+        else:
+            raise Exception('Failed to build %s' % i)
 
-def download_resources():
+    results_dir = join(simpet_dir, 'Results', 'Test', 'SimSET_Sim_Discovery_ST', 'OSEM3D')
 
-    print('Downloading resources from Onedrive...')
-    icom = 'wget "http://gofile.me/5v8xA/xza6oaaHV"'
-    rsystem(icom)
-    print('Moving and extracting resources...')
-    icom = 'mv "xza6oaaHV" resources.tar.gz'
-    rsystem(icom)
-    icom = 'tar -xvf resources.tar.gz'
-    rsystem(icom)
+    checks = ['rec_OSEM3D_32.v', 'rec_OSEM3D_32.hv']
+    for i in checks:
+        file_ = join(results_dir, i)
+        if exists(file_):
+            print('%s: OK' % i)
+        else:
+            raise Exception('Failed to reconstruct %s' % i)
 
-
-#install_soap()
-#download_resources()
-
-# Fruitcake is not needed right now
-# # Add fruitcake paths to bashrc... This can be a problem...
-#fruitcake_binpath = 'echo "export PATH=%s/fruitcake/bin:$PATH" >> ~/.bashrc' % dest_dir
-#rsystem(fruitcake_binpath)
-
-#fruitcake_ldpath = 'echo "export LD_LIBRARY_PATH=%s/fruitcake/book/lib:$LD_LIBRARY_PATH" >> ~/.bashrc' % dest_dir
-#rsystem(fruitcake_ldpath)
-
-#rsystem('source ~/.bashrc')
-
+# Setup run lines
 simpet_dir = os.getcwd()
+log_file = join(simpet_dir, 'log_setup.txt')
+if exists(log_file):
+    os.remove(log_file)
 
-
-#install_soap()
-
+dest_dir = join(simpet_dir, 'include')
 if not exists(dest_dir):
     os.makedirs(dest_dir)
 os.chdir(dest_dir)
 
-simset_dir = join(dest_dir,"SimSET")
-#install_simset(simset_dir, log_file)
 
-stir_dir = join(dest_dir,"STIR")
-#install_stir(stir_dir, simset_dir, log_file)
+simset_dir = join(dest_dir, "SimSET")
+install_simset(simset_dir, log_file)
+verify_simset_install(simset_dir)
+
+stir_dir = join(dest_dir, "STIR")
+install_stir(stir_dir, simset_dir, log_file)
+verify_stir_install(stir_dir)
 
 os.chdir(simpet_dir)
-update_config(stir_dir,simset_dir)
+download_resources(dest_dir)
+update_config(stir_dir, simset_dir, dest_dir)
 
+print("\nEverything looks good... we will launch a quick simulation now just to be sure...")
+print("This can take a bit, maybe 15 min... you may abort it if you are very sure what you are doing.\n")
+
+import simpet
+
+test = simpet.SimPET('Data/test_image/testParams.yml')
+test.run()
+
+verify_test_simulation(simpet_dir)
+
+print("\nNice! It seems that we are good to go. Consider adding the lines in simpet_paths.sh to your .bashrc. Enjoy SimPET!.")
 

@@ -993,7 +993,7 @@ def change_format(image_hdr, newFormat, logfile):
         message = "Error! Invalid format (or not implemented yet): " +str(newFormat)
         print(message)
         log_message(logfile, message, 'error')
-        if message=="":
+    if message=="":
         data = data.astype(form) 
         hdr = nib.AnalyzeHeader()
         hdr.set_data_dtype(form)

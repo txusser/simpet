@@ -2,30 +2,37 @@
 sim_type: "SimSET"        # SimSET, STIR or GATE (only SimSET working)
 do_simulation: 1          # Set to 0 to reconstruction previous simulation
 do_reconstruction: 1      # Set to 0 to generate adq data only
-divisions: 12              # Number os subprocesses for parallel simulation
+divisions: 7             # Number os subprocesses for parallel simulation
+viset_iterations: 2
 
 # PET system (Vereos, Siemens_mCT, Discovery_ST, Discovery_STE, GE_Advance)
 scanner: "Vereos"
 # Scanner Model (simple_pet, cylindrical)
 model_type: "simple_pet"
 
+
 #Patient Variables
-patient_dirname: "C3_w413"
-act_map: "xnewMap_roi5_0.8_flipLR.hdr"
-att_map: "xCtrl_3_flipLR.att.hdr"
-output_dir: "C3"         #Name of the Results Dir
+patient_dirname: "2011663"
+pet_image: "PET.hdr"
+ct_image: "CT.hdr"
+act_map: "ACT_map_5_new.hdr"
+att_map: "ATT_map_5_new.hdr"
+output_dir: "2011663"         #Name of the Results Dir
 
 #Config your phantom
+z_min: 75               # Only used in wholebody simulations (start of the acquisition, slice)
+z_max: 316              # Only used in wholebody simulations (end of the acquisition, slice). Depending in z_max - z_min, several beds may be simulated.
 center_slice:  153       # The slice number to be placed on the center of the scanner. If 0, automatically, the half of the slices will be calculated and used
 total_dose: 1            # mCi
 simulation_time: 30     # secods
 
+
 #SimSET Parameters (not used by STIR sim)
-sampling_photons: 2000000 # Set to 0 to avoid importance sampling
-photons: 15000000                  # Set to 0 to do a realistic noise simulation
-add_randoms: 1              # 1 activate Randoms simulation (Will force sampling_photons=0 and photons=0)
+sampling_photons: 0 # Set to 0 to avoid importance sampling
+photons: 0                  # Set to 0 to do a realistic noise simulation
+add_randoms: 0              # 1 activate Randoms simulation (Will force sampling_photons=0 and photons=0)
 phglistmode: 0              # History Files from the phg module (Needed for LM reconstruction. Potentially very big)
-detlistmode: 1              # History Files from the detector module (You need this for adding randoms. If add_randoms=1 will be forced)
+detlistmode: 0              # History Files from the detector module (You need this for adding randoms. If add_randoms=1 will be forced)
 
 #BrainVISET Iterations (Iterations: 1 will run a conventional simulation)
 maximumIteration: 1

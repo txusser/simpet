@@ -685,8 +685,8 @@ def convert_simset_sino_to_stir(input_img, output=False):
   
     nib.save(stir_img,output)
     
-    
 def resampleXYvoxelSizes(image_hdr, xyVoxelSize, log_file):
+
     img = nib.load(image_hdr)
     z_VoxelSize =img.header['pixdim'][3]
     target_affine = np.diag((xyVoxelSize,xyVoxelSize,z_VoxelSize))
@@ -993,7 +993,6 @@ def change_format(image_hdr, newFormat, logfile):
         message = "Error! Invalid format (or not implemented yet): " +str(newFormat)
         print(message)
         log_message(logfile, message, 'error')
-    
     if message=="":
         data = data.astype(form) 
         hdr = nib.AnalyzeHeader()
@@ -1001,3 +1000,21 @@ def change_format(image_hdr, newFormat, logfile):
         hdr.set_data_shape(data.shape)
         imageToWrite = nib.AnalyzeImage(data, img.affine, hdr)    
         nib.save(imageToWrite, image_hdr)
+    
+    return image_hdr
+
+def fix_4d_data(data):
+    
+    shape = data.shape
+
+    if len(shape) == 3:
+        return data
+    else:
+        return data[:,:,:,0]
+
+def remove_neg_nan(data):
+    
+    indx = np.where(data<0)
+    data[indx] = 0
+    indx = np.where(np.isnan(data))
+    data[indx] = 0

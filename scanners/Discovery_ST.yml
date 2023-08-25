@@ -9,7 +9,7 @@ axial_fov: 15.7               # Axial FOV max (cm)
 z_crystal_size: 0.63           # Axial Crystal size (cm)
 transaxial_crystal_size: 0.63 # Transaxial Crystal size (cm).
 crystal_thickness: 3          # Crystal Thickness (cm)
-energy_resolution: 16          # Energy resolution (%)
+energy_resolution: 17          # Energy resolution (%)
 #timing_resolution:            # nanoseconds. WARNING: TOF_resolution/sqrt(2)
 # Binning parameters
 num_aa_bins:  210            # Number of views (Numero de detectores por anillo divido por 2)
@@ -21,8 +21,8 @@ max_energy_window:  675
 coincidence_window: 11.7        # nanoseconds. Used only for random simulation (SimSET)
 # Reconstruction
 max_segment: 23             # Maximum Ring difference on the reconstruction
-zoomFactor: 1.55            # Zoom factor in x and y
-xyOutputSize: 128
+zoomFactor: 1               # Zoom factor in x and y
+xyOutputSize: 256
 zOutputSize: 47
 zOutputVoxelSize: 3.27      # mm
 numberOfSubsets: 7          # Number of subsets
@@ -44,9 +44,9 @@ recons_type: "OSEM3D"
 # Inter-iteration filter
 inter_iteration_filter: 0 #1 for activate, 0 for deactivate
 subiteration_interval: 4
-x_dir_filter_FWHM: 1.5 # in mm
-y_dir_filter_FWHM: 1.5 # in mm
-z_dir_filter_FWHM: 3 # in mm
+x_dir_filter_FWHM: 0 # in mm
+y_dir_filter_FWHM: 0 # in mm
+z_dir_filter_FWHM: 0 # in mm
 
 psf_value: 1.125
 add_noise: 0

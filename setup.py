@@ -32,25 +32,25 @@ def rsystem(command):
 def install_simset(simset_dir, log_file):
     if exists(simset_dir):
         shutil.rmtree(simset_dir)
-    os.makedirs(simset_dir)
 
     # Download, patch and compile SimSET
     print('Downloading SimSET source from Washington University repos...')
-    icom = 'wget -q http://depts.washington.edu/simset/downloads/phg.2.9.2.tar.Z > %s' % log_file
+    icom = 'wget -q https://github.com/txusser/simset_simpet/archive/refs/heads/main.zip > %s' % log_file
     rsystem(icom)
-    icom = 'tar -xvf %s/phg.2.9.2.tar.Z --directory=SimSET > %s' % (dest_dir, log_file)
+    icom = 'unzip main.zip'
     rsystem(icom)
-    os.remove('phg.2.9.2.tar.Z')
+    os.remove('main.zip')
+    shutil.move('simset_simpet-main', simset_dir)
 
     os.chdir(simset_dir)
 
     # Let's Apply the SimSET patch for SimPET
     print('Applying modification patch for SimSET-STIR interface...')
-    icom = 'patch -s -p0 < %s/src/simset/simset_for_stir.patch' % simpet_dir
-    rsystem(icom)
+    #icom = 'patch -s -p0 < %s/src/simset/simset_for_stir.patch' % simpet_dir
+    #rsystem(icom)
 
-    makefile = join(simset_dir, '2.9.2', 'make.files', 'simset.make')
-    newmakefile = join(simset_dir, '2.9.2', 'make.files', 'simset.make.new')
+    makefile = join(simset_dir, 'make.files', 'simset.make')
+    newmakefile = join(simset_dir, 'make.files', 'simset.make.new')
 
     # Replacing the current directory into the makefile
     f_old = open(makefile, 'r')
@@ -58,7 +58,7 @@ def install_simset(simset_dir, log_file):
 
     lines = f_old.readlines()
     for line in lines:
-        line = line.replace('/Users/useruser/Desktop', simset_dir)
+        line = line.replace('/simset_docker-main', simset_dir)
         f_new.write(line)
     f_old.close()
     f_new.close()
@@ -66,7 +66,7 @@ def install_simset(simset_dir, log_file):
     shutil.move(newmakefile, makefile)
 
     # Now we can compile
-    os.chdir(join(simset_dir, '2.9.2'))
+    os.chdir(join(simset_dir))
     os.makedirs('lib')
     print('Compiling SimSET...')
     icom = './make_all.sh'
@@ -75,12 +75,12 @@ def install_simset(simset_dir, log_file):
 
 def verify_simset_install(simset_dir):
     print('\nVerifying SIMSET installation...')
-    if exists(join(simset_dir, '2.9.2', 'lib', 'libsimset.so')):
+    if exists(join(simset_dir, 'lib', 'libsimset.so')):
         print('SimSET library: OK')
     else:
         raise Exception('Failed to build SimSET')
 
-    bin_dir = join(simset_dir, '2.9.2', 'bin')
+    bin_dir = join(simset_dir, 'bin')
 
     checks = ['addrandoms', 'bin', 'calcattenuation', 'combinehist', 'makeindexfile', 'phg', 'timesort']
 
@@ -124,9 +124,9 @@ def install_stir(stir_dir, simset_dir, log_file):
         if line.startswith('CMAKE_INSTALL_PREFIX'):
             line = ('CMAKE_INSTALL_PREFIX:PATH=%s\n' % install_dir)
         if line.startswith('SIMSET_INCLUDE_DIRS'):
-            line = ('SIMSET_INCLUDE_DIRS:PATH=%s\n' % join(simset_dir, '2.9.2', 'src'))
+            line = ('SIMSET_INCLUDE_DIRS:PATH=%s\n' % join(simset_dir, 'src'))
         if line.startswith('SIMSET_LIBRARY'):
-            line = ('SIMSET_LIBRARY:FILEPATH=%s\n' % join(simset_dir, '2.9.2', 'lib', 'libsimset.so'))
+            line = ('SIMSET_LIBRARY:FILEPATH=%s\n' % join(simset_dir, 'lib', 'libsimset.so'))
         if line.startswith('STIR_OPENMP'):
             line = 'STIR_OPENMP:BOOL=ON'
         f_new.write(line)
@@ -191,7 +191,7 @@ def update_config(stir_dir, simset_dir, dest_dir):
         if line.startswith('dir_stir'):
             line = ('dir_stir:  "%s"\n' % join(stir_dir, 'install'))
         if line.startswith('dir_simset'):
-            line = ('dir_simset:  "%s"\n' % join(simset_dir, '2.9.2'))
+            line = ('dir_simset:  "%s"\n' % join(simset_dir))
         f_new.write(line)
     f_old.close()
     f_new.close()

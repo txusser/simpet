@@ -1,7 +1,7 @@
 scanner_name: "GE Discovery ST"
 # Scanner Description
 simset_material: 10           # BGO
-average_doi: 0.84              # ¿0.84? cm
+average_doi: 0.84             # ¿0.84? cm
 scanner_radius: 44.31         # Scanner radius
 num_rings:  24                # Number of rings
 axial_fov: 15.7               # Axial FOV max (cm) 

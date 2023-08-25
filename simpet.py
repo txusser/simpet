@@ -118,7 +118,7 @@ class SimPET(object):
             my_reconstruction = sim.SimSET_Reconstruction(self.params,self.config,projections_dir,self.scanner,reconstruction_dir,reconstruction_type)
             my_reconstruction.run()
 
-    def stir_simulation(self,param_file):
+    def stir_simulation(self,act_map,att_map,output_dir):
 
         projections_dir = join(output_dir, "STIR_Sim_" + self.scanner_model)
 

@@ -24,7 +24,7 @@ def make_simset_act_table (act_table_factor, my_act_table, log_file=False):
 
 def make_simset_phg(config, output_file, simulation_dir, act,
                     scanner_radius, scanner_axial_fov, center_slice,
-                    photons, sim_time,
+                    isotope, photons, sim_time,
                     add_randoms=False, phg_hf=False, S=0, log_file=False):
 
     stir_identifier = "# Hello, I am a SimSET PHG file!\n"
@@ -66,7 +66,6 @@ def make_simset_phg(config, output_file, simulation_dir, act,
     point_source_voxels = config.get("point_source_voxels")
     coherent_scatter_object = config.get("coherent_scatter_object")
     coherent_scatter_detector = config.get("coherent_scatter_detector")
-    simulated_isotope = config.get("isotope")
 
     # Generate a random seed for the MC
     random_seed = str(random.randint(1,1e12))
@@ -116,7 +115,7 @@ def make_simset_phg(config, output_file, simulation_dir, act,
         f.write(integer + "random_seed = " + random_seed + "\n")
         f.write(boolean + "model_coherent_scatter_in_obj = " + coherent_scatter_object + "\n")
         f.write(boolean + "model_coherent_scatter_in_tomo = " + coherent_scatter_detector + "\n")
-        f.write(enum + "isotope = " + simulated_isotope + "\n")
+        f.write(enum + "isotope = " + isotope + "\n")
 
         # Now comes the object stuff (old make_phg_simset from fruitcake)
         f.write("\n\n# OBJECT GEOMETRY VALUES\n")

@@ -156,6 +156,7 @@ class SimSET_Simulation(object):
         log_file = join(sim_dir, "logging.log")
         # Establishing necessary parameters
         model_type = self.params.get("model_type")
+        isotope = self.params.get("isotope")
         scanner_radius = self.scanner.get("scanner_radius")
         scanner_axial_fov = self.scanner.get("axial_fov")
 
@@ -177,7 +178,7 @@ class SimSET_Simulation(object):
         # Creating the phg for the simulation...
         my_phg_file = join(sim_dir,"phg.rec")
         simset_tools.make_simset_phg(self.config, my_phg_file, sim_dir, act, scanner_radius, scanner_axial_fov, self.center_slice,
-                                     sim_photons, sim_time, add_randoms, self.phglistmode, sampling, log_file=log_file)
+                                     isotope, sim_photons, sim_time, add_randoms, self.phglistmode, sampling, log_file=log_file)
 
         my_det_file = join(sim_dir,"det.rec")
         if model_type=="simple_pet":

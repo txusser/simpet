@@ -270,7 +270,7 @@ print("This can take a bit, maybe 15 min... you may abort it if you are very sur
 
 import simpet
 
-test = simpet.SimPET('Data/test_image/testParams.yml')
+test = simpet.SimPET('Params_test.yml')
 test.run()
 
 verify_test_simulation(simpet_dir)

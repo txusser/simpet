@@ -1,0 +1,52 @@
+#Define the simulation type and the environment
+sim_type: "SimSET"        # SimSET, STIR or GATE (only SimSET working)
+
+
+# Run parameters
+do_simulation: 1          # Set to 0 to reconstruction previous simulation
+do_reconstruction: 1      # Set to 0 to generate adq data only
+divisions: 8              # Number os subprocesses for parallel simulation
+
+
+# PET system (Vereos, Siemens_mCT, Discovery_ST, Discovery_STE, GE_Advance)
+scanner: "Vereos"
+model_type: "simple_pet" # Scanner Model (simple_pet, cylindrical)
+
+
+# Input and output directories
+patient_dirname: "brainViset_prueba" # Name of the directory in Data where phantoms are located
+output_dir: "example_dir"            # Name of the Results Dir
+
+
+# Variables needed for single simulation
+act_map: "example_act.hdr"
+att_map: "example_att.hdr"
+center_slice:  153      # The slice number to be placed on the center of the scanner. If 0, automatically, the half of the slices will be calculated and used
+
+
+# Variables needed for whole_body simulation
+z_min: 75               # Only used in wholebody simulations (start of the acquisition, slice)
+z_max: 316              # Only used in wholebody simulations (end of the acquisition, slice). 
+# We calculate the number of beeds based on (z_max - z_min) and the scanner FOV.
+
+
+# Variables needed when running BrainViset
+maximumIteration: 5
+pet_image: "pet.nii"   # Input PET image (from human subject)
+mri_image: "mri.nii"   # Input MRI image (from human subject)
+ct_image: "ct.nii"     # Input CT image  (from human subject)
+# The three modalities are needed for running BrainViset
+
+
+#SimSET Parameters (not used by STIR sim)
+total_dose: 1               # mCi
+isotope: "f18"              # For positron range. Options are f18, c11, n13, o15, ga68, rb82, zr89
+simulation_time: 30         # secods
+sampling_photons: 0         # Set to 0 to avoid importance sampling
+photons: 0                  # Set to 0 to do a realistic noise simulation
+add_randoms: 0              # 1 activate Randoms simulation (Will force sampling_photons=0 and photons=0)
+phglistmode: 0              # History Files from the phg module (Needed for LM reconstruction. Potentially very big)
+detlistmode: 0              # History Files from the detector module (You need this for adding randoms. If add_randoms=1 will be forced)
+
+
+

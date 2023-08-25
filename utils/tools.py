@@ -43,7 +43,7 @@ def nib_load(image, logfile=False):
     """
     try:
         img = nib.load(image)
-        data = img.get_data()[:,:,:]
+        data = img.get_fdata()[:,:,:]
         return img, data
     except Exception as e:
         message = "Error: " + str(e)
@@ -394,7 +394,7 @@ def verify_roi_exists(rois_image, roi_number):
     :return: nvox is not zero
     """
     rois_img = nib.load(rois_image)
-    rois_data = rois_img.get_data()[:, :, :]
+    rois_data = rois_img.get_fdata()[:, :, :]
     indx = np.where(rois_data == roi_number)
     nvox = len(rois_data[indx])
     if nvox == 0:
@@ -415,7 +415,7 @@ def operate_single_image(input_image, operation, factor, output_image, logfile):
     """
 
     img = nib.load(input_image)
-    data = img.get_data()[:,:,:]
+    data = img.get_fdata()[:,:,:]
     data = np.nan_to_num(data)
     
 

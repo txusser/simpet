@@ -29,78 +29,6 @@ def rsystem(command):
             w_file.write(message)
 
 
-def install_soap():
-    """
-    Execute installation of all dependencies
-    :return:
-    """
-    # Install SOAP
-
-    icom = 'sudo apt install python3 -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install unzip -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install sshpass -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install python3-pip -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install ipython3 -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install libboost-dev libboost-all-dev -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install libpcre3 libpcre3-dev -y -q'
-    rsystem(icom)
-
-    icom = 'sudo apt install libncurses-dev -y -q'
-    rsystem(icom)
-
-    # Install and upgrade PIP
-    icom = 'sudo pip3 install -U PyYAML'
-    rsystem(icom)
-
-    # Install numpy
-    icom = 'sudo apt install python3-numpy -y -q'
-    rsystem(icom)
-
-    # Install Scipy
-    icom = 'sudo apt install python3-scipy -y -q'
-    rsystem(icom)
-
-    # Install Nibabel
-    icom = 'sudo apt install python3-nibabel -y -q'
-    rsystem(icom)
-
-    # Install matplotlib
-    icom = 'sudo apt install python3-matplotlib -y -q'
-    rsystem(icom)
-
-    # Install Pandas
-    icom = 'sudo apt install python3-pandas -y -q'
-    rsystem(icom)
-
-    # Install nilearn
-    icom = 'sudo pip3 install -U nilearn'
-    rsystem(icom)
-
-    # Install cmake (needed for STIR)
-    icom = 'sudo apt install cmake -y -q'
-    rsystem(icom)
-
-    # Install swig (needed for STIR)
-    icom = 'sudo apt install swig -y -q'
-    rsystem(icom)
-
-    # Install NIPYPE
-    icom = 'sudo pip3 install nipype'
-    rsystem(icom)
-
-
 def install_simset(simset_dir, log_file):
     if exists(simset_dir):
         shutil.rmtree(simset_dir)
@@ -320,8 +248,6 @@ log_file = join(simpet_dir, 'log_setup.txt')
 if exists(log_file):
     os.remove(log_file)
 
-install_soap()
-
 dest_dir = join(simpet_dir, 'include')
 if not exists(dest_dir):
     os.makedirs(dest_dir)
@@ -329,9 +255,11 @@ os.chdir(dest_dir)
 
 simset_dir = join(dest_dir, "SimSET")
 install_simset(simset_dir, log_file)
+verify_simset_install(simset_dir)
 
 stir_dir = join(dest_dir, "STIR")
 install_stir(stir_dir, simset_dir, log_file)
+verify_stir_install(stir_dir)
 
 os.chdir(simpet_dir)
 download_resources(dest_dir)
@@ -340,12 +268,12 @@ update_config(stir_dir, simset_dir, dest_dir)
 print("\nEverything looks good... we will launch a quick simulation now just to be sure...")
 print("This can take a bit, maybe 15 min... you may abort it if you are very sure what you are doing.\n")
 
-icom = ('source simpet_paths.sh')
 import simpet
 
 test = simpet.SimPET('Data/test_image/testParams.yml')
 test.run()
 
-verify_simset_install(simset_dir)
-verify_stir_install(stir_dir)
 verify_test_simulation(simpet_dir)
+
+print("\nNice! It seems that we are good to go. Consider adding the lines in simpet_paths.sh to your .bashrc. Enjoy SimPET!.")
+

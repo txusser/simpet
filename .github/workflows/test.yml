@@ -11,4 +11,4 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: echo $LD_LIBRARY_PATH && pwd && ls -l
-      - run: python setup.py
+      - run: ./setup.sh

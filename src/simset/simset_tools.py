@@ -205,10 +205,14 @@ def make_simset_bin(config, output_file, simulation_dir, scanner, add_randoms=Fa
     num_z_bins = str(scanner.get("num_rings"))
     axial_fov = scanner.get("axial_fov")
     min_z, max_z = -axial_fov/2, axial_fov/2
+
+    #Transaxial binning
+    transaxial_fov = scanner.get("transaxial_fov")
+    min_td = str(-transaxial_fov/2)
+    max_td = str(transaxial_fov/2)
+
     num_aa_bins = str(scanner.get("num_aa_bins"))
     num_td_bins = str(scanner.get("num_td_bins"))
-    min_td = str(-scanner.get("scanner_radius"))
-    max_td = str(scanner.get("scanner_radius"))
     min_e = str(scanner.get("min_energy_window"))
     max_e = str(scanner.get("max_energy_window"))
     rec_weight_file = join(simulation_dir,"rec.weight")
@@ -342,7 +346,6 @@ def make_simset_cyl_det(scanner_params, output, sim_dir, det_hf=0, log_file=Fals
                   "Timing resolution: %s" % timing_resolution)
 
         tools.log_message(log_file,message,'info')
-
 
 def make_index_file(simulation_dir, simset_dir, log_file=False):
 

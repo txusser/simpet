@@ -39,6 +39,10 @@ class SimPET(object):
         with open(scanner_parfile, 'rb') as f:
             self.scanner = yaml.load(f.read(), Loader=yaml.FullLoader)
 
+        validation_status = self.scanner.get("validation_status")
+        if validation_status != "Validated":
+            print("Warning. The selected scanner model has not been fully validated")
+
         # This will load the environment config
         with open(config_file, 'rb') as f:
             self.config = yaml.load(f.read(), Loader=yaml.FullLoader)

@@ -27,7 +27,7 @@ center_slice:  7      # The slice number to be placed on the center of the scann
 # Variables needed for whole_body simulation
 z_min: 75               # Only used in wholebody simulations (start of the acquisition, slice)
 z_max: 316              # Only used in wholebody simulations (end of the acquisition, slice). 
-# We calculate the number of beeds based on (z_max - z_min) and the scanner FOV.
+# We calculate the number of beds based on (z_max - z_min) and the scanner FOV.
 
 
 # Variables needed when running BrainViset

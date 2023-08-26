@@ -21,11 +21,13 @@ def create_stir_hs_from_detparams(scannerParams,output_file, output_format="SimS
     gap_size = (max_z-min_z-z_crystal_size*num_rings)/(num_rings-1)
     ring_spacing = z_crystal_size + gap_size
 
-    min_td = -scannerParams.get("scanner_radius")
-    max_td = scannerParams.get("scanner_radius")
+    min_td = -scannerParams.get("transaxial_fov")/2
+    max_td = scannerParams.get("transaxial_fov")/2
     td_bins = scannerParams.get("num_td_bins")
     bin_size = (max_td-min_td)/float(td_bins)
-    matrix_size, ring_difference = generate_segments_lists_stir(num_rings, num_rings-1)
+    
+    max_segment = scannerParams.get("max_segment")
+    matrix_size, ring_difference = generate_segments_lists_stir(num_rings, max_segment)
 
     scanner_name = scannerParams.get("scanner_name")
         
@@ -61,13 +63,13 @@ def create_stir_hs_from_detparams(scannerParams,output_file, output_format="SimS
         "matrix axis label ["+ str(axial_coordinate) +"] := axial coordinate\n" +
         "!matrix size [" + str(axial_coordinate) + "] := " + matrix_size + "\n" +
         "matrix axis label [1] := tangential coordinate\n" +
-        "!matrix size [1] := " + str(td_bins) + "\n" 
+        "!matrix size [1] := " + str(td_bins) + "\n" +
         "minimum ring difference per segment := " + ring_difference + "\n" +
         "maximum ring difference per segment := " + ring_difference + "\n" +
         "Scanner parameters:= \n" +
         "Scanner type := " + scanner_name + "\n" +
         "Number of rings := " + str(num_rings) + "\n" +
-        "Number of detectors per ring := " + str(scannerParams.get("num_aa_bins")*2) + "\n" 
+        "Number of detectors per ring := " + str(scannerParams.get("num_aa_bins")*2) + "\n" +
         "Inner ring diameter (cm) := " + str(scannerParams.get("scanner_radius")*2) + "\n" +
         "Average depth of interaction (cm) := " + str(scannerParams.get("average_doi")) + "\n" +
         "Distance between rings (cm) := " + str(ring_spacing) + "\n" +
@@ -283,13 +285,6 @@ def OSEM2D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
     numberOfIterations = scannerParams.get("numberOfIterations")
     savingInterval = scannerParams.get("savingInterval")
     
-    scan_radius = scannerParams.get("scanner_radius")
-    td_bins = scannerParams.get("num_td_bins")
-    bin_size = (2*scan_radius)/float(td_bins)
-    xyVoxelSize = round(10*(bin_size/zoom),2) #in mm
-    zoom_aux=1
-    xyOutputSize_aux=round(xyOutputSize/zoom)
-
     if scannerParams.get("analytical_att_correction") == 1:
         att_corr_str = ""
     elif scannerParams.get("stir_recons_att_corr")==1:
@@ -353,8 +348,8 @@ def OSEM2D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
             "End Median Filter Parameters:= \n" +
             "END FilterRootPrior Parameters := \n\n" +
             scatt_corr_str +
-            "zoom := " + str(zoom_aux) + "\n" +
-            "xy output image size (in pixels) := " + str(xyOutputSize_aux) + "\n" 
+            "zoom := " + str(zoom) + "\n" +
+            "xy output image size (in pixels) := " + str(xyOutputSize) + "\n" 
             "Z output image size (in pixels) := " + str(zOutputSize) + "\n\n" +
             "end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters := \n\n" +
             "number of subsets := " + str(numberOfSubsets) + "\n" +
@@ -373,8 +368,6 @@ def OSEM2D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
             
     output = recFileName + "_" + str(scannerParams.get("numberOfIterations")) + ".hv"
     output = tools.anything_to_hdr_convert(output,log_file)
-    if zoom!=zoom_aux:
-        output = tools.resampleXYvoxelSizes(output, xyVoxelSize, log_file)
 
     return output
 
@@ -390,23 +383,7 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
     numberOfSubsets = scannerParams.get("numberOfSubsets")
     numberOfIterations = scannerParams.get("numberOfIterations")
     savingInterval = scannerParams.get("savingInterval")
-    
-    scan_radius = scannerParams.get("scanner_radius")
-    td_bins = scannerParams.get("num_td_bins")
-    bin_size = (2*scan_radius)/float(td_bins)
-    xyVoxelSize = 10*(bin_size/zoom) #in mm
-    zoom_aux=1
-    xyOutputSize_aux = xyOutputSize/zoom
-    
-    zOutputVoxelSize = scannerParams.get("zOutputVoxelSize")
-    num_rings = scannerParams.get("num_rings")
-    max_z = scannerParams.get("axial_fov")/2
-    min_z = -scannerParams.get("axial_fov")/2
-    z_crystal_size = scannerParams.get("z_crystal_size")
-    gap_size = (max_z-min_z-z_crystal_size*num_rings)/(num_rings-1)
-    zVoxelSize = (z_crystal_size + gap_size)/2
-    zOutputSize_aux = (zOutputSize*zOutputVoxelSize)/(zVoxelSize*10)
-
+        
     if scannerParams.get("stir_recons_att_corr")==1:
         att_corr_str = (
         "Bin Normalisation type := From ProjData \n" + 
@@ -471,9 +448,9 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
             "End Median Filter Parameters:= \n" +
             "END FilterRootPrior Parameters := \n\n" +
             scatt_corr_str +
-            "zoom := " + str(zoom_aux) + "\n" +
-            "xy output image size (in pixels) := " + str(xyOutputSize_aux) + "\n" 
-            "Z output image size (in pixels) := " + str(zOutputSize_aux) + "\n\n" +
+            "zoom := " + str(zoom) + "\n" +
+            "xy output image size (in pixels) := " + str(xyOutputSize) + "\n" 
+            "Z output image size (in pixels) := " + str(zOutputSize) + "\n\n" +
             "end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters := \n\n" +
             "number of subsets := " + str(numberOfSubsets) + "\n" +
             "number of subiterations := " + str(numberOfIterations) + "\n" +
@@ -492,18 +469,7 @@ def OSEM3D_recons(config, scannerParams, sinograms_stir, additive_sino_stir, att
     output = recFileName + "_" + str(scannerParams.get("numberOfIterations")) + ".hv"
        
     output = tools.anything_to_hdr_convert(output,log_file)
-    # tools.prepare_input_image(output, log_file, min_voxel_size=1.5)
-    
-    if zoom!=zoom_aux:
-        output = tools.resampleXYvoxelSizes(output, xyVoxelSize, log_file)
-        
-    
-    if zOutputVoxelSize != zVoxelSize:
-        output = tools.resampleZvoxelSize(output, zOutputVoxelSize, log_file)
-     
-    # output = tools.nii_analyze_convert(output)    
-    # tools.reorient_dcmtonii(output)
-    # output = tools.nii_analyze_convert(output) 
+
     return output
 
 

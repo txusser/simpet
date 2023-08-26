@@ -28,7 +28,7 @@ The SIMPET project is intended to provide a framework to set up and launch MC si
 - Aida Ninyerola-Baizan
 - Yeremaya Póveda
 - Francisco Javier López-González
-‪- Nikos Efthimiou‬
+- Nikos Efthimiou‬
 - Arnau Farre
 
 

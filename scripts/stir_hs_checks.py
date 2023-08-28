@@ -14,7 +14,7 @@ args = vars(parser.parse_args())
 
 def finditem(obj: Mapping[str, Any], key: str):
     """
-    Findd the value associated to a ``key``
+    Find the value associated to a ``key``
     recursively in a nested ``dict``.
 
     Args:

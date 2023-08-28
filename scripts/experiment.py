@@ -175,10 +175,10 @@ def copy_recon(cfg: Mapping[str, Any], path: Union[str, Path]) -> None:
         cfg: ``dict``-like configuration.
         path: path to save the config.
     """
-    results_path = Path(cfg["dir_results_path"])
+    patient_path = Path(cfg["dir_results_path"]).joinpath(cfg["params"]["patient_dirname"])
 
     try:
-        recon_path = [p for p in results_path.rglob("**/rec_*.img") if p.name.startswith("rec_")].pop()
+        recon_path = [p for p in patient_path.rglob("**/rec_*.img") if p.name.startswith("rec_")].pop()
     except IndexError as ex:
         raise ex("Not reconstruction file found.")
 
@@ -187,6 +187,31 @@ def copy_recon(cfg: Mapping[str, Any], path: Union[str, Path]) -> None:
 
     shutil.copy(recon_path, save_path)
     shutil.copy(recon_path.with_suffix(".hdr"), save_path.with_suffix(".hdr"))
+
+
+def compute_F_factor(cfg: Mapping[str, Any]) -> Mapping[str, Any]:
+    """
+    Compute F factor as:
+
+    ..code-block::
+
+        xyOutputSize * transaxial_crystal_size / (2 * scanner_radius * zoomFactor)
+
+    Args:
+        cfg: ``dict``-like config having: xyOutputSize,
+            transaxial_crystal_size, scanner_radius, zoomFactor.
+
+    Returns:
+        Config with a new key ``"F"`` having the F factor.
+    """
+    xy_output_size = cfg["params"]["scanner"]["xyOutputSize"]
+    transaxial_crystal_size = cfg["params"]["scanner"]["transaxial_crystal_size"]
+    scanner_radius = cfg["params"]["scanner"]["scanner_radius"]
+    zoom_factor = cfg["params"]["scanner"]["zoomFactor"]
+
+    cfg["params"]["scanner"]["F"] = xy_output_size * transaxial_crystal_size / (2 * scanner_radius * zoom_factor)
+
+    return cfg
 
 
 try:
@@ -221,18 +246,20 @@ def simulate(cfg: DictConfig) -> None:
         test.run()
 
     cfg = OmegaConf.to_container(cfg)
+    compute_F_factor(cfg)
 
     if log:
         run = wandb.init(project="SimPET-Randfigs-Simulations", config=cfg, name=cfg["params"]["scanner"]["scanner_name"], job_type=job_type)
+
         data_central_slices = get_central_slices(cfg["dir_data_path"])
-        outputs_central_slices = get_central_slices(cfg["dir_results_path"])
+        outputs_central_slices = get_central_slices(patient_dir)
         
         data_table = get_table(data_central_slices)
         outputs_table = get_table(outputs_central_slices)
         run.log({"Data": data_table, "Outputs": outputs_table})
 
         logs_data = get_logs(cfg["dir_data_path"])
-        logs_outputs = get_logs(cfg["dir_results_path"])
+        logs_outputs = get_logs(patient_dir)
         logs = logs_data + logs_outputs
 
         logs_artifact = wandb.Artifact(name="Logs", type="Text-Files")

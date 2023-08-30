@@ -34,7 +34,7 @@ def install_simset(simset_dir, log_file):
         shutil.rmtree(simset_dir)
 
     # Download, patch and compile SimSET
-    print('Downloading SimSET source from Washington University repos...')
+    print('Downloading SimSET source from simset_simpet repo in GitHub...')
     icom = 'wget -q https://github.com/txusser/simset_simpet/archive/refs/heads/main.zip > %s' % log_file
     rsystem(icom)
     icom = 'unzip main.zip'
@@ -44,11 +44,7 @@ def install_simset(simset_dir, log_file):
 
     os.chdir(simset_dir)
 
-    # Let's Apply the SimSET patch for SimPET
-    print('Applying modification patch for SimSET-STIR interface...')
-    #icom = 'patch -s -p0 < %s/src/simset/simset_for_stir.patch' % simpet_dir
-    #rsystem(icom)
-
+    
     makefile = join(simset_dir, 'make.files', 'simset.make')
     newmakefile = join(simset_dir, 'make.files', 'simset.make.new')
 

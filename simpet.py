@@ -8,6 +8,7 @@ from omegaconf import DictConfig, OmegaConf
 from pyprojroot import here
 from utils import tools
 from utils import wb_tools
+from src.simset import simset_sim as sim
 
 
 class SimPET(object):

@@ -20,3 +20,4 @@ add_randoms: 1
 phglistmode: 0
 detlistmode: 1
 maximumIteration: 1
+isotope: "f18"

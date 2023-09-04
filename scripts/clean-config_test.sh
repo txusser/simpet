@@ -20,7 +20,6 @@ yq eval \
     .forced_non_absortion = "true" | 
     .acceptance_angle = 90.0 | 
     .positron_range =  "true" | 
-    .isotope = "f18" | 
     .non_colinearity = "true" | 
     .minimum_energy = 350.0 | 
     .weight_window_ratio = 1.0 | 

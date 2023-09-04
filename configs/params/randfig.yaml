@@ -1,0 +1,23 @@
+defaults:
+ - scanner: randscanner
+
+simulation_environment: 0
+sim_type: "SimSET"
+do_simulation: 1
+do_reconstruction: 1
+divisions: 12
+model_type: "cylindrical"
+patient_dirname: "0"
+remove_previous_patient_dir: false
+act_map: "S1_actMap.nii"
+att_map: "S1_attMap.nii"
+output_dir: "0"
+center_slice: 153
+total_dose: 1
+simulation_time: 30
+sampling_photons: 10000000
+photons: 0
+add_randoms: 1
+phglistmode: 0
+detlistmode: 1
+maximumIteration: 1

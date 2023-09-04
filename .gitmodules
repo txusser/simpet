@@ -1,0 +1,3 @@
+[submodule "STIR"]
+	path = submodules/STIR/STIR
+	url = https://github.com/txusser/STIR.git

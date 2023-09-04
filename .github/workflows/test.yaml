@@ -1,0 +1,29 @@
+name: Build and run test simulations
+on:
+  pull_request:
+jobs:
+  build-and-run-test-simulations:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          lfs: true
+          submodules: recursive
+      - name: Build
+        run: make install
+      - name: Test Simulation Data
+        run: make dummy-data
+      - name: python3.9 Installation
+        run: |
+          sudo apt-get update
+          sudo apt-get install software-properties-common
+          sudo add-apt-repository -y ppa:deadsnakes/ppa
+          sudo apt-get -y -q install python3.9 python3.9-distutils python3-pip
+          python3.9 -m pip install --upgrade pip
+          pip3.9 install -r requirements.txt
+      - name: Test Simulation
+        env:
+          LD_LIBRARY_PATH: "${{ github.workspace }}/include/fruitcake/book/lib"
+        run: |
+          echo "${{ github.workspace }}/include/format_converters" >> $GITHUB_PATH
+          python3.9 scripts/experiment.py only_log=False log=False

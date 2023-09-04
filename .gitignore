@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
 
 # C extensions
 *.so
@@ -71,6 +72,7 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+**/notebooks
 
 # pyenv
 .python-version
@@ -89,6 +91,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.vscode
 
 # Spyder project settings
 .spyderproject
@@ -103,9 +106,19 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-*.pyc
-include
+# vim buffers
+*.swp
+*.swo
+
+# Files, dependencies, resources, etc.
+**/include/*
 Data
 resources
 Results
-.vscode
+Subjects/
+
+# hydra
+**/outputs
+
+# Weights & Biases
+**/wandb

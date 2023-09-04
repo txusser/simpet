@@ -1,11 +1,26 @@
 import os
 
-def old_normalize(matlab_rcommand, mfile_name, image_to_norm, template_image,  log_file,
-                  images_to_write=False, cutoff=15, nits=16, reg=1, preserve=0,
-                  affine_regularization_type='mni', source_image_smoothing=8, template_image_smoothing=3,
-                  bb=[-78, -112, -70, 78, 76, 85], write_vox_size='[1 1 1]',
-                  wrapping=True, interpolation=4, prefix='w'):
 
+def old_normalize(
+    matlab_rcommand,
+    mfile_name,
+    image_to_norm,
+    template_image,
+    log_file,
+    images_to_write=False,
+    cutoff=15,
+    nits=16,
+    reg=1,
+    preserve=0,
+    affine_regularization_type="mni",
+    source_image_smoothing=8,
+    template_image_smoothing=3,
+    bb=[-78, -112, -70, 78, 76, 85],
+    write_vox_size="[1 1 1]",
+    wrapping=True,
+    interpolation=4,
+    prefix="w",
+):
     design_type = "matlabbatch{1}.spm.tools.oldnorm.estwrite."
 
     if not images_to_write:
@@ -14,29 +29,92 @@ def old_normalize(matlab_rcommand, mfile_name, image_to_norm, template_image,  l
     new_spm = open(mfile_name, "a")
 
     new_spm.write(
-        design_type + "subj.source = {'" + image_to_norm + ",1'};" + "\n" +
-        design_type + "subj.wtsrc = '';" + "\n" +
-        design_type + "subj.resample = {"
-        )
+        design_type
+        + "subj.source = {'"
+        + image_to_norm
+        + ",1'};"
+        + "\n"
+        + design_type
+        + "subj.wtsrc = '';"
+        + "\n"
+        + design_type
+        + "subj.resample = {"
+    )
 
     for image in images_to_write:
         new_spm.write("'" + image + ",1'" + "\n")
     new_spm.write("};" + "\n")
 
     new_spm.write(
-        design_type + "eoptions.template = {'" + template_image + ",1'};" + "\n" +
-        design_type + "eoptions.weight = '';" + "\n" +
-        design_type + "eoptions.smosrc =" + str(source_image_smoothing) + ";" + "\n" +
-        design_type + "eoptions.smoref =" + str(template_image_smoothing) + ";" + "\n" +
-        design_type + "eoptions.regtype ='" + affine_regularization_type + "';" + "\n" +
-        design_type + "eoptions.cutoff =" + str(cutoff) + ";" + "\n" +
-        design_type + "eoptions.nits =" + str(nits) + ";" + "\n" +
-        design_type + "eoptions.reg =" + str(reg) + ";" + "\n" +
-        design_type + "roptions.preserve =" + str(preserve) + ";" + "\n" +
-        design_type + "roptions.bb =[" + str(bb[0]) + " " + str(bb[1]) + " " + str(bb[2]) + "\n" +
-                                         str(bb[3]) + " " + str(bb[4]) + " " + str(bb[5]) + "];" + "\n" +
-        design_type + "roptions.vox =" + write_vox_size + ";" + "\n" +
-        design_type + "roptions.interp =" + str(interpolation) + ";" + "\n")
+        design_type
+        + "eoptions.template = {'"
+        + template_image
+        + ",1'};"
+        + "\n"
+        + design_type
+        + "eoptions.weight = '';"
+        + "\n"
+        + design_type
+        + "eoptions.smosrc ="
+        + str(source_image_smoothing)
+        + ";"
+        + "\n"
+        + design_type
+        + "eoptions.smoref ="
+        + str(template_image_smoothing)
+        + ";"
+        + "\n"
+        + design_type
+        + "eoptions.regtype ='"
+        + affine_regularization_type
+        + "';"
+        + "\n"
+        + design_type
+        + "eoptions.cutoff ="
+        + str(cutoff)
+        + ";"
+        + "\n"
+        + design_type
+        + "eoptions.nits ="
+        + str(nits)
+        + ";"
+        + "\n"
+        + design_type
+        + "eoptions.reg ="
+        + str(reg)
+        + ";"
+        + "\n"
+        + design_type
+        + "roptions.preserve ="
+        + str(preserve)
+        + ";"
+        + "\n"
+        + design_type
+        + "roptions.bb =["
+        + str(bb[0])
+        + " "
+        + str(bb[1])
+        + " "
+        + str(bb[2])
+        + "\n"
+        + str(bb[3])
+        + " "
+        + str(bb[4])
+        + " "
+        + str(bb[5])
+        + "];"
+        + "\n"
+        + design_type
+        + "roptions.vox ="
+        + write_vox_size
+        + ";"
+        + "\n"
+        + design_type
+        + "roptions.interp ="
+        + str(interpolation)
+        + ";"
+        + "\n"
+    )
 
     if wrapping:
         new_spm.write(design_type + "roptions.wrap = [1 1 1];" + "\n")
@@ -49,17 +127,30 @@ def old_normalize(matlab_rcommand, mfile_name, image_to_norm, template_image,  l
     os.system("%s %s >> %s" % (matlab_rcommand, mfile_name, log_file))
 
     components = os.path.split(images_to_write[0])
-    output = os.path.join(components[0], 'w' + components[1])
+    output = os.path.join(components[0], "w" + components[1])
 
     transformation_matrix = image_to_norm[0:-4] + "_sn.mat"
 
     return output, transformation_matrix
 
-def new_normalize(matlab_rcommand, mfile_name, image_to_norm, template_image,  log_file,
-                  images_to_write=False, biasreg=0.01, biasfwhm=60, reg="[0 0.001 0.5 0.05 0.2]",
-                  affine_regularization_type='mni', fwhm=0, samp=4,
-                  bb=[-78, -112, -70, 78, 76, 85], write_vox_size='[1 1 1]', interpolation=4):
 
+def new_normalize(
+    matlab_rcommand,
+    mfile_name,
+    image_to_norm,
+    template_image,
+    log_file,
+    images_to_write=False,
+    biasreg=0.01,
+    biasfwhm=60,
+    reg="[0 0.001 0.5 0.05 0.2]",
+    affine_regularization_type="mni",
+    fwhm=0,
+    samp=4,
+    bb=[-78, -112, -70, 78, 76, 85],
+    write_vox_size="[1 1 1]",
+    interpolation=4,
+):
     design_type = "matlabbatch{1}.spm.spatial.normalise.estwrite."
 
     if not images_to_write:
@@ -68,33 +159,89 @@ def new_normalize(matlab_rcommand, mfile_name, image_to_norm, template_image,  l
     new_spm = open(mfile_name, "w")
 
     new_spm.write(
-        design_type + "subj.vol = {'" + image_to_norm + ",1'};" + "\n" +
-        design_type + "subj.resample = {"+ "\n"
-        )
+        design_type
+        + "subj.vol = {'"
+        + image_to_norm
+        + ",1'};"
+        + "\n"
+        + design_type
+        + "subj.resample = {"
+        + "\n"
+    )
 
     for image in images_to_write:
         new_spm.write("'" + image + ",1'" + "\n")
     new_spm.write("};" + "\n")
 
     new_spm.write(
-        design_type + "eoptions.biasreg = " + str(biasreg) + ";" + "\n" +
-        design_type + "eoptions.biasfwhm = " + str(biasfwhm) + ";" + "\n" +
-        design_type + "eoptions.tpm = {'" + template_image + "'};" + "\n" +
-        design_type + "eoptions.affreg = '" + affine_regularization_type + "';" + "\n" +
-        design_type + "eoptions.reg = " + reg + ";" + "\n" +
-        design_type + "eoptions.fwhm = " + str(fwhm) + ";" + "\n" +
-        design_type + "eoptions.samp = " + str(samp) + ";" + "\n" +
-        design_type + "woptions.bb = [" + str(bb[0]) + " " + str(bb[1]) + " " + str(bb[2]) + "\n" +
-                                          str(bb[3]) + " " + str(bb[4]) + " "+ str(bb[5]) + "];" + "\n" +
-        design_type + "woptions.vox = " + write_vox_size + ";" + "\n" +
-        design_type + "woptions.interp = " + str(interpolation) + ";" + "\n")
+        design_type
+        + "eoptions.biasreg = "
+        + str(biasreg)
+        + ";"
+        + "\n"
+        + design_type
+        + "eoptions.biasfwhm = "
+        + str(biasfwhm)
+        + ";"
+        + "\n"
+        + design_type
+        + "eoptions.tpm = {'"
+        + template_image
+        + "'};"
+        + "\n"
+        + design_type
+        + "eoptions.affreg = '"
+        + affine_regularization_type
+        + "';"
+        + "\n"
+        + design_type
+        + "eoptions.reg = "
+        + reg
+        + ";"
+        + "\n"
+        + design_type
+        + "eoptions.fwhm = "
+        + str(fwhm)
+        + ";"
+        + "\n"
+        + design_type
+        + "eoptions.samp = "
+        + str(samp)
+        + ";"
+        + "\n"
+        + design_type
+        + "woptions.bb = ["
+        + str(bb[0])
+        + " "
+        + str(bb[1])
+        + " "
+        + str(bb[2])
+        + "\n"
+        + str(bb[3])
+        + " "
+        + str(bb[4])
+        + " "
+        + str(bb[5])
+        + "];"
+        + "\n"
+        + design_type
+        + "woptions.vox = "
+        + write_vox_size
+        + ";"
+        + "\n"
+        + design_type
+        + "woptions.interp = "
+        + str(interpolation)
+        + ";"
+        + "\n"
+    )
 
     new_spm.close()
 
     os.system("%s %s >> %s" % (matlab_rcommand, mfile_name, log_file))
 
     components = os.path.split(images_to_write[0])
-    output = os.path.join(components[0], 'w' + components[1])
+    output = os.path.join(components[0], "w" + components[1])
 
     matrix_name = "y_" + os.path.basename(image_to_norm)[0:-3] + "nii"
 
@@ -102,69 +249,151 @@ def new_normalize(matlab_rcommand, mfile_name, image_to_norm, template_image,  l
 
     return output, transformation_matrix
 
-def new_deformations(matlab_rcommand, mfile_name, def_matrix, base_image, images_to_deform,
-                     save_dir, interpolation, log_file, mask = 0, fwhm = "[0 0 0]"):
 
+def new_deformations(
+    matlab_rcommand,
+    mfile_name,
+    def_matrix,
+    base_image,
+    images_to_deform,
+    save_dir,
+    interpolation,
+    log_file,
+    mask=0,
+    fwhm="[0 0 0]",
+):
     design_type_comp = "matlabbatch{1}.spm.util.defs.comp{1}.inv."
     design_type_out = "matlabbatch{1}.spm.util.defs.out{1}."
 
     new_spm = open(mfile_name, "w")
 
     new_spm.write(
-        design_type_comp + "comp{1}.def = {'" + def_matrix + "'};" + "\n" +
-        design_type_comp + "space = {'" + base_image + "'};" + "\n" +
-        design_type_out + "pull.fnames = {"+ "\n"
-        )
+        design_type_comp
+        + "comp{1}.def = {'"
+        + def_matrix
+        + "'};"
+        + "\n"
+        + design_type_comp
+        + "space = {'"
+        + base_image
+        + "'};"
+        + "\n"
+        + design_type_out
+        + "pull.fnames = {"
+        + "\n"
+    )
 
     for image in images_to_deform:
         new_spm.write("'" + image + "'" + "\n")
     new_spm.write("};" + "\n")
 
     new_spm.write(
-        design_type_out + "pull.savedir.saveusr = {'" + save_dir + "'};" + "\n" +
-        design_type_out + "pull.interp =" + str(interpolation) + ";" + "\n" +
-        design_type_out + "pull.mask =" + str(mask) + ";" + "\n" +
-        design_type_out + "pull.fwhm =" + str(fwhm) + ";" + "\n"
-        )
+        design_type_out
+        + "pull.savedir.saveusr = {'"
+        + save_dir
+        + "'};"
+        + "\n"
+        + design_type_out
+        + "pull.interp ="
+        + str(interpolation)
+        + ";"
+        + "\n"
+        + design_type_out
+        + "pull.mask ="
+        + str(mask)
+        + ";"
+        + "\n"
+        + design_type_out
+        + "pull.fwhm ="
+        + str(fwhm)
+        + ";"
+        + "\n"
+    )
 
     new_spm.close()
 
     os.system("%s %s >> %s" % (matlab_rcommand, mfile_name, log_file))
 
-def old_deformations(matlab_rcommand, mfile_name, def_matrix, base_image, images_to_deform,
-                     save_dir, interpolation, log_file, mask=1, fwhm ="[0 0 0]"):
 
+def old_deformations(
+    matlab_rcommand,
+    mfile_name,
+    def_matrix,
+    base_image,
+    images_to_deform,
+    save_dir,
+    interpolation,
+    log_file,
+    mask=1,
+    fwhm="[0 0 0]",
+):
     design_type_comp = "matlabbatch{1}.spm.util.defs.comp{1}.inv."
     design_type_out = "matlabbatch{1}.spm.util.defs.out{1}."
 
     new_spm = open(mfile_name, "w")
 
     new_spm.write(
-        design_type_comp + "comp{1}.sn2def.matname = {'" + def_matrix + "'};" + "\n" +
-        design_type_comp + "comp{1}.sn2def.vox = [NaN NaN NaN];" + "\n" +
-        design_type_comp + "comp{1}.sn2def.bb = [NaN NaN NaN" + "\n" +
-        "NaN NaN NaN];" + "\n" +
-        design_type_comp + "space = {'" + base_image + "'};" + "\n" +
-        design_type_out + "pull.fnames = {" + "\n"
-        )
+        design_type_comp
+        + "comp{1}.sn2def.matname = {'"
+        + def_matrix
+        + "'};"
+        + "\n"
+        + design_type_comp
+        + "comp{1}.sn2def.vox = [NaN NaN NaN];"
+        + "\n"
+        + design_type_comp
+        + "comp{1}.sn2def.bb = [NaN NaN NaN"
+        + "\n"
+        + "NaN NaN NaN];"
+        + "\n"
+        + design_type_comp
+        + "space = {'"
+        + base_image
+        + "'};"
+        + "\n"
+        + design_type_out
+        + "pull.fnames = {"
+        + "\n"
+    )
 
     for image in images_to_deform:
         new_spm.write("'" + image + "'" + "\n")
     new_spm.write("};" + "\n")
 
-    new_spm.write(design_type_out + "pull.savedir.saveusr = {'" + save_dir + "/'};" + "\n" +
-        design_type_out + "pull.interp = " + str(interpolation) + ";" + "\n" +
-        design_type_out + "pull.mask = " + str(mask) + ";" + "\n" +
-        design_type_out + "pull.fwhm = " + str(fwhm) + ";" + "\n"
-        )
+    new_spm.write(
+        design_type_out
+        + "pull.savedir.saveusr = {'"
+        + save_dir
+        + "/'};"
+        + "\n"
+        + design_type_out
+        + "pull.interp = "
+        + str(interpolation)
+        + ";"
+        + "\n"
+        + design_type_out
+        + "pull.mask = "
+        + str(mask)
+        + ";"
+        + "\n"
+        + design_type_out
+        + "pull.fwhm = "
+        + str(fwhm)
+        + ";"
+        + "\n"
+    )
     new_spm.close()
 
     os.system("%s %s >> %s" % (matlab_rcommand, mfile_name, log_file))
 
-def smoothing(matlab_rcommand, mfile_name, image_to_smooth, smoothing, prefix, log_file):
 
+def smoothing(
+    matlab_rcommand, mfile_name, image_to_smooth, smoothing, prefix, log_file
+):
     design_type = "matlabbatch{1}.spm.spatial.smooth."
-    smoothing_array = "[" + str(smoothing) + " " + str(smoothing) + " " + str(smoothing) + "]"
+    smoothing_array = (
+        "[" + str(smoothing) + " " + str(smoothing) + " " + str(smoothing) + "]"
+    )
 
     new_spm = open(mfile_name, "w")
     new_spm.write(design_type + "data = {'" + image_to_smooth + "'};" + "\n")
@@ -181,11 +410,21 @@ def smoothing(matlab_rcommand, mfile_name, image_to_smooth, smoothing, prefix, l
 
     return output
 
-def smoothing_xyz(matlab_rcommand, mfile_name, image_to_smooth,
-                  smoothing_x, smoothing_y, smoothing_z, prefix, log_file):
 
+def smoothing_xyz(
+    matlab_rcommand,
+    mfile_name,
+    image_to_smooth,
+    smoothing_x,
+    smoothing_y,
+    smoothing_z,
+    prefix,
+    log_file,
+):
     design_type = "matlabbatch{1}.spm.spatial.smooth."
-    smoothing_array = "[" + str(smoothing_x) + " " + str(smoothing_y) + " " + str(smoothing_z) + "]"
+    smoothing_array = (
+        "[" + str(smoothing_x) + " " + str(smoothing_y) + " " + str(smoothing_z) + "]"
+    )
 
     new_spm = open(mfile_name, "w")
     new_spm.write(design_type + "data = {'" + image_to_smooth + "'};" + "\n")
@@ -201,9 +440,9 @@ def smoothing_xyz(matlab_rcommand, mfile_name, image_to_smooth,
     output = os.path.join(components[0], prefix + components[1])
 
     return output
+
 
 def image_fusion(matlab_rcommand, mfile_name, reference_image, source_image, log_file):
-
     design_type = "matlabbatch{1}.spm.spatial.coreg.estwrite."
 
     new_spm = open(mfile_name, "w")
@@ -213,7 +452,11 @@ def image_fusion(matlab_rcommand, mfile_name, reference_image, source_image, log
     new_spm.write(design_type + "other = {''};" + "\n")
     new_spm.write(design_type + "eoptions.cost_fun = 'nmi';" + "\n")
     new_spm.write(design_type + "eoptions.sep = [4 2];" + "\n")
-    new_spm.write(design_type + "eoptions.tol = [0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001];" + "\n")
+    new_spm.write(
+        design_type
+        + "eoptions.tol = [0.02 0.02 0.02 0.001 0.001 0.001 0.01 0.01 0.01 0.001 0.001 0.001];"
+        + "\n"
+    )
     new_spm.write(design_type + "eoptions.fwhm = [7 7];" + "\n")
     new_spm.write(design_type + "roptions.interp = 4;")
     new_spm.write(design_type + "roptions.wrap = [0 0 0];")
@@ -228,8 +471,8 @@ def image_fusion(matlab_rcommand, mfile_name, reference_image, source_image, log
 
     return output
 
-def segment_mri_spm(matlab_rcommand, mfile_name, image, template, log_file):
 
+def segment_mri_spm(matlab_rcommand, mfile_name, image, template, log_file):
     design_type = "matlabbatch{1}.spm.spatial.preproc."
 
     new_spm = open(mfile_name, "w")
@@ -262,18 +505,18 @@ def segment_mri_spm(matlab_rcommand, mfile_name, image, template, log_file):
     new_spm.write(design_type + "tissue(6).ngaus = 2;" + "\n")
     new_spm.write(design_type + "tissue(6).native = [0 0];" + "\n")
     new_spm.write(design_type + "tissue(6).warped = [0 0];" + "\n")
-    new_spm.write(design_type + "warp.mrf = 1;"+ "\n")
-    new_spm.write(design_type + "warp.cleanup = 1;"+ "\n")
-    new_spm.write(design_type + "warp.reg = [0 0.001 0.5 0.05 0.2];"+ "\n")
-    new_spm.write(design_type + "warp.affreg = 'mni';"+ "\n")
-    new_spm.write(design_type + "warp.fwhm = 0;"+ "\n")
-    new_spm.write(design_type + "warp.samp = 3;"+ "\n")
-    new_spm.write(design_type + "write = [0 0];"+ "\n")
+    new_spm.write(design_type + "warp.mrf = 1;" + "\n")
+    new_spm.write(design_type + "warp.cleanup = 1;" + "\n")
+    new_spm.write(design_type + "warp.reg = [0 0.001 0.5 0.05 0.2];" + "\n")
+    new_spm.write(design_type + "warp.affreg = 'mni';" + "\n")
+    new_spm.write(design_type + "warp.fwhm = 0;" + "\n")
+    new_spm.write(design_type + "warp.samp = 3;" + "\n")
+    new_spm.write(design_type + "write = [0 0];" + "\n")
     new_spm.close()
 
     os.system("%s %s >> %s" % (matlab_rcommand, mfile_name, log_file))
 
     components = os.path.split(image)
-    output_gm = os.path.join(components[0], "c1" + components[1][0:-3]+ "nii")
+    output_gm = os.path.join(components[0], "c1" + components[1][0:-3] + "nii")
 
     return output_gm

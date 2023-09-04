@@ -28,6 +28,10 @@ class SimPET(object):
         self.scanner_model = (
             self.params["scanner"]["scanner_name"].replace(" ", "_").lower()
         )
+        if self.cfg["dir_data_path"] is not None:
+            self.dir_data = Path(self.cfg["dir_data_path"])
+        else:
+            self.dir_data = here().joinpath("Data")
 
         if self.cfg["dir_results_path"] is not None:
             self.dir_results = Path(self.cfg["dir_results_path"])

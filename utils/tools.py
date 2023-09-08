@@ -1,5 +1,6 @@
-import os,shutil, datetime
-from os.path import join, exists, isfile, isdir, dirname, basename, splitext
+import os, shutil, datetime
+import re
+from os.path import join, exists, isdir, dirname, basename, splitext
 from subprocess import getstatusoutput as getoutput
 import nibabel as nib
 import nibabel.processing as nibp
@@ -7,10 +8,9 @@ from utils import resources as rsc
 from utils import spm_tools as spm
 import numpy as np
 from operator import itemgetter
-from nilearn import image
 from nipype.interfaces.dcm2nii import Dcm2nii
 from nipype.interfaces import fsl
-import sys
+
 
 def osrun(command, logfile, catch_out=False):
     """
@@ -278,13 +278,16 @@ def anything_to_hdr_convert(image, logfile=False, outfile=False ):
             lines = f.readlines()
 
         lines = [x.strip() for x in lines]
+        
+        pixel = [re.compile(f"\!matrix size \[{i}\].*") for i in range(1, 4)]
+        pixel_size = [re.compile(f"scaling factor \(mm.pixel\) \[{i}\].*") for i in range(1, 4)]
 
-        pixel_x = lines[16].split()[4]        
-        pixel_size_x = lines[17].split()[5]
-        pixel_y = lines[19].split()[4]
-        pixel_size_y = lines[20].split()[5]
-        pixel_z = lines[22].split()[4]
-        pixel_size_z = lines[23].split()[5]
+        pixel_x = list(filter(pixel[0].match, lines))[0].split()[-1]
+        pixel_size_x = list(filter(pixel_size[0].match, lines))[0].split()[-1]
+        pixel_y = list(filter(pixel[1].match, lines))[0].split()[-1]
+        pixel_size_y = list(filter(pixel_size[1].match, lines))[0].split()[-1]
+        pixel_z = list(filter(pixel[2].match, lines))[0].split()[-1]
+        pixel_size_z = list(filter(pixel_size[2].match, lines))[0].split()[-1]
         
         hdr_header = image[0:-2] + "hdr" 
         # img_file = image[0:-2] + "img"

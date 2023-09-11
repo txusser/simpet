@@ -122,3 +122,7 @@ Subjects/
 
 # Weights & Biases
 **/wandb
+
+# Custom scanner configuration names
+**/randfig.yaml
+**/scanner_*.yaml

@@ -88,7 +88,7 @@ install-stir: install-simset ${STIR_DIR}
 			${STIR_MKFILE} ;\
 		cmake ${STIR_DIR} ;\
 		make -s -j${NPROC} ;\
-		make install ;\
+		sudo make install ;\
 		mv ${STIR_BUILD_DIR} ${STIR_INSTALL_DIR} ${STIR_FINAL_DEST_DIR} ;\
 	else \
 		echo "${STIR_FINAL_DEST_DIR} already exists, run clean-stir if you really want to remove it (you will have to intall STIR again)." ;\

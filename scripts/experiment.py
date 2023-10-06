@@ -216,7 +216,7 @@ def compute_F_factor(cfg: Mapping[str, Any]) -> Mapping[str, Any]:
 
 try:
     OmegaConf.register_new_resolver("root_path", lambda s: str(here()))
-    OmegaConf.register_new_resolver("mibiolab_home_path", lambda s: "/home/mibiolab")
+    OmegaConf.register_new_resolver("home_path", lambda s: str(Path.home()))
 except ValueError:
     pass
 

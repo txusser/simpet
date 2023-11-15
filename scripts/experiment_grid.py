@@ -16,7 +16,12 @@ def main(
     results: Annotated[Path, typer.Option(file_okay=False, resolve_path=True)]
 ):
     """
-    # TODO
+    Typer app for grid-like experiments.
+    The directory specified by ``data`` must
+    have subjects-like structure: each subject
+    must a have a folder with all its
+    associated maps (activity and attenuation)
+    in it.
     """
     initialize(version_base=None, config_path="../configs", job_name="simpet")
 
@@ -42,7 +47,6 @@ def main(
         scanner_name = cfg.params.scanner.scanner_name.replace(' ', '_').lower()
         patient_dirname = cfg.params.patient_dirname
         OmegaConf.save(cfg, results.joinpath(f"{patient_dirname}/{scanner_name}.yaml"))
-
 
 
 if __name__ == "__main__":

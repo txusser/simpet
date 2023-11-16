@@ -51,8 +51,7 @@ def main(
         simulation.run()
 
         scanner_name = cfg.params.scanner.scanner_name.replace(' ', '_').lower()
-        patient_dirname = cfg.params.patient_dirname
-        config_file_path = results.joinpath(f"{patient_dirname}/{scanner_name}.yaml")
+        config_file_path = results.joinpath(cfg.output_dir).joinpath(f"{scanner_name}.yaml")
         config_file_path.touch()
         OmegaConf.save(cfg, config_file_path)
 

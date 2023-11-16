@@ -27,9 +27,15 @@ def main(
 
     scanner_names = [s.stem for s in here().joinpath("configs/params/scanner").glob("scanner_*") if s.is_file()]
     data_subjects = [p.name for p in data.glob("*") if p.is_dir()]
-    permutations = itertools.product(data_subjects, scanner_names)
 
-    for subject, scanner in permutations:
+    # simulation dirs have the following name structure <subject_id>_scanner_<scanner_id>
+    done_simulations = set([tuple(p.name.split("_", 1)) for p in results.glob("*") if p.is_dir()])
+    permutations = set(itertools.product(data_subjects, scanner_names))
+
+    # remove done simulations from possible simulations
+    to_do_simulations = list(permutations - done_simulations)
+
+    for subject, scanner in to_do_simulations:
         cfg = compose(
             config_name="randfig",
             overrides=[
@@ -46,7 +52,9 @@ def main(
 
         scanner_name = cfg.params.scanner.scanner_name.replace(' ', '_').lower()
         patient_dirname = cfg.params.patient_dirname
-        OmegaConf.save(cfg, results.joinpath(f"{patient_dirname}/{scanner_name}.yaml"))
+        config_file_path = results.joinpath(f"{patient_dirname}/{scanner_name}.yaml")
+        config_file_path.touch()
+        OmegaConf.save(cfg, config_file_path)
 
 
 if __name__ == "__main__":

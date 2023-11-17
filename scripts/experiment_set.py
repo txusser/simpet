@@ -38,7 +38,6 @@ def main(
 
     # remove done simulations from possible simulations
     to_do_simulations = [tuple(sim_id.split("_", 1)) for sim_id in list(simulations_id - done_simulations_id)]
-    breakpoint()
 
     for subject, scanner in to_do_simulations:
         cfg = compose(

@@ -16,7 +16,7 @@ def main(
     results: Annotated[Path, typer.Option(file_okay=False, resolve_path=True)]
 ):
     """
-    Typer app for grid-like experiments.
+    Typer app for a set of experiments.
     The directory specified by ``data`` must
     have subjects-like structure: each subject
     must a have a folder with all its
@@ -25,15 +25,20 @@ def main(
     """
     initialize(version_base=None, config_path="../configs", job_name="simpet")
 
+    subjects_ids = [p.name for p in data.glob("*") if p.is_dir()]
+    subjects_ids.sort()
+
     scanner_names = [s.stem for s in here().joinpath("configs/params/scanner").glob("scanner_*") if s.is_file()]
-    data_subjects = [p.name for p in data.glob("*") if p.is_dir()]
+    scanner_names.sort()
+
+    simulations_id = set([f"{subj_id}_{sc_name}" for subj_id, sc_name in zip (subjects_ids, scanner_names)])
 
     # simulation dirs have the following name structure <subject_id>_scanner_<scanner_id>
-    done_simulations = set([tuple(p.name.split("_", 1)) for p in results.glob("*") if p.is_dir()])
-    permutations = set(itertools.product(data_subjects, scanner_names))
+    done_simulations_id = set([tuple(p.name.split("_", 1)) for p in results.glob("*") if p.is_dir()])
 
     # remove done simulations from possible simulations
-    to_do_simulations = list(permutations - done_simulations)
+    to_do_simulations = [tuple(sim_id.split("_", 1)) for sim_id in list(simulations_id - done_simulations_id)]
+    breakpoint()
 
     for subject, scanner in to_do_simulations:
         cfg = compose(

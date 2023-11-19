@@ -1,6 +1,5 @@
 import sys
 import typer
-import itertools
 from omegaconf import OmegaConf
 from hydra import compose, initialize
 from pathlib import Path
@@ -55,7 +54,7 @@ def main(
         simulation.run()
 
         scanner_name = cfg.params.scanner.scanner_name.replace(' ', '_').lower()
-        config_file_path = results.joinpath(cfg.output_dir).joinpath(f"{scanner_name}.yaml")
+        config_file_path = results.joinpath(cfg.params.output_dir).joinpath(f"{scanner}.yaml")
         config_file_path.touch()
         OmegaConf.save(cfg, config_file_path)
 

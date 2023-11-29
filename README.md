@@ -13,6 +13,7 @@ The SIMPET project is intended to allow to setup and launch MC simulation on a s
 # Installtion
 
 - Install [Git LFS](https://git-lfs.com/).
+- Clone the repository by adding the `--recurse-submodules` flag since we have [STIR](https://github.com/UCL/STIR) as a [submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
 - Install [python 3.9](https://www.python.org/downloads/release/python-390/).
 - Create a python virtual environment from python 3.9, there are several options for this (we recommend [Conda](https://conda.io/projects/conda/en/latest/user-guide/install/index.html)):
   - [venv](https://docs.python.org/es/3.9/library/venv.html).
@@ -72,7 +73,6 @@ python scripts/experiment.py --config-name config_prod params=params_test params
 - Monte Carlo simulations usually take a lot of space. If you want to change the default Data and Results directories you can do so in the in the `global` configuration group or using [facebook-hydra](https://hydra.cc) CLI overriding syntax.
 - The current version of the project is able to produce only sinograms and LM data using SimSET. Rest of the stuff is coming soon.
 - The repository has only been tested on Ubuntu 22.04.1 LTS.
-- It is possible to use [Weights & Biases](https://wandb.ai/site) (W&B) to log slices (sinograms, activity maps, etc.) and main logs. Using this option requires the creation of a project and additional steps described in the W&B official documentation. You can disable this option by setting `log=false`.
 - You may want to use `git update-index --assume-unchanged <full-path-configs>` in order to ignore your user-defined configurations or to not commit changes to the default test configuration (actually, there is a git filter to reset the remote test configuration in each push).
 
 # Contributors

@@ -1,7 +1,5 @@
 defaults:
   - params: test
-only_log: false
-log: false
 interactive_mode: 0
 dir_stir: ${root_path:root}/include/STIR/install
 dir_simset: ${root_path:root}/include/SimSET/2.9.2

@@ -1,4 +1,5 @@
 import sys
+import shutil
 import os
 import hydra
 from hydra import compose, initialize
@@ -14,6 +15,7 @@ initialize(version_base=None, config_path="../configs", job_name="simpet")
 
 data = Path(os.environ["DATA"])
 results = Path(os.environ["RESULTS"])
+simulations = Path(os.environ["SIMULATIONS"])
 
 subjects_ids = [p.name for p in data.glob("*") if p.is_dir()]
 subjects_ids.sort()
@@ -22,10 +24,11 @@ scanner_names.sort()
 simulations_id = set([f"{subj_id}_{sc_name}" for subj_id, sc_name in zip (subjects_ids, scanner_names)])
 
 # simulation dirs have the following name structure <subject_id>_scanner_<scanner_id>
-done_simulations_id = set([tuple(p.name.split("_", 1)) for p in results.glob("*") if p.is_dir()])
+done_simulations_id = set([p.name for p in simulations.glob("*") if p.is_dir()])
 
 # remove done simulations from possible simulations
 to_do_simulations = [tuple(sim_id.split("_", 1)) for sim_id in list(simulations_id - done_simulations_id)]
+to_do_simulations.sort()
 
 for subject, scanner in to_do_simulations:
     cfg = compose(
@@ -47,6 +50,4 @@ for subject, scanner in to_do_simulations:
     config_file_path.touch()
     OmegaConf.save(cfg, config_file_path)
 
-
-if __name__ == "__main__":
-    simulate()
+    shutil.move(results.joinpath(cfg.params.output_dir), simulations)

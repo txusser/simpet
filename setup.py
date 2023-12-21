@@ -100,11 +100,13 @@ def install_stir(stir_dir, simset_dir, log_file):
     os.makedirs(install_dir)
     os.chdir(stir_dir)
     print("Cloning the SimSET input branch from STIR repo...")
-    icom = 'git clone --single-branch --branch simset_input https://github.com/txusser/STIR.git'
+    icom = 'wget https://github.com/UCL/STIR/archive/refs/tags/rel_5.2.0.zip'
+    rsystem(icom)
+    icom = 'unzip rel_5.2.0.zip'
     rsystem(icom)
 
     os.chdir(build_dir)
-    rsystem('cmake ../STIR/')
+    rsystem('cmake ../STIR-rel_5.2.0/')
 
     makefile = join(build_dir, 'CMakeCache.txt')
     newmakefile = join(stir_dir, 'build', 'new_CMakeCache.txt')
@@ -131,9 +133,9 @@ def install_stir(stir_dir, simset_dir, log_file):
     f_new.close()
 
     shutil.move(newmakefile, makefile)
-    rsystem('cmake ../STIR/')
+    rsystem('cmake ../STIR-rel_5.2.0/')
 
-    print('Building STIR....')
+    print('Building STIR with %s cores....' % cpu_count())
     icom = 'make -s -j%s & make install' % str(cpu_count())
     rsystem(icom)
 
@@ -266,7 +268,7 @@ print("This can take a bit, maybe 15 min... you may abort it if you are very sur
 
 import simpet
 
-test = simpet.SimPET('Params_test.yml')
+test = simpet.wholebody_simulation('Params_test.yml')
 test.run()
 
 verify_test_simulation(simpet_dir)

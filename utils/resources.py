@@ -6,6 +6,7 @@ RESOURCES = abspath(join(dirname(dirname(abspath(__file__))), 'resources'))
 BIN = abspath(join(dirname(dirname(abspath(__file__))), 'include', 'format_converters'))
 FRUTICAKE = abspath(join(dirname(dirname(abspath(__file__))), 'include', 'fruitcake', 'bin'))
 
+
 def get_rsc(resource, type):
     """
     Returns the absolute path to the required resource needed by SimPET
@@ -40,7 +41,7 @@ def get_rsc(resource, type):
             rpath = join(BIN, 'analyzetonii')
         else:
             rpath = False
-           
+
     ### Fruitcake tools
     elif type == 'fruitcake':
         if resource == 'overlap':
@@ -87,7 +88,7 @@ def get_rsc(resource, type):
             rpath = join(FRUTICAKE, 'convolucion_hdr')
         elif resource == 'corta_pega_filcol_hdr':
             rpath = join(FRUTICAKE, 'corta_pega_filcol_hdr')
-            
+
         else:
             rpath = False
 

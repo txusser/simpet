@@ -1,8 +1,8 @@
 # Directories to the necesary binaries
-dir_stir:  "/home/jesus/simpet/include/STIR/install"
-dir_simset:  "/home/jesus/simpet/include/SimSET/2.9.2"
-matlab_mcr_path:  "/media/usuario3/HDD/SPM_standalone/MCR/v713"
-spm_path:  "/media/usuario3/HDD/SPM_standalone/spm12"
+dir_stir: "/mnt/c/Users/jesus/Work/repos/simpet/include/STIR/install"
+dir_simset: "/mnt/c/Users/jesus/Work/repos/simpet/include/SimSET"
+matlab_mcr_path: "/media/usuario3/HDD/SPM_standalone/MCR/v713"
+spm_path: "/media/usuario3/HDD/SPM_standalone/spm12"
 dir_data_path: ""
 dir_results_path: ""
 
@@ -14,7 +14,7 @@ stratification: "true"
 forced_detection: "true"
 forced_non_absortion: "true"
 acceptance_angle: 90.0
-positron_range:  "true"
+positron_range: "true"
 non_colinearity: "true"
 minimum_energy: 350.0
 weight_window_ratio: 1.0

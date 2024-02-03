@@ -3,9 +3,9 @@ This script installs the necessary files to run simpet, including all the requir
 Don't run this script if you think all the needed dependencies are already fulfilled.
 """
 import os
-from os.path import join, basename, exists
 import shutil
 from multiprocessing import cpu_count
+from os.path import join, exists
 
 
 def rsystem(command):
@@ -44,7 +44,6 @@ def install_simset(simset_dir, log_file):
 
     os.chdir(simset_dir)
 
-    
     makefile = join(simset_dir, 'make.files', 'simset.make')
     newmakefile = join(simset_dir, 'make.files', 'simset.make.new')
 
@@ -216,7 +215,7 @@ def verify_test_simulation(simpet_dir):
     import numpy as np
 
     results_dir = join(simpet_dir, 'Results', 'Test', 'SimSET_Sim_Discovery_ST', 'division_0')
-    
+
     checks = ['trues.hdr', 'scatter.hdr', 'randoms.hdr']
 
     for i in checks:
@@ -224,7 +223,7 @@ def verify_test_simulation(simpet_dir):
         if exists(file_):
             img_d = nib.load(file_).get_fdata()
             counts = np.sum(img_d)
-            print("Counts in %s: %s" % (i,counts))
+            print("Counts in %s: %s" % (i, counts))
 
         else:
             raise Exception('Failed to build %s' % i)
@@ -239,6 +238,7 @@ def verify_test_simulation(simpet_dir):
         else:
             raise Exception('Failed to reconstruct %s' % i)
 
+
 # Setup run lines
 simpet_dir = os.getcwd()
 log_file = join(simpet_dir, 'log_setup.txt')
@@ -249,7 +249,6 @@ dest_dir = join(simpet_dir, 'include')
 if not exists(dest_dir):
     os.makedirs(dest_dir)
 os.chdir(dest_dir)
-
 
 simset_dir = join(dest_dir, "SimSET")
 install_simset(simset_dir, log_file)
@@ -273,5 +272,5 @@ test.run()
 
 verify_test_simulation(simpet_dir)
 
-print("\nNice! It seems that we are good to go. Consider adding the lines in simpet_paths.sh to your .bashrc. Enjoy SimPET!.")
-
+print(
+    "\nNice! It seems that we are good to go. Consider adding the lines in simpet_paths.sh to your .bashrc. Enjoy SimPET!.")

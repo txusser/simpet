@@ -21,7 +21,7 @@ output_dir: "Test"            # Name of the Results Dir
 # Variables needed for single simulation
 act_map: "act.hdr"
 att_map: "att.hdr"
-center_slice:  7      # The slice number to be placed on the center of the scanner. If 0, automatically, the half of the slices will be calculated and used
+center_slice: 7      # The slice number to be placed on the center of the scanner. If 0, automatically, the half of the slices will be calculated and used
 
 
 # Variables needed for whole_body simulation

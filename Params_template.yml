@@ -5,28 +5,28 @@ sim_type: "SimSET"        # SimSET, STIR or GATE (only SimSET working)
 # Run parameters
 do_simulation: 1          # Set to 0 to reconstruction previous simulation
 do_reconstruction: 1      # Set to 0 to generate adq data only
-divisions: 8              # Number os subprocesses for parallel simulation
+divisions: 6              # Number os subprocesses for parallel simulation
 
 
 # PET system
-scanner: "Vereos" # Scanner Model (Vereos, Siemens_mCT, Discovery_ST, Discovery_STE, GE_Advance)
-model_type: "simple_pet" # SimSET Model (simple_pet, cylindrical)
+scanner: "Discovery_ST" # Scanner Model (Vereos, Siemens_mCT, Discovery_ST, Discovery_STE, GE_Advance)
+model_type: "cylindrical" # SimSET Model (simple_pet, cylindrical)
 
 
 # Input and output directories
-patient_dirname: "example_input_dir"   # Name of the directory in Data where phantoms are located
-output_dir: "example_output_dir"       # Name of the Results Dir
+patient_dirname: "test_brain_FDG"   # Name of the directory in Data where phantoms are located
+output_dir: "test_brain"       # Name of the Results Dir
 
 
 # Variables needed for single simulation
-act_map: "example_act.hdr"    # Activity map name 
-att_map: "example_att.hdr"    # Attenuation map name
-center_slice:  153      # The slice number to be placed on the center of the scanner. If 0, automatically, the middle slice will be used
+act_map: "S1_actMap.nii"    # Activity map name
+att_map: "S1_attMap.nii"    # Attenuation map name
+center_slice: 153      # The slice number to be placed on the center of the scanner. If 0, automatically, the middle slice will be used
 
 
 # Variables needed for whole_body simulation
-z_min: 75               # Only for wholebody simulations (start of the acquisition, slice)
-z_max: 316              # Only for wholebody simulations (end of the acquisition, slice). 
+z_min: 283               # Only for wholebody simulations (start of the acquisition, slice)
+z_max: 584              # Only for wholebody simulations (end of the acquisition, slice).
 # We calculate the number of beeds based on (z_max - z_min) and the scanner FOV.
 
 

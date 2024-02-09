@@ -77,8 +77,6 @@ class SimPET(object):
                         shutil.rmtree(projections_dir)
                     else:
                         raise Exception('The simulation was aborted.')
-                        ## Place some logging here
-                        sys.exit(1)
                 else:
                     shutil.rmtree(projections_dir)
 
@@ -94,8 +92,6 @@ class SimPET(object):
 
             if not exists(projections_dir):
                 raise Exception('The projections directory does not exist. Run your simulation first.')
-                ## Place some logging here
-                sys.exit(1)
 
             postprocess_log = join(projections_dir, "postprocessing.log")
 
@@ -118,8 +114,6 @@ class SimPET(object):
                         shutil.rmtree(reconstruction_dir)
                     else:
                         raise Exception('The simulation was aborted.')
-                        ## Place some logging here
-                        sys.exit(1)
                 else:
                     shutil.rmtree(reconstruction_dir)
 
@@ -237,7 +231,6 @@ class brainviset(object):
                 else:
                     raise Exception('The simulation was aborted.')
                     ## Place some logging here
-                    sys.exit(1)
             else:
                 shutil.rmtree(output_dir)
 
@@ -257,7 +250,7 @@ class brainviset(object):
             old_corrCoef = 0.0
             new_corrCoef = 0.0
             more_its = True
-            while ((it < max_num_it) & more_its):
+            while (it < max_num_it) & more_its:
                 log_file_its = join(output_dir, "log_sim_It_%s.log" % str(it))
                 output_dir_aux = join(output_dir, "It_%s" % str(it))
                 components = os.path.split(pet)
@@ -284,16 +277,16 @@ class brainviset(object):
                     rrec_file = join(output_dir_aux, "SimSET_Sim_" + self.params.get("scanner"), recons_algorithm,
                                      'rrec_%s_%s.hdr' % (recons_algorithm, recons_it))
                     new_corrCoef = tools.compute_corr_coeff(preproc_pet, rrec_file, log_file_its)
-                    msg = "Correlation coefficient between images is %s " % (new_corrCoef)
+                    msg = "Correlation coefficient between images is %s " % new_corrCoef
                     print(msg)
                     tools.log_message(log_file_its, msg)
-                    if (new_corrCoef > 0.99):
+                    if new_corrCoef > 0.99:
                         msg = "No further iterations are necessary. Final activity map is %s" % (act_map)
                         more_its = False
-                    elif (old_corrCoef > new_corrCoef):
+                    elif old_corrCoef > new_corrCoef:
                         fin_act_map = join(maps_dir, act_map[0:-5] + "%s.hdr" % str(it - 1))
-                        msg = "No further iterations will be done.  The correlation coefficient has worsened. Final activity map is %s" % (
-                            fin_act_map)
+                        msg = ("No further iterations will be done.  The correlation coefficient has worsened. Final "
+                               "activity map is %s") % fin_act_map
                         more_its = False
                         # remove all the folders relatively to the last iteration done?
                     else:
@@ -310,10 +303,9 @@ class brainviset(object):
                 else:
                     raise Exception('The brainviset process was aborted.')
                     ## Place some logging here
-                    sys.exit(1)
 
             if more_its:
-                msg = "Maximum number of iterations reached. Final activity map is %s" % (updated_act_map)
+                msg = "Maximum number of iterations reached. Final activity map is %s" % updated_act_map
                 print(msg)
                 tools.log_message(log_file, msg)
 

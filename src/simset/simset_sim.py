@@ -1,16 +1,51 @@
 # -*- coding: utf-8 -*-
-from os.path import join, dirname, abspath, isdir, basename, exists
-import os, sys
+import os
+import re
 import shutil
-import datetime, time
-from multiprocessing import Process
-from utils import resources as rsc
-from utils import tools
-import yaml
+import time
 import numpy as np
-import src.simset.simset_tools as simset_tools
-import subprocess
 import nibabel as nib
+import warnings
+from multiprocessing import Process
+from pathlib import Path
+from os import PathLike
+from os.path import join, dirname, abspath, exists
+import src.simset.simset_tools as simset_tools
+from utils import tools
+
+
+def read_ws_from_simset_log(simset_log: PathLike) -> float:
+    """
+    Read W and W^2 from SimSet log file.
+
+    Args:
+        simset_log: path to simset log file.
+
+    Returns:
+        W^2/W as ``float``.
+    """
+    simset_log = Path(simset_log)
+
+    scintific_number_regex = "(\d+\.\d+e\+\d+)"
+    w_regex = re.compile(
+        f"Sum of accepted coincidence weights in this simulation = {scintific_number_regex}")
+    w2_regex = re.compile(
+        f"Sum of accepted coincidence squared weights in this simulation = {scintific_number_regex}")
+
+    weights = {"W": None, "W2": None}
+    with open(simset_log, 'r') as slog:
+        for line in slog:
+            w_match = w_regex.match(line)
+            w2_match = w2_regex.match(line)
+            if w_match:
+                weights["W"] = float(w_match.groups()[0])
+            elif w2_match:
+                weights["W2"] = float(w2_match.groups()[0])
+            if weights["W"] is not None and weights["W2"] is not None:
+                quotient = weights["W2"] / weights["W"]
+                if quotient < 1:
+                    warnings.warn("W2/W is less than 1!")
+                return quotient
 
 
 class SimSET_Simulation(object):
@@ -107,20 +142,40 @@ class SimSET_Simulation(object):
         my_phg = self.prepare_simset_files(
             sim_dir, act_table_factor, act, sim_photons, sim_time, 0
         )
-        my_log = join(sim_dir, "simset_s0.log")
+        # Copying phg file for posterior analysis
+        sim_phg = Path(sim_dir).joinpath("phg.rec")
+        shutil.copy(
+            sim_phg,
+            sim_phg.with_name("phg_first_sampling_sim.rec")
+        )
+        my_log = join(sim_dir, "simset_s0_init.log")
 
+        print("Running first sampling simulation...")
         command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
         tools.osrun(command, log_file)
+
+        my_phg = self.prepare_simset_files(
+            sim_dir, act_table_factor, act, sim_photons, sim_time, 1
+        )
+        # Copying phg file for posterior analysis
+        sim_phg = Path(sim_dir).joinpath("phg.rec")
+        shutil.copy(
+            sim_phg,
+            sim_phg.with_name("phg_second_sampling_sim.rec")
+        )
+        my_log = join(sim_dir, "simset_s0.log")
+
+        print("Running second sampling simulation...")
+        command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
+        tools.osrun(command, log_file)
+        w_quotient = read_ws_from_simset_log(my_log)
 
         rec_weight = join(sim_dir, "rec.weight")
         det_hf = join(sim_dir, "det_hf.hist")
         phg_hf = join(sim_dir, "phg_hf.hist")
 
         if self.s_photons != 0 and self.params.get("add_randoms") != 1:
-            if self.photons != 0:
-                sim_photons = self.photons / self.divisions
-            else:
-                sim_photons = self.photons
+            sim_photons = int(self.s_photons * w_quotient)
 
             # Removes counts for preparing for the next simulation
             os.remove(rec_weight)
@@ -134,7 +189,7 @@ class SimSET_Simulation(object):
             )
             my_log = join(sim_dir, "simset_s1.log")
 
-            print("Running the sencond simulation with importance sampling...")
+            print("Running full simulation with importance sampling...")
 
             command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
             tools.osrun(command, log_file)

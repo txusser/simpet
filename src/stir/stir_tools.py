@@ -128,17 +128,21 @@ def create_stir_hs_from_detparams(scannerParams, output_file, output_format="Sim
         + "Number of crystals per singles unit in axial direction := 1\n"
         + "Number of crystals per singles unit in transaxial direction := 1\n"
         + "Scanner geometry := Cylindrical"
+        + "\n"
         + "Distance between crystals in axial direction (cm) := "
         + str(ring_spacing)
         + "\n"
         + "Distance between crystals in transaxial direction (cm) := "
         + str(transaxial_crystal_distance)
         + "\n"
-        + "Distance between blocks in axial direction (cm) := "
-        + str(ring_spacing)
-        + "\n"
         + "Distance between blocks in transaxial direction (cm) := "
         + str(transaxial_crystal_distance)
+        + "\n"
+        + "Distance between crystals in axial direction (cm) := "
+        + str(ring_spacing)
+        + "\n"
+        + "Distance between blocks in axial direction (cm) := "
+        + str(ring_spacing)
         + "\n"
         + "end scanner parameters:=\n"
         + "effective central bin size (cm) := "

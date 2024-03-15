@@ -24,6 +24,7 @@ def create_stir_hs_from_detparams(scannerParams, output_file, output_format="Sim
     matrix_size, ring_difference = generate_segments_lists_stir(
         num_rings, num_rings - 1
     )
+    transaxial_crystal_distance = scannerParams.get("transaxial_crystal_size")
 
     scanner_name = scannerParams.get("scanner_name")
 
@@ -117,7 +118,7 @@ def create_stir_hs_from_detparams(scannerParams, output_file, output_format="Sim
         + str(td_bins)
         + "\n"
         + "Energy_resolution := "
-        + str(scannerParams.get("energy_resolution") * 5.11)
+        + str(scannerParams.get("energy_resolution") / 511)
         + "\n"
         + "Reference energy (in keV) := 511\n"
         + "Number of blocks per bucket in transaxial direction := 1\n"
@@ -126,6 +127,23 @@ def create_stir_hs_from_detparams(scannerParams, output_file, output_format="Sim
         + "Number of crystals per block in transaxial direction := 1\n"
         + "Number of crystals per singles unit in axial direction := 1\n"
         + "Number of crystals per singles unit in transaxial direction := 1\n"
+        + "Scanner geometry := Cylindrical"
+        + "\n"
+        + "Distance between crystals in axial direction (cm) := "
+        + str(ring_spacing)
+        + "\n"
+        + "Distance between crystals in transaxial direction (cm) := "
+        + str(transaxial_crystal_distance)
+        + "\n"
+        + "Distance between blocks in transaxial direction (cm) := "
+        + str(transaxial_crystal_distance)
+        + "\n"
+        + "Distance between crystals in axial direction (cm) := "
+        + str(ring_spacing)
+        + "\n"
+        + "Distance between blocks in axial direction (cm) := "
+        + str(ring_spacing)
+        + "\n"
         + "end scanner parameters:=\n"
         + "effective central bin size (cm) := "
         + str(bin_size)

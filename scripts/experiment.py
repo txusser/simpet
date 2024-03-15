@@ -42,16 +42,19 @@ def simulate(cfg: DictConfig) -> None:
 
     OmegaConf.resolve(cfg)
 
-    patient_dirname = cfg.get("params")["patient_dirname"]
     results_dir = Path(cfg["dir_results_path"])
-    patient_dir = results_dir.joinpath(patient_dirname)
+    patient_dirname = str(cfg['params']['patient_dirname'])
+    output_dir = results_dir.joinpath(cfg["params"]["output_dir"])
+    scanner_name = cfg['params']['scanner']["scanner_name"].lower().replace(" ", "_")
+    config_name = f"{patient_dirname}_{scanner_name}.yaml"
+    config_path = output_dir.joinpath(config_name)
 
     test = simpet.SimPET(cfg)
     test.run()
 
     cfg = OmegaConf.to_container(cfg)
 
-    save_cfg(cfg, patient_dir)
+    save_cfg(cfg, config_path)
 
 
 if __name__ == "__main__":

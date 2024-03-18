@@ -68,7 +68,7 @@ python scripts/experiment.py --config-name config_prod params=params_test params
 python scripts/experiment.py --config-name config_prod params=params_test params/scanner=discovery params.do_simulation=0 params.scanner.scanner_radius=35
 ```
 
-# WHOLE BODY SIMULATIONS
+# Whole Body Simulation
 
 You can perform whole body simulations following the same logic described in the last section. You may want to add `z_min` and `z_max` parameters to the `params` configuration group. Here you can find the configuration templates:
 

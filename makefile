@@ -33,19 +33,18 @@ deps:
 	sudo apt-get -y -q update ;\
 	sudo apt-get install -y -q yq
 
-SIMSET_TAR = ${ASSETS_DIR}/phg.2.9.2.tar.Z
+SIMSET_SUBMODULE_DIR = ${ROOT_DIR}/submodules/simset_simpet
 SIMSET_DEST_DIR =  ${INCLUDE_DIR}/SimSET
 SIMSET_PATH = ${SIMSET_DEST_DIR}/2.9.2
 SIMSET_BIN = ${SIMSET_PATH}/bin
 SIMSET_LIB = ${SIMSET_PATH}/lib
 SIMSET_MKALL = ${SIMSET_PATH}/make_all.sh
-SIMSET_STIR_PATCH = ${ASSETS_DIR}/simset_for_stir.patch
 SIMSET_MKFILE = ${SIMSET_PATH}/make.files/simset.make
 
 install-simset: ${SIMSET_TAR}
 	if [ ! -d ${SIMSET_DEST_DIR} ]; then \
-		mkdir -p ${SIMSET_DEST_DIR} && tar -xvf "${SIMSET_TAR}" --directory=${SIMSET_DEST_DIR} ;\
-		cd ${SIMSET_DEST_DIR} && patch -s -p0 < ${SIMSET_STIR_PATCH} ;\
+		mkdir -p ${SIMSET_PATH} ;\
+		cp -r ${SIMSET_SUBMODULE_DIR}/* ${SIMSET_PATH} ;\
 		sed -i 's/^\(SIMSET_PATH = \).*$$/\1$(subst /,\/,${SIMSET_PATH})/' ${SIMSET_MKFILE} ;\
 		cd ${SIMSET_PATH} && mkdir -p ${SIMSET_LIB} && bash ${SIMSET_MKALL} ;\
 	else \

@@ -5,7 +5,7 @@ from pyprojroot import here
 from omegaconf import DictConfig, OmegaConf
 
 sys.path.append(str(here()))
-import wholebody
+import brainviset
 
 
 try:
@@ -15,12 +15,12 @@ except ValueError:
     pass
 
 
-@hydra.main(version_base=None, config_path=str(here().joinpath("configs")), config_name="config_test_wholebody")
-def wholebody_simulation(cfg: DictConfig) -> None:
+@hydra.main(version_base=None, config_path=str(here().joinpath("configs")), config_name="config_test_brainviset")
+def run_brainviset(cfg: DictConfig) -> None:
     OmegaConf.resolve(cfg)
-    wb = wholebody.WholebodySimulation(cfg)
-    wb.run()
+    bviset = brainviset.BrainVISET(cfg)
+    bviset.run()
 
 
 if __name__ == "__main__":
-    wholebody_simulation()
+    run_brainviset()

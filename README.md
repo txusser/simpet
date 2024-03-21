@@ -86,7 +86,7 @@ This approach allows the user to have several configuration groups and switch be
             └── discovery.yaml
 ```
 
-Using [facebook-hydra](https://hydra.cc) override syntax, switching between configurations is trivial:
+Using [facebook-hydra](https://hydra.cc) override syntax and the [`experiment.py`](scripts/experiment.py) launcher, switching between configurations is trivial:
 
 ```
 # Running test configuration with Siemens scanner
@@ -115,7 +115,7 @@ You can perform whole body simulations following the same logic described in the
 - Example of [`global`](configs/config_test_wholebody.yaml) configuration.
 - Example of [`params`](configs/params/test_wholebody.yaml) configuration group.
 
-Then you can launch an experiment with:
+Then you can launch an experiment with the [`experiment_wholebody.py`](scripts/experiment_wholebody.py) launcher:
 
 ```
 python3.9 scripts/experiment_wholebody.py --config-name <your_config_name>
@@ -144,7 +144,7 @@ python3.9 scripts/experiment_brainviset.py --config-name <your_config_name>
 Even change image names on the fly (or other parameters):
 
 ```
-python3.9 scripts/experiment_brainviset.pyy --config-name <your_config_name> params.ct_image="my_ct.nii" params.mri_image="my_mri.nii" params.pet_image="my_pet.nii"
+python3.9 scripts/experiment_brainviset.py --config-name <your_config_name> params.ct_image="my_ct.nii" params.mri_image="my_mri.nii" params.pet_image="my_pet.nii"
 ```
 
 **GENERAL NOTES ON USAGE**: 

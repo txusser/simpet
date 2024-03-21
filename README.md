@@ -322,3 +322,10 @@ See [SimSET](https://depts.washington.edu/simset/html/simset_main.html) document
 - Nikos Efthimiou
 - Arnau Farre
 
+# References
+
+You may find more information about STIR and SimSET parameters in their official documentation.
+
+[1] [SimSET](https://depts.washington.edu/simset/html/simset_main.html).
+[2] [STIR]([url](https://stir.sourceforge.net/)https://stir.sourceforge.net/).
+

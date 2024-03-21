@@ -68,6 +68,31 @@ python scripts/experiment.py --config-name config_prod params=params_test params
 python scripts/experiment.py --config-name config_prod params=params_test params/scanner=discovery params.do_simulation=0 params.scanner.scanner_radius=35
 ```
 
+# Whole Body Simulation
+
+You can perform whole body simulations following the same logic described in the last section. You may want to add `z_min` and `z_max` parameters to the `params` configuration group. Here you can find the configuration templates:
+
+- Example of [`global`](configs/config_test_wholebody.yaml) configuration.
+- Example of [`params`](configs/params/test_wholebody.yaml) configuration group.
+
+Then you can launch an experiment with:
+
+```
+python3.9 scripts/experiment_wholebody.py --config-name <your_config_name>
+```
+
+Even add `z_min` and `z_max` on the fly:
+
+```
+python3.9 scripts/experiment_wholebody.py --config-name <your_config_name> +params.z_min=29 +params.z_max=89
+```
+
+Or override them:
+
+```
+python3.9 scripts/experiment_wholebody.py --config-name <your_config_name> params.z_min=29 params.z_max=89
+```
+
 **NOTES ON USAGE**: 
 
 - Monte Carlo simulations usually take a lot of space. If you want to change the default Data and Results directories you can do so in the in the `global` configuration group or using [facebook-hydra](https://hydra.cc) CLI overriding syntax.
@@ -80,7 +105,7 @@ python scripts/experiment.py --config-name config_prod params=params_test params
 - Jesús Silva-Rodríguez
 - Pablo Aguiar
 - Aida Ninyerola-Baizan
-- Jeremiah Póveda
+- Jeremiah Poveda
 - Francisco Javier López-González
 - Nikos Efthimiou
 - Arnau Farre

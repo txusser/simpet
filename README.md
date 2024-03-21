@@ -306,11 +306,11 @@ See [SimSET](https://depts.washington.edu/simset/html/simset_main.html) document
 
 #### Filter
 
-- **inter_iteration_filter**:                                                            
+- **inter_iteration_filter**: 1 for activation, 0 for deactivation.                                                     
 - **subiteration_interval**:                                                              
-- **x_dir_filter_FWHM**:                                                                
-- **y_dir_filter_FWHM**:                                                                  
-- **z_dir_filter_FWHM**:                                                                                                                   
+- **x_dir_filter_FWHM**: postprocessing filter X size in mm.                                                                
+- **y_dir_filter_FWHM**: postprocessing filter Y size in mm.                                                                 
+- **z_dir_filter_FWHM**: postprocessing filter Z size in mm.                                                                                                                 
 
 # Contributors
 
@@ -329,4 +329,3 @@ You may find more information about STIR and SimSET parameters in their official
 [1] [SimSET](https://depts.washington.edu/simset/html/simset_main.html).
 
 [2] [STIR](https://stir.sourceforge.net/).
-

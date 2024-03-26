@@ -1001,3 +1001,11 @@ def change_format(image_hdr, newFormat, logfile):
         hdr.set_data_shape(data.shape)
         imageToWrite = nib.AnalyzeImage(data, img.affine, hdr)    
         nib.save(imageToWrite, image_hdr)
+
+def fix_4d_data(data):
+    shape = data.shape
+
+    if len(shape) == 3:
+        return data
+    else:
+        return data[:, :, :, 0]

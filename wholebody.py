@@ -28,7 +28,8 @@ class WholebodySimulation(object):
         self.params = self.cfg["params"]
         self.config = {k: v for k, v in self.cfg.items() if k != "params"}
         self.scanner = self.cfg["params"]["scanner"]
-        self.scanner_model = self.params.get("scanner")
+        self.scanner_model = str(self.params["scanner"]["scanner_name"]).lower().replace(" ", "_")
+        self.cfg_omega.params.scanner.scanner_name = self.scanner_model
 
         # The following lines will read the general, scanner and config parameters
         self.sim_type = self.params.get("sim_type")
@@ -82,8 +83,8 @@ class WholebodySimulation(object):
             if not exists(bed_dir):
                 os.makedirs(bed_dir)
 
-            self.params['center_slice'] = cs
-            self.params['output_dir'] = output_name + "/Bed_cs_%s" % cs
+            self.cfg_omega.params.center_slice = int(cs)
+            self.cfg_omega.params.output_dir = output_name + "/Bed_cs_%s" % cs
 
             print("Simulating bed %s with center slice %s" % (j, cs))
 

@@ -1,8 +1,12 @@
+import sys
 from os.path import join, dirname
 import nibabel as nib
 import numpy as np
 from scipy.ndimage import gaussian_filter
 from scipy.ndimage import median_filter
+from pyprojroot import here
+
+sys.path.append(str(here()))
 from utils import resources as rsc
 from utils import spm_tools as spm
 from utils import tools
@@ -222,14 +226,14 @@ def join_beds_wb(recons_beds, joint_beds):
 
     bed_0_data = bed_0_data[:, :, :-slices_to_remove]
 
-    for i in range(1, len(recons_beds) - 1):
-        print(i)
+    for i in range(1, len(recons_beds)):
+        print(f"Bed: {i}")
 
         bed = nib.load(recons_beds[i])
         bed_data = tools.fix_4d_data(bed.get_fdata())
         bed_data = bed_data[:, :, slices_to_remove:-slices_to_remove]
         bed_0_data = np.append(bed_0_data, bed_data, axis=2)
-    print(len(recons_beds) - 1)
+    
     bed_last = nib.load(recons_beds[len(recons_beds) - 1])
     bed_data = tools.fix_4d_data(bed_last.get_fdata())
     bed_data = bed_data[:, :, slices_to_remove:]
@@ -243,7 +247,7 @@ def join_beds_wb(recons_beds, joint_beds):
     hdr1.set_data_dtype(dtype)
     hdr1.set_data_shape(bed_0_data.shape)
     affine = bed_0.get_affine()
-    hdr1.set_zooms((affine[0, 0], affine[1, 1], affine[2, 2]))
+    hdr1.set_zooms((abs(affine[0, 0]), abs(affine[1, 1]), abs(affine[2, 2])))
 
     analyze_img = nib.AnalyzeImage(bed_0_data, hdr1.get_base_affine(), hdr1)
     nib.save(analyze_img, joint_beds)

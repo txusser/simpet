@@ -226,7 +226,7 @@ def join_beds_wb(recons_beds, joint_beds):
 
     bed_0_data = bed_0_data[:, :, :-slices_to_remove]
 
-    for i in range(1, len(recons_beds)):
+    for i in range(1, len(recons_beds) - 1):
         print(f"Bed: {i}")
 
         bed = nib.load(recons_beds[i])

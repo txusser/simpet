@@ -118,7 +118,7 @@ def create_stir_hs_from_detparams(scannerParams, output_file, output_format="Sim
         + str(td_bins)
         + "\n"
         + "Energy_resolution := "
-        + str(scannerParams.get("energy_resolution") / 511)
+        + str(scannerParams.get("energy_resolution") / 100)
         + "\n"
         + "Reference energy (in keV) := 511\n"
         + "Number of blocks per bucket in transaxial direction := 1\n"

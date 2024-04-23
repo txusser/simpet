@@ -52,7 +52,7 @@ class SimSET_Simulation(object):
     """This class provides functions to run a SimSET simulation."""
 
     def __init__(
-        self, params, config, act_map, att_map, scanner, projections_dir, debug=False
+            self, params, config, act_map, att_map, scanner, projections_dir, debug=False
     ):  ##Debug True must be implemented....
         # Initialization
         self.simpet_dir = dirname(abspath(__file__))
@@ -131,9 +131,11 @@ class SimSET_Simulation(object):
             print("Importance sampling is also being deactivated")
             print("All these means the simulation can take very long...")
 
+        # If the user have established a number of photons and NO importance sampling, this n_phothons will be used
         elif self.s_photons == 0 and self.photons != 0:
             sim_photons = self.photons / self.divisions
 
+        # If randoms are not simulated, and s_photons different that 0, s_photons will be used in the first sim
         else:
             sim_photons = self.s_photons
 
@@ -150,32 +152,26 @@ class SimSET_Simulation(object):
         )
         my_log = join(sim_dir, "simset_s0_init.log")
 
-        print("Running first sampling simulation...")
+        # This block runs the first sim
+        print("Running first simulation without importance sampling...")
         command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
         tools.osrun(command, log_file)
 
-        my_phg = self.prepare_simset_files(
-            sim_dir, act_table_factor, act, sim_photons, sim_time, 1
-        )
-        # Copying phg file for posterior analysis
-        sim_phg = Path(sim_dir).joinpath("phg.rec")
-        shutil.copy(
-            sim_phg,
-            sim_phg.with_name("phg_second_sampling_sim.rec")
-        )
-        my_log = join(sim_dir, "simset_s0.log")
-
-        print("Running second sampling simulation...")
-        command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
-        tools.osrun(command, log_file)
         w_quotient = read_ws_from_simset_log(my_log)
 
         rec_weight = join(sim_dir, "rec.weight")
         det_hf = join(sim_dir, "det_hf.hist")
         phg_hf = join(sim_dir, "phg_hf.hist")
 
+        # Now, if s_photons !=0, and only then, the second sim is performed
+
         if self.s_photons != 0 and self.params.get("add_randoms") != 1:
-            sim_photons = int(self.s_photons * w_quotient)
+
+            # If the user has not manually stated photons, it will be calculated from previous sim
+            if self.photons == 0:
+                sim_photons = int(self.s_photons * w_quotient)
+            else:
+                sim_photons = self.photons
 
             # Removes counts for preparing for the next simulation
             os.remove(rec_weight)
@@ -189,7 +185,7 @@ class SimSET_Simulation(object):
             )
             my_log = join(sim_dir, "simset_s1.log")
 
-            print("Running full simulation with importance sampling...")
+            print("Running second simulation with importance sampling...")
 
             command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
             tools.osrun(command, log_file)
@@ -212,7 +208,7 @@ class SimSET_Simulation(object):
         print("Finished simulation for %s" % os.path.basename(sim_dir))
 
     def prepare_simset_files(
-        self, sim_dir, act_table_factor, act, sim_photons, sim_time, sampling
+            self, sim_dir, act_table_factor, act, sim_photons, sim_time, sampling
     ):
         log_file = join(sim_dir, "logging.log")
         # Establishing necessary parameters
@@ -366,7 +362,7 @@ class SimSET_Reconstruction(object):
     """This class provides functions to reconstruct a SimSET simulation."""
 
     def __init__(
-        self, params, config, projections_dir, scanner, reconstructions_dir, recons_type
+            self, params, config, projections_dir, scanner, reconstructions_dir, recons_type
     ):
         # Initialization
         self.simpet_dir = dirname(abspath(__file__))
@@ -502,7 +498,7 @@ class SimSET_Reconstruction(object):
         att_stir = join(self.output_dir, "stir_att.hs")
 
         if any(
-            exists(i) == False for i in [sinogram_stir, additive_sino_stir, att_stir]
+                exists(i) == False for i in [sinogram_stir, additive_sino_stir, att_stir]
         ):
             print("Something is not ready for the reconstruction")
         else:

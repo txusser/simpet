@@ -150,32 +150,48 @@ class SimSET_Simulation(object):
         )
         my_log = join(sim_dir, "simset_s0_init.log")
 
-        print("Running first sampling simulation...")
+        print("Running first simulation without importance sampling...")
         command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
         tools.osrun(command, log_file)
-
-        my_phg = self.prepare_simset_files(
-            sim_dir, act_table_factor, act, sim_photons, sim_time, 1
-        )
-        # Copying phg file for posterior analysis
-        sim_phg = Path(sim_dir).joinpath("phg.rec")
-        shutil.copy(
-            sim_phg,
-            sim_phg.with_name("phg_second_sampling_sim.rec")
-        )
-        my_log = join(sim_dir, "simset_s0.log")
-
-        print("Running second sampling simulation...")
-        command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
-        tools.osrun(command, log_file)
-        w_quotient = read_ws_from_simset_log(my_log)
 
         rec_weight = join(sim_dir, "rec.weight")
         det_hf = join(sim_dir, "det_hf.hist")
         phg_hf = join(sim_dir, "phg_hf.hist")
 
         if self.s_photons != 0 and self.params.get("add_randoms") != 1:
-            sim_photons = int(self.s_photons * w_quotient)
+
+            # If the user did not state photons it will be calculated from sampling
+            if self.photons == 0:
+
+                # Removes counts for preparing for the next simulation
+                os.remove(rec_weight)
+                if exists(det_hf):
+                    os.remove(det_hf)
+                if exists(phg_hf):
+                    os.remove(phg_hf)
+
+                my_phg = self.prepare_simset_files(
+                    sim_dir, act_table_factor, act, sim_photons, sim_time, 1
+                    )
+
+                # Copying phg file for posterior analysis
+                sim_phg = Path(sim_dir).joinpath("phg.rec")
+                shutil.copy(
+                    sim_phg,
+                    sim_phg.with_name("phg_second_sampling_sim.rec")
+                )
+                my_log = join(sim_dir, "simset_s0.log")
+
+                print("Running second sampling simulation to calculate photons...")
+                command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
+                tools.osrun(command, log_file)
+                w_quotient = read_ws_from_simset_log(my_log)
+
+                sim_photons = int(self.s_photons * w_quotient)
+
+            else:
+                # If the user stated photons, the provided value will be used
+                sim_photons = self.photons
 
             # Removes counts for preparing for the next simulation
             os.remove(rec_weight)
@@ -190,7 +206,6 @@ class SimSET_Simulation(object):
             my_log = join(sim_dir, "simset_s1.log")
 
             print("Running full simulation with importance sampling...")
-
             command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
             tools.osrun(command, log_file)
 

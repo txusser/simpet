@@ -85,6 +85,15 @@ class SimSET_Simulation(object):
     def run(self):
         processes = []
 
+        print("\nLaunching simulation with %d divisions" % self.divisions)
+        print('------------------------------------------------------------')
+        print('Scanner: %s' % self.scanner.get("scanner_name"))
+        print('Activity map: %s' % self.act_map)
+        print('Attenuation map: %s' % self.att_map)
+        print('Dose: %s mCi' % self.sim_dose)
+        print('Acquisition time: %s seconds' % self.sim_time)
+        print('------------------------------------------------------------')
+
         for division in range(self.divisions):
             division_dir = join(self.output_dir, "division_" + str(division))
             os.makedirs(division_dir)
@@ -93,7 +102,6 @@ class SimSET_Simulation(object):
             p.start()
             time.sleep(5)
 
-        print(" ")
 
         for process in processes:
             process.join()
@@ -103,9 +111,8 @@ class SimSET_Simulation(object):
         self.simulation_postprocessing()
 
     def run_simset_simulation(self, sim_dir):
-        log_file = join(sim_dir, "logging.log")
 
-        print("Starting simulation for %s" % os.path.basename(sim_dir))
+        log_file = join(sim_dir, "logging.log")
 
         act, act_data = tools.nib_load(self.act_map)
 
@@ -127,15 +134,14 @@ class SimSET_Simulation(object):
         # If Sampling Photons is 0, importance sampling is deactivated, so we use photons as the input.
         if self.add_randoms == 1:
             sim_photons = 0
-            print("WARNING: add_randoms=1, so simulation is forced to realistic noise")
-            print("Importance sampling is also being deactivated")
-            print("All these means the simulation can take very long...")
+            needed_sims = 1
 
         elif self.s_photons == 0 and self.photons != 0:
             sim_photons = self.photons / self.divisions
-
+            needed_sims = 1
         else:
             sim_photons = self.s_photons
+            needed_sims = 3
 
         sim_time = float(self.sim_time) / self.divisions
 
@@ -150,7 +156,14 @@ class SimSET_Simulation(object):
         )
         my_log = join(sim_dir, "simset_s0_init.log")
 
-        print("Running first simulation without importance sampling...")
+        print("Running first simulation without importance sampling...(1/%s simulations needed for %s)" %
+              (needed_sims, os.path.basename(sim_dir)))
+
+        if self.add_randoms == 1:
+            print("WARNING: add_randoms=1, so simulation is forced to realistic noise")
+            print("Importance sampling is also being deactivated")
+            print("All these means the simulation can take very long...")
+
         command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
         tools.osrun(command, log_file)
 
@@ -182,7 +195,9 @@ class SimSET_Simulation(object):
                 )
                 my_log = join(sim_dir, "simset_s0.log")
 
-                print("Running second sampling simulation to calculate photons...")
+                print("Running second sampling simulation to calculate photons...(2/%s simulations needed for %s)" %
+                      (needed_sims, os.path.basename(sim_dir)))
+
                 command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
                 tools.osrun(command, log_file)
                 w_quotient = read_ws_from_simset_log(my_log)
@@ -205,7 +220,9 @@ class SimSET_Simulation(object):
             )
             my_log = join(sim_dir, "simset_s1.log")
 
-            print("Running full simulation with importance sampling...")
+            print("Running third sampling simulation to calculate photons...(3/%s simulations needed for %s)" %
+                  (needed_sims, os.path.basename(sim_dir)))
+
             command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
             tools.osrun(command, log_file)
 

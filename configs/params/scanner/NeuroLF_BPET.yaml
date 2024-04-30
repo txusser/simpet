@@ -12,7 +12,7 @@ num_aa_bins: 128
 num_td_bins: 256
 min_energy_window: 425
 max_energy_window: 650
-coincidence_window: 8 #falta por revisar
+coincidence_window: 5 #falta por revisar
 numberOfSubsets: 8
 numberOfIterations: 128   #48
 savingInterval: 2      #8
@@ -29,7 +29,7 @@ subiteration_interval: 4
 x_dir_filter_FWHM: 1.30            #valor inicial 1.5  #rango aceptable 1.20 a 1.45
 y_dir_filter_FWHM: 1.30            #valor inicial 1.5 #rango aceptable 1.20 a 1.45
 z_dir_filter_FWHM: 0.50               #valor inicial 1.5
-psf_value: 0.65
+psf_value: 0
 add_noise: 0
 max_segment: 47
 zoomFactor: 1.264

@@ -29,7 +29,7 @@ subiteration_interval: 4
 x_dir_filter_FWHM: 1.5
 y_dir_filter_FWHM: 1.5
 z_dir_filter_FWHM: 3
-psf_value: 1.125
+psf_value: 0
 add_noise: 0
 max_segment: 23
 zoomFactor: 1.55

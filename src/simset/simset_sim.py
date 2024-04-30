@@ -108,7 +108,7 @@ class SimSET_Simulation(object):
 
         print(" ")
 
-        self.simulation_postprocessing()
+        #self.simulation_postprocessing()
 
     def run_simset_simulation(self, sim_dir):
 
@@ -139,6 +139,11 @@ class SimSET_Simulation(object):
         elif self.s_photons == 0 and self.photons != 0:
             sim_photons = self.photons / self.divisions
             needed_sims = 1
+
+        elif self.s_photons == 0 and self.photons == 0:
+            sim_photons = self.photons
+            needed_sims = 1
+
         else:
             sim_photons = self.s_photons
             needed_sims = 3

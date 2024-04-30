@@ -493,6 +493,7 @@ def make_index_file(simulation_dir, simset_dir, log_file=False):
 
 
 def process_weights(weights_file, output_dir, scanner, add_randoms=0):
+
     nbins = scanner.get("num_td_bins")
     nangles = scanner.get("num_aa_bins")
     nrings = scanner.get("num_rings")

@@ -108,7 +108,7 @@ class SimSET_Simulation(object):
 
         print(" ")
 
-        #self.simulation_postprocessing()
+        self.simulation_postprocessing()
 
     def run_simset_simulation(self, sim_dir):
 

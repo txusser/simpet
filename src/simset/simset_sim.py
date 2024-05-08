@@ -108,7 +108,19 @@ class SimSET_Simulation(object):
 
         print(" ")
 
-        #self.simulation_postprocessing()
+        self.simulation_postprocessing()
+
+        print('------------------------------------------------------------')
+        print("Final report")
+        div_0_dir = join(self.output_dir, "division_0")
+
+        for j in ['trues', 'scatter', 'randoms']:
+            hdr_ = join(div_0_dir, "%s.hdr" % j)
+            if exists(hdr_):
+                counts_ = tools.ncounts(hdr_)
+                print("Number of %s in simulation: %s" % (j, counts_))
+
+        print('------------------------------------------------------------')
 
     def run_simset_simulation(self, sim_dir):
 

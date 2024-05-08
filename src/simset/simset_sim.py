@@ -122,6 +122,7 @@ class SimSET_Simulation(object):
 
         print('------------------------------------------------------------')
 
+
     def run_simset_simulation(self, sim_dir):
 
         log_file = join(sim_dir, "logging.log")

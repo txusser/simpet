@@ -157,6 +157,10 @@ class SimSET_Simulation(object):
             sim_photons = self.photons
             needed_sims = 1
 
+        elif self.sphotons != 0 and self.photons !=0:
+            sim_photons = self.s_photons
+            needed_sims = 2
+
         else:
             sim_photons = self.s_photons
             needed_sims = 3
@@ -174,7 +178,7 @@ class SimSET_Simulation(object):
         )
         my_log = join(sim_dir, "simset_s0_init.log")
 
-        print("Running first simulation without importance sampling...(1/%s simulations needed for %s)" %
+        print("Running first simulation...(Of %s simulations needed for %s)" %
               (needed_sims, os.path.basename(sim_dir)))
 
         if self.add_randoms == 1:
@@ -213,7 +217,7 @@ class SimSET_Simulation(object):
                 )
                 my_log = join(sim_dir, "simset_s0.log")
 
-                print("Running second sampling simulation to calculate photons...(2/%s simulations needed for %s)" %
+                print("Running second simulation...(Of %s simulations needed for %s)" %
                       (needed_sims, os.path.basename(sim_dir)))
 
                 command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
@@ -238,7 +242,7 @@ class SimSET_Simulation(object):
             )
             my_log = join(sim_dir, "simset_s1.log")
 
-            print("Running third sampling simulation to calculate photons...(3/%s simulations needed for %s)" %
+            print("Running final simulation...(Of %s simulations needed for %s)" %
                   (needed_sims, os.path.basename(sim_dir)))
 
             command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)

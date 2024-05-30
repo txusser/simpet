@@ -85,6 +85,15 @@ class SimSET_Simulation(object):
     def run(self):
         processes = []
 
+        print("\nLaunching simulation with %d divisions" % self.divisions)
+        print('------------------------------------------------------------')
+        print('Scanner: %s' % self.scanner.get("scanner_name"))
+        print('Activity map: %s' % self.act_map)
+        print('Attenuation map: %s' % self.att_map)
+        print('Dose: %s mCi' % self.sim_dose)
+        print('Acquisition time: %s seconds' % self.sim_time)
+        print('------------------------------------------------------------')
+
         for division in range(self.divisions):
             division_dir = join(self.output_dir, "division_" + str(division))
             os.makedirs(division_dir)
@@ -93,7 +102,6 @@ class SimSET_Simulation(object):
             p.start()
             time.sleep(5)
 
-        print(" ")
 
         for process in processes:
             process.join()
@@ -102,10 +110,22 @@ class SimSET_Simulation(object):
 
         self.simulation_postprocessing()
 
-    def run_simset_simulation(self, sim_dir):
-        log_file = join(sim_dir, "logging.log")
+        print('------------------------------------------------------------')
+        print("Final report")
+        div_0_dir = join(self.output_dir, "division_0")
 
-        print("Starting simulation for %s" % os.path.basename(sim_dir))
+        for j in ['trues', 'scatter', 'randoms']:
+            hdr_ = join(div_0_dir, "%s.hdr" % j)
+            if exists(hdr_):
+                counts_ = tools.ncounts(hdr_)
+                print("Number of %s in simulation: %s" % (j, counts_))
+
+        print('------------------------------------------------------------')
+
+
+    def run_simset_simulation(self, sim_dir):
+
+        log_file = join(sim_dir, "logging.log")
 
         act, act_data = tools.nib_load(self.act_map)
 
@@ -127,15 +147,23 @@ class SimSET_Simulation(object):
         # If Sampling Photons is 0, importance sampling is deactivated, so we use photons as the input.
         if self.add_randoms == 1:
             sim_photons = 0
-            print("WARNING: add_randoms=1, so simulation is forced to realistic noise")
-            print("Importance sampling is also being deactivated")
-            print("All these means the simulation can take very long...")
+            needed_sims = 1
 
         elif self.s_photons == 0 and self.photons != 0:
             sim_photons = self.photons / self.divisions
+            needed_sims = 1
+
+        elif self.s_photons == 0 and self.photons == 0:
+            sim_photons = self.photons
+            needed_sims = 1
+
+        elif self.sphotons != 0 and self.photons !=0:
+            sim_photons = self.s_photons
+            needed_sims = 2
 
         else:
             sim_photons = self.s_photons
+            needed_sims = 3
 
         sim_time = float(self.sim_time) / self.divisions
 
@@ -150,32 +178,57 @@ class SimSET_Simulation(object):
         )
         my_log = join(sim_dir, "simset_s0_init.log")
 
-        print("Running first sampling simulation...")
+        print("Running first simulation...(Of %s simulations needed for %s)" %
+              (needed_sims, os.path.basename(sim_dir)))
+
+        if self.add_randoms == 1:
+            print("WARNING: add_randoms=1, so simulation is forced to realistic noise")
+            print("Importance sampling is also being deactivated")
+            print("All these means the simulation can take very long...")
+
         command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
         tools.osrun(command, log_file)
-
-        my_phg = self.prepare_simset_files(
-            sim_dir, act_table_factor, act, sim_photons, sim_time, 1
-        )
-        # Copying phg file for posterior analysis
-        sim_phg = Path(sim_dir).joinpath("phg.rec")
-        shutil.copy(
-            sim_phg,
-            sim_phg.with_name("phg_second_sampling_sim.rec")
-        )
-        my_log = join(sim_dir, "simset_s0.log")
-
-        print("Running second sampling simulation...")
-        command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
-        tools.osrun(command, log_file)
-        w_quotient = read_ws_from_simset_log(my_log)
 
         rec_weight = join(sim_dir, "rec.weight")
         det_hf = join(sim_dir, "det_hf.hist")
         phg_hf = join(sim_dir, "phg_hf.hist")
 
         if self.s_photons != 0 and self.params.get("add_randoms") != 1:
-            sim_photons = int(self.s_photons * w_quotient)
+
+            # If the user did not state photons it will be calculated from sampling
+            if self.photons == 0:
+
+                # Removes counts for preparing for the next simulation
+                os.remove(rec_weight)
+                if exists(det_hf):
+                    os.remove(det_hf)
+                if exists(phg_hf):
+                    os.remove(phg_hf)
+
+                my_phg = self.prepare_simset_files(
+                    sim_dir, act_table_factor, act, sim_photons, sim_time, 1
+                    )
+
+                # Copying phg file for posterior analysis
+                sim_phg = Path(sim_dir).joinpath("phg.rec")
+                shutil.copy(
+                    sim_phg,
+                    sim_phg.with_name("phg_second_sampling_sim.rec")
+                )
+                my_log = join(sim_dir, "simset_s0.log")
+
+                print("Running second simulation...(Of %s simulations needed for %s)" %
+                      (needed_sims, os.path.basename(sim_dir)))
+
+                command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
+                tools.osrun(command, log_file)
+                w_quotient = read_ws_from_simset_log(my_log)
+
+                sim_photons = int(self.s_photons * w_quotient)
+
+            else:
+                # If the user stated photons, the provided value will be used
+                sim_photons = self.photons
 
             # Removes counts for preparing for the next simulation
             os.remove(rec_weight)
@@ -189,7 +242,8 @@ class SimSET_Simulation(object):
             )
             my_log = join(sim_dir, "simset_s1.log")
 
-            print("Running full simulation with importance sampling...")
+            print("Running final simulation...(Of %s simulations needed for %s)" %
+                  (needed_sims, os.path.basename(sim_dir)))
 
             command = "%s/bin/phg %s > %s" % (self.simset_dir, my_phg, my_log)
             tools.osrun(command, log_file)

@@ -6,22 +6,22 @@ num_rings: 48
 axial_fov: 16.318
 z_crystal_size: 0.319
 transaxial_crystal_size: 0.319
-crystal_thickness: 1 
+crystal_thickness: 1
 energy_resolution: 14
 num_aa_bins: 128
 num_td_bins: 256
 min_energy_window: 425
 max_energy_window: 650
-coincidence_window: 8 #falta por revisar
+coincidence_window: 5 #falta por revisar
 numberOfSubsets: 8
 numberOfIterations: 128   #48
 savingInterval: 2      #8
 analytical_att_correction: 0        #falta por revisar
 stir_recons_att_corr: 1             #1 esta corrigiendo por attenuacion; 0 no esta corrigiendo 
-analytic_scatt_corr_factor: 0.15    #falta por revisar
+analytic_scatt_corr_factor: 1    #falta por revisar
 stir_scatt_corr_smoothing: 0        #falta por revisar
 stir_scatt_simulation: 0            #falta por revisar
-analytic_randoms_corr_factor: 0.2   #falta por revisar
+analytic_randoms_corr_factor: 1   #falta por revisar
 stir_randoms_corr_smoothing: 0      #falta por revisar
 recons_type: "OSEM3D"
 inter_iteration_filter: 1           #1 se está filtrando
@@ -29,7 +29,7 @@ subiteration_interval: 4
 x_dir_filter_FWHM: 1.30            #valor inicial 1.5  #rango aceptable 1.20 a 1.45
 y_dir_filter_FWHM: 1.30            #valor inicial 1.5 #rango aceptable 1.20 a 1.45
 z_dir_filter_FWHM: 0.50               #valor inicial 1.5
-psf_value: 0.65
+psf_value: 0
 add_noise: 0
 max_segment: 47
 zoomFactor: 1.264

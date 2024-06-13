@@ -157,7 +157,7 @@ class SimSET_Simulation(object):
             sim_photons = self.photons
             needed_sims = 1
 
-        elif self.sphotons != 0 and self.photons !=0:
+        elif self.s_photons != 0 and self.photons !=0:
             sim_photons = self.s_photons
             needed_sims = 2
 

@@ -16,12 +16,12 @@ coincidence_window: 5 #falta por revisar
 numberOfSubsets: 8
 numberOfIterations: 128   #48
 savingInterval: 2      #8
-analytical_att_correction: 0        #falta por revisar
-stir_recons_att_corr: 1             #1 esta corrigiendo por attenuacion; 0 no esta corrigiendo 
-analytic_scatt_corr_factor: 1    #falta por revisar
+analytical_att_correction: 1        #falta por revisar
+stir_recons_att_corr: 0             #1 esta corrigiendo por attenuacion; 0 no esta corrigiendo 
+analytic_scatt_corr_factor: 0    #falta por revisar
 stir_scatt_corr_smoothing: 0        #falta por revisar
 stir_scatt_simulation: 0            #falta por revisar
-analytic_randoms_corr_factor: 1   #falta por revisar
+analytic_randoms_corr_factor: 0   #falta por revisar
 stir_randoms_corr_smoothing: 0      #falta por revisar
 recons_type: "OSEM3D"
 inter_iteration_filter: 1           #1 se está filtrando
@@ -32,7 +32,7 @@ z_dir_filter_FWHM: 0.50               #valor inicial 1.5
 psf_value: 0
 add_noise: 0
 max_segment: 47
-zoomFactor: 1.264
+zoomFactor: 1
 xyOutputSize: 325
 zOutputSize: 96
 zOutputVoxelSize: 1.64 #No hace nada

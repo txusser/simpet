@@ -1,0 +1,22 @@
+defaults:
+ - scanner: NeuroLF_BPET
+
+simulation_environment: 0
+sim_type: "SimSET"
+do_simulation: 1
+do_reconstruction: 1
+divisions: 8
+model_type: "cylindrical"
+patient_dirname: "Uniform_Cylinder"
+act_map: "uniform_cylinder_act_cut.hdr"
+att_map: "uniform_cylinder_att_cut.hdr"
+output_dir: "Uniform_Cyl"
+center_slice: 94
+total_dose: 3
+simulation_time: 100
+sampling_photons: 10000000
+photons: 0
+add_randoms: 0
+phglistmode: 0
+detlistmode: 0
+maximumIteration: 1

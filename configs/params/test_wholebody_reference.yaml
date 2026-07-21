@@ -1,5 +1,5 @@
 defaults:
- - scanner: Bruker_PET_MRI_scanner_Validado_modif_WE20
+ - scanner: Bruker_PET_MRI_scanner
 
 simulation_environment: 0
 sim_type: "SimSET"
@@ -7,13 +7,13 @@ do_simulation: 1
 do_reconstruction: 1
 divisions: 2
 model_type: "cylindrical"
-patient_dirname: "Phantom_Phantech"
-mask_dirname: "Phantom_Phantech/Reference"
-act_map: "Phantom_Phantech_13.02.26_1B_act.hdr"
-att_map: "RatPhantom_Phantech_att_1B.hdr"
-mask_map: "Phantom_Phantech_Reference_mask.hdr"
-output_dir: "Phantom_Phantech_13.02.26_0.0359uCi"
-center_slice: 7
+patient_dirname: "test_image"
+mask_dirname: "test_image"
+act_map: "act.hdr"
+att_map: "att.hdr"
+mask_map: "act.hdr"
+output_dir: "test_image"
+center_slice: 0
 total_dose: 0.03592
 simulation_time: 600
 sampling_photons: 2000000

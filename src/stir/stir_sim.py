@@ -33,6 +33,9 @@ class STIR_Simulation(object):
         self.target_size = scanner.scanner_target_size
         self.scanner_template = scanner.scanner_template
         self.proyector = scanner.proyector
+        
+        #TODO borrar
+        print(f"Scanner_template:{self.scanner_template}  \n Scanner_target_size:{self.target_size} \n Scanner_proyector: {self.proyector}")
 
         # Configuring required resources
         self.stir_dir = join(simpet_dir, "include", "stir", "bin")

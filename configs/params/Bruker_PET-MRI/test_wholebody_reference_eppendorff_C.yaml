@@ -1,0 +1,38 @@
+defaults:
+ - scanner: Bruker_PET_MRI_scanner_Validado_modif_WE20_sscatter_3
+
+simulation_environment: 0
+sim_type: "SimSET"
+do_simulation: 0
+do_reconstruction: 1
+divisions: 9
+model_type: "cylindrical"
+patient_dirname: "Phantom_Bruker"
+mask_dirname: "Phantom_Bruker"
+act_map: "EPPENDORF_act_test_1.hdr"
+att_map: "EPPENDORF_att_test_1.hdr"
+mask_map: "EPPENDORF_att_test_1.hdr"
+output_dir: "Eppendorff_101uCi_10min_12.02.26_test_1"
+center_slice: 75
+total_dose: 0.101
+simulation_time: 600
+sampling_photons: 2000000
+photons: 0
+add_randoms: 0
+phglistmode: 0
+detlistmode: 0
+maximumIteration: 1
+
+#Corrections:
+correction_for_NECR: 1  # 0-NO 1-SI
+correction_for_normalization: 1 # 0-No 1-Si 
+correction_total_fov: 1   # 0-No 1-Si
+
+#Quantification
+quantification_info: 1 # 0-NO 1-SI
+
+# Variables needed for whole body simulation
+whole_body_simulation : 0 # 0-NO 1-SI
+z_min: 0
+z_max: 534
+joints_beds: 0 # 0-NO 1-SI

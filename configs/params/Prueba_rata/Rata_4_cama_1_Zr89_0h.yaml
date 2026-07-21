@@ -1,0 +1,23 @@
+defaults:
+        - scanner: Bruker_PET_MRI_scanner_Validado_modif_WE30
+
+simulation_environment: 1
+sim_type: "SimSET"
+do_simulation: 1       
+do_reconstruction: 1 
+divisions: 8
+model_type: "cylindrical"                
+patient_dirname: "Phantom_Rata_F98_GBM"
+act_map: "Rat_F98_GBM_act_0h.hdr"                  
+att_map: "Rat_Oficial_att.hdr"      
+output_dir: "Rata_4_Zr89_0h_cama_1"
+center_slice: 222   # cama 1            
+total_dose:  0.1139
+simulation_time: 600   
+sampling_photons: 20000000
+photons: 0
+add_randoms: 0  
+phglistmode: 0
+detlistmode: 0
+recons_type: 0
+maximumIteration: 1

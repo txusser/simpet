@@ -81,7 +81,7 @@ class WholebodySimulation(object):
 
             bed_dir = join(output_dir, "Bed_cs_%s" % cs)
             if not exists(bed_dir):
-                os.makedirs(bed_dir)
+               os.makedirs(bed_dir)
 
             self.cfg_omega.params.center_slice = int(cs)
             self.cfg_omega.params.output_dir = output_name + "/Bed_cs_%s" % cs

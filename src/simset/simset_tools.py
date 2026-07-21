@@ -84,6 +84,9 @@ def make_simset_phg(
     xbins = act.shape[0]
     ybins = act.shape[1]
 
+
+
+
     act_fov = abs(act.shape * act.affine)
     xMin, xMax = round(-act_fov[0, 0] / 20, 3), round(
         act_fov[0, 0] / 20, 3
@@ -95,7 +98,7 @@ def make_simset_phg(
     )  # cm
     zMin, zMax = round(-z_offset, 3), round(act_fov[2, 2] / 10 - z_offset, 3)
 
-    dz = round((zMax - zMin) / nslices, 2)
+    dz = round((zMax - zMin) / nslices, 3)
 
     max_z_target = scanner_axial_fov / 2
     min_z_target = -scanner_axial_fov / 2
@@ -152,8 +155,8 @@ def make_simset_phg(
         f.write("\n		INT		num_slices = %s" % str(nslices))
 
         for i in range(nslices):
-            zMin_value = round(zMin + i * dz, 2)
-            zMax_value = round(zMin + (i + 1) * dz, 2)
+            zMin_value = round(zMin + i * dz, 3)
+            zMax_value = round(zMin + (i + 1) * dz, 3)
             f.write(
                 "\n		NUM_ELEMENTS_IN_LIST	slice = 9 "
                 + "\n		INT	slice_number  = %s" % str(i)

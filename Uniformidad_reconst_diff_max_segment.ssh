@@ -1,0 +1,211 @@
+#Reconstrucciones con diferentes max_segment
+#1
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_1.3722mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#2
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_1.2097mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#3
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_1.0665mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#4
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.00324mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#5
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.00367mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#6
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.00417mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#7
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.00473mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#8
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.00536mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#9
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.00608mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+#10
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.00690mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+11
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.00782mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#12
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.00887mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#13
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0101mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#14
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0114mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#15
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0130mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#16
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0147mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#17
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0167mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#18
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0189mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+#19
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0214mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#20
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0243mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#21
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0276mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#22
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0313mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#23
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0355mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#24
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0403mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#25
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0457mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#26
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0518mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+27
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0588mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#28
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0667mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+#29
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0756mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#30
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0858mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#31
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.0973mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#32
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.1103mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#33
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.1252mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#34
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.1420mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#35
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.1611mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#36
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.1827mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#37
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.2072mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#38
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.2351mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#39
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.2666mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#40
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.3024mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#41
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.3431mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#42
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.3891mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#43
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.4414mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#44
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.5007mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#45
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.5679mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#46
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.6442mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#47
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.7307mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#48
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.8289mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+#49
+cd /home/mibiolab/Data/Uniformidad_claudia/Prueba_cyl_uniformidad_0.9402mCi_5min_F18_WE20/SimSET_Sim_bruker_pet_mri_scanner_validado_modif_we20/OSEM3D/
+OSMAPOSL ParamsOSEM3D_MAX_SEGMENT.par
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

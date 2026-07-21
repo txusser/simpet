@@ -1,0 +1,23 @@
+defaults:
+ - scanner: NeuroLF_BPET_claudia_scanner
+
+simulation_environment: 1
+sim_type: "SimSET"
+do_simulation: 1 
+do_reconstruction: 1
+divisions: 8
+model_type: "cylindrical"
+patient_dirname: "test_brain_FDG"
+act_map: "S22_actMap.nii"
+att_map: "S22_attMap.nii"
+output_dir: "Test_brain_paciente_S22_FDG_200seg_2mCi"
+center_slice: 128              
+total_dose: 2               
+simulation_time: 200             
+sampling_photons: 20000000      
+photons: 0
+add_randoms: 0
+phglistmode: 0
+detlistmode: 0
+recons_type: 0
+maximumIteration: 1

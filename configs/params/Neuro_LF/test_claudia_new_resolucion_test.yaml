@@ -1,0 +1,23 @@
+defaults:
+ - scanner: NeuroLF_BPET_claudia_scanner
+
+simulation_environment: 1
+sim_type: "SimSET"
+do_simulation: 1 
+do_reconstruction: 1
+divisions: 3 
+model_type: "cylindrical"
+patient_dirname: "New_Resolution_test"
+act_map: "0_0_0_pto_act54.hdr"                   
+att_map: "cilindro_agua_att.hdr"                    
+output_dir: "Prueba_resolucion_45sec_0.25mCi_noruido_pto"  
+center_slice: 118              
+total_dose: 0.25                
+simulation_time: 45               
+sampling_photons: 2000000     
+photons: 0
+add_randoms: 0
+phglistmode: 0
+detlistmode: 0
+recons_type: 0
+maximumIteration: 1

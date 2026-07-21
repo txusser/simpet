@@ -1,0 +1,23 @@
+defaults:
+        - scanner: Bruker_PET_MRI_scanner_Validado_modif_WE20 
+
+simulation_environment: 1
+sim_type: "SimSET"
+do_simulation: 1       
+do_reconstruction: 0
+divisions: 2
+model_type: "cylindrical"                
+patient_dirname: "Fuente_Na_22"
+act_map: "0_0_0_Na_act_sensibilidad.hdr"                 
+att_map: "0_0_0_Na_att_sensibilidad.hdr" 
+output_dir: "Prueba_sensibilidad_241_posición_-15_WE20"
+center_slice:  241
+total_dose: 0.01041 #mCi
+simulation_time: 600      #600
+sampling_photons: 0    #20000000
+photons: 0
+add_randoms: 0
+phglistmode: 0
+detlistmode: 0
+recons_type: 0
+maximumIteration: 1

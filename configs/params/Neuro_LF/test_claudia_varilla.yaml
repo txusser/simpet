@@ -1,0 +1,23 @@
+defaults:
+- scanner: NeuroLF_BPET_claudia_scanner
+
+simulation_environment: 1
+sim_type: "SimSET"
+do_simulation: 1 #1 se hace la simulacion
+do_reconstruction: 1
+divisions: 2 #16 para agilizar cylinder uniform
+model_type: "cylindrical"
+patient_dirname: "NEMA_SENSITIVITY_PHANTOMS_NEUROLF_2"
+act_map: "1mm_0_0_0_act.hdr"
+att_map: "1mm_0_0_0_att.hdr"
+output_dir: "Phantom_varilla_0_0_0"
+center_slice: 351                    #351 #700             #varilla700: 700  varilla:165 #pto_:118 #pto sensibilidad:83 #uniform_cyl:94 
+total_dose: 0.3324                   #0.01892      #0.07749mCi es 2.83MBq de 12.3MBq*165/700 corregido por longitud            #0.3324mCi equivale 12.3MBq varilla 
+simulation_time: 180                 #180 varilla #21600 cylinder  #93 punto
+sampling_photons: 20000000           #200000
+photons: 0
+add_randoms: 0
+phglistmode: 0
+detlistmode: 0
+recons_type: 0
+maximumIteration: 1

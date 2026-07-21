@@ -1,0 +1,23 @@
+defaults:
+ - scanner: NeuroLF_BPET_claudia_scanner_cristal_2mm
+
+simulation_environment: 1
+sim_type: "SimSET"
+do_simulation: 0 
+do_reconstruction: 1
+divisions: 8
+model_type: "cylindrical"
+patient_dirname: "NEMA_Resolution_Phantoms_NeuroLF"
+act_map: "0_10_0_act.hdr"
+att_map: "0_10_0_att.hdr"
+output_dir: "Phantom_0_10_0_osem3d_crystal_size_2mm"
+center_slice: 118             #pto_resolucion_espacial:118 
+total_dose: 0.6               #0.3 resolucion espacial   0.6 para cristal de 2mm
+simulation_time: 40            #3 
+sampling_photons: 20000000      #200000
+photons: 0
+add_randoms: 0
+phglistmode: 0
+detlistmode: 0
+recons_type: 0
+maximumIteration: 1

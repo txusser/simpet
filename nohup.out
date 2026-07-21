@@ -1,0 +1,13 @@
+Cannot find primary config 'config_test_wholebody_Phantom_Rata'. Check that it's in your config search path.
+
+Config search path:
+	provider=hydra, path=pkg://hydra.conf
+	provider=main, path=file:///home/claudia/Repository_new/simpet/configs
+	provider=schema, path=structured://
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
+
+
+Estas usando wholebody_Claudia : se está modificando
+
+

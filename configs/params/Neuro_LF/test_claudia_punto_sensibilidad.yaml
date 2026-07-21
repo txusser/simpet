@@ -1,0 +1,23 @@
+defaults:
+ - scanner: NeuroLF_BPET_claudia_scanner
+
+simulation_environment: 1
+sim_type: "SimSET"
+do_simulation: 1  
+do_reconstruction: 1
+divisions: 2 
+model_type: "cylindrical"
+patient_dirname: "NEMA_Sensitivity_Phantoms_Point_Source_NeuroLF"
+act_map: "0_0_0_act_s.hdr"
+att_map: "0_0_0_att_s.hdr"
+output_dir: "Phantom_source_point_sensitivity_0_113_0_rev"
+center_slice: 113              #pto sensibilidad:83 
+total_dose: 0.01892           #0.01892 pto   doble de actividad para cristales de 2mm
+simulation_time: 60           #93 punto
+sampling_photons: 20000000      #200000
+photons: 0
+add_randoms: 0
+phglistmode: 0
+detlistmode: 0
+recons_type: 0
+maximumIteration: 1

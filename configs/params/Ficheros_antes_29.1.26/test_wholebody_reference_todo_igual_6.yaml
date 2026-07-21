@@ -1,0 +1,32 @@
+defaults:
+ - scanner: Bruker_PET_MRI_scanner_Validado_modif_WE20
+
+simulation_environment: 0
+sim_type: "SimSET"
+do_simulation: 1
+do_reconstruction: 1
+divisions: 8
+model_type: "cylindrical"
+patient_dirname: "Phantom_Phantech"
+act_map: "RatPhantom_Phantech_body_act.hdr"
+att_map: "RatPhantom_Phantech_att_all_agua.hdr"
+output_dir: "Rat_Phantom_Phantech_WB_totalBodyAgua_10seg"
+center_slice: 7
+total_dose: 0.2422
+simulation_time: 10
+sampling_photons: 2000000
+photons: 0
+add_randoms: 0
+phglistmode: 0
+detlistmode: 0
+maximumIteration: 1
+
+#Corrections:
+correction_for_NECR: 1  # 0-NO 1-SI
+correction_for_normalization: 1 # 0-No 1-Si 
+correction_total_fov: 1   # 0-No 1-Si
+
+# Variables needed for whole body simulation
+z_min: 0
+z_max: 730
+joints_beds: 1

@@ -1,0 +1,23 @@
+defaults:
+        - scanner: Bruker_PET_MRI_scanner_Validado_modif_WE20_sin_att
+
+simulation_environment: 1
+sim_type: "SimSET"
+do_simulation: 0       
+do_reconstruction: 1
+divisions: 10
+model_type: "cylindrical"                
+patient_dirname: "NEMA_Uniformity_Phantoms_preclinical"
+act_map: "cyl_act.hdr"                 
+att_map: "cyl_att_agua.hdr" 
+output_dir: "Prueba_cyl_uniformidad_0.2666mCi_5min_F18_WE20"
+center_slice: 86               #201          #361 para posición axial de 40 mm
+total_dose:  0.2666
+simulation_time: 300      #600
+sampling_photons: 20000000
+photons: 0
+add_randoms: 0
+phglistmode: 0
+detlistmode: 0
+recons_type: 0
+maximumIteration: 1

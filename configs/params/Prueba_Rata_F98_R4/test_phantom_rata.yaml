@@ -1,0 +1,23 @@
+defaults:
+        - scanner: Bruker_PET_MRI_scanner_Validado_final 
+
+simulation_environment: 1
+sim_type: "SimSET"
+do_simulation: 1       
+do_reconstruction: 1 
+divisions: 8
+model_type: "cylindrical"                
+patient_dirname: "Phantoms_Rata"
+act_map: "RAT_lesion_modif_act.hdr"                 
+att_map: "RAT_atn_1.hdr" 
+output_dir: "Prueba_Phantom_Rata_lesion_cama_1"
+center_slice: 225   # cama 1            
+total_dose: 0.2162
+simulation_time: 600      #600
+sampling_photons: 20000000
+photons: 0
+add_randoms: 0  #modificado para NEC debe ser 1
+phglistmode: 0
+detlistmode: 0
+recons_type: 0
+maximumIteration: 1

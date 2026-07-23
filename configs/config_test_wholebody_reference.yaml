@@ -7,7 +7,7 @@ matlab_mcr_path: ""
 spm_path: ""
 dir_data_path: ${root_path:root}/Data/Subjets
 dir_results_path: ${root_path:root}/Data/Results
-dir_stir_sino_corrections: ${root_path:root}/Data/Subjets/normalisation_sino_corrections
+dir_stir_sino_corrections: ${root_path:root}/Normalization_sino_correction_Bruker_PET-MRI
 stratification: "true"
 forced_detection: "true"
 forced_non_absortion: "true"

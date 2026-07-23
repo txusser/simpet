@@ -8,7 +8,7 @@ from os.path import join, exists
 from omegaconf import DictConfig, OmegaConf
 from pyprojroot import here
 from utils import tools
-from utils import wb_tools_Claudia
+from utils import wb_tools
 
 sys.path.append(str(here()))
 from simpet import SimPET
@@ -74,7 +74,7 @@ class WholebodySimulation(object):
         log_file = join(output_dir, "logfile.log")
         
 
-        beds_cs = wb_tools_Claudia.calculate_center_slices(self, act_map, self.scanner, self.zmin, self.zmax)
+        beds_cs = wb_tools.calculate_center_slices(self, act_map, self.scanner, self.zmin, self.zmax)
 
         print("\nNumber of simulation to be performed: %s" % len(beds_cs))    #num_beds = len(beds_cs)
         print("Beds center slides: %s\n" % beds_cs)
@@ -93,7 +93,7 @@ class WholebodySimulation(object):
             print(f"Original Time of Simulation: {sim_time_original_global} seg")
 
             #  Calculate corrected times (one per bed)
-            sim_times_per_bed, phantom_doses_FOV = wb_tools_Claudia.correction_for_NECR(self, act_map, sim_time_original_global)
+            sim_times_per_bed, phantom_doses_FOV = wb_tools.correction_for_NECR(self, act_map, sim_time_original_global)
 
         else:
             print("\nNECR correction disabled _ keeping original simulation time.")
@@ -142,7 +142,7 @@ class WholebodySimulation(object):
             print("\n>>> Applying NORMALIZATION correction for Reconstructed Image...")
 
             # Normalization factors for each bed
-            factors = wb_tools_Claudia.normalization_factor_correction(self)
+            factors = wb_tools.normalization_factor_correction(self)
 
             for i, recons_file in enumerate(recons_beds, start=1):
                 if not os.path.exists(recons_file):
@@ -212,7 +212,7 @@ class WholebodySimulation(object):
         else:
             try:
                 print("\n>>> Joining reconstructed beds...")
-                wb_tools_Claudia.join_beds_wb(self, act_map, recons_beds, joint_beds)
+                wb_tools.join_beds_wb(self, act_map, recons_beds, joint_beds)
                 print("Bed joining completed.")
             except Exception as e:
                 print(f"Error while joining beds: {e}")
@@ -220,7 +220,7 @@ class WholebodySimulation(object):
             if self.Normalization == 1 and n_beds > 1:
                 try:
                     joint_norm_beds = join(output_dir, f"rec_{recons_algorithm}_{recons_it}_norm.hdr")
-                    wb_tools_Claudia.join_beds_wb(self, act_map, recons_norm_beds, joint_norm_beds)
+                    wb_tools.join_beds_wb(self, act_map, recons_norm_beds, joint_norm_beds)
 
                     print("Joining of normalized beds completed.")
                 except Exception as e:
@@ -237,12 +237,12 @@ class WholebodySimulation(object):
             mask_map = join(self.dir_data, mask_dir, self.params.get("mask_map"))
 
             rotated_mask_file = join(output_dir, "rotated_mask.nii")
-            rotated_mask = wb_tools_Claudia.rotate_and_flip_mask(act_map, mask_map, rotated_mask_file, joint_beds, self.zmin, self.zmax)
+            rotated_mask = wb_tools.rotate_and_flip_mask(act_map, mask_map, rotated_mask_file, joint_beds, self.zmin, self.zmax)
             
 
             #Changed the dimension of the mash to the same of the simulated image
             mask_file = join(output_dir, "mask_image.nii")
-            reshaped_mask_image = wb_tools_Claudia.change_act_dimensions(mask_file, rotated_mask, joint_beds)
+            reshaped_mask_image = wb_tools.change_act_dimensions(mask_file, rotated_mask, joint_beds)
 
             #Doing Quantification of Final Image
             if self.quantification == 1 and self.joints_beds == 1 and joint_norm_beds is not None: # es si existen los ficheros Arreglar!!!!
@@ -254,10 +254,10 @@ class WholebodySimulation(object):
                 label_file_act_map = join(self.dir_data, patient_dir, "act_map.txt")
                 
                 import inspect
-                print(inspect.signature(wb_tools_Claudia.total_quantification))
-                wb_tools_Claudia.total_quantification(mask_file, joint_norm_beds, quantification_file, label_file_mask)
+                print(inspect.signature(wb_tools.total_quantification))
+                wb_tools.total_quantification(mask_file, joint_norm_beds, quantification_file, label_file_mask)
 
-                wb_tools_Claudia.distribution_of_dose_into_phantom(self, maps_dir, act_map, info_act_map, label_file_act_map)
+                wb_tools.distribution_of_dose_into_phantom(self, maps_dir, act_map, info_act_map, label_file_act_map)
                 
                 print("Quantification finished")
 
@@ -268,7 +268,7 @@ class WholebodySimulation(object):
         
         # #Apply normalization to whole body
         # if self.Normalization == 1 and self.joints_beds == 1 and os.path.exists(joint_beds):
-        #     factor_wholeBody = wb_tools_Claudia.normalization_factor_correction_whole_body(self, joint_beds)
+        #     factor_wholeBody = wb_tools.normalization_factor_correction_whole_body(self, joint_beds)
 
         #     # Load reconstructed image
         #     img = nib.load(joint_beds)
@@ -286,14 +286,14 @@ class WholebodySimulation(object):
         #     #Quantification
         #     quantification_file = join(output_dir, "Quantification_data_whole_body.txt")
             
-        #     wb_tools_Claudia.total_quantification_wholeBody(mask_file, recons_norm_wholeBody_file, quantification_file)
+        #     wb_tools.total_quantification_wholeBody(mask_file, recons_norm_wholeBody_file, quantification_file)
             
 
         #     print("Normalization Whole Body completed")
         # else:
         #      print("No Normalization Whole Body completed was performed")
 
-        #wb_tools_Claudia.coincidencias_mask_vs_image_Claudia(mask_file, act_map)
+        #wb_tools.coincidencias_mask_vs_image_Claudia(mask_file, act_map)
         
         
 

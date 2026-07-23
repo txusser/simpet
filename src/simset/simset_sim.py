@@ -13,7 +13,7 @@ from os import PathLike
 from os.path import join, dirname, abspath, exists
 import src.simset.simset_tools as simset_tools
 from utils import tools
-from utils import wb_tools_Claudia   #TODO modificar al nombre original
+from utils import wb_tools  
 
 
 def read_ws_from_simset_log(simset_log: PathLike) -> float:
@@ -587,7 +587,7 @@ class SimSET_Reconstruction(object):
         if self.params.get("correction_total_fov") == 1:
             recons_dir = self.output_dir
             print(f"Recons Dir = {recons_dir}")
-            sinogram_stir_corrected = wb_tools_Claudia.total_fov_correction(self, recons_dir)
+            sinogram_stir_corrected = wb_tools.total_fov_correction(self, recons_dir)
             sinogram_stir = join(self.output_dir, sinogram_stir_corrected)
         else:
             sinogram_stir = join(self.output_dir, "stir_sinogram.hs")

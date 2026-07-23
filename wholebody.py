@@ -1,6 +1,4 @@
-import os
-import yaml
-import sys
+import os, yaml, sys
 import shutil
 import nibabel as nib
 import numpy as np
@@ -293,7 +291,7 @@ class WholebodySimulation(object):
         # else:
         #      print("No Normalization Whole Body completed was performed")
 
-        #wb_tools.coincidencias_mask_vs_image_Claudia(mask_file, act_map)
+        #wb_tools.coincidences_mask_vs_image(mask_file, act_map)
         
         
 

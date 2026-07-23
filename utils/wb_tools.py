@@ -386,7 +386,7 @@ def calculate_map_into_fov(self, act_map):
         map_into_FOV_start = int(round(cs - half_fov_slices))
         map_into_FOV_end = int(round(cs + half_fov_slices))
         
-        #Eliminar
+        #Remove
         #print(f"Before correction: start={map_into_FOV_start}, end={map_into_FOV_end}")
 
         if map_into_FOV_start < zmin:
@@ -451,7 +451,7 @@ def correction_for_NECR(self, act_map, sim_time_original):
         print(f"Corrected simulation time = {sim_time_bed} seg") 
       
 
-        # ####BORRAR
+        # ####Remove
         # #labels into each beds
         # # Extract only the portion of the map within the FOV (Z-axis)
         # # Assuming that axis 2 (index 2) is the Z-axis
@@ -637,7 +637,7 @@ def normalization_factor_correction_whole_body(self, joint_beds):
     # Valor medio ignorando ceros
     #mean_nonzero = sum_nonzero / num_nonzero_voxels
    
-    #Calcular la concentracion estimada segun el total sum de la imagen
+    #Calculate the estimated concentration based on the total sum of the image
 
     #conc_estimate_image = 1.34*10**-5 * sum_nonzero - 8.96*10**-9
     act_estimate_image = float(4.22*10**-4 * sum_nonzero - 4.65*10**-8) #volumen de la voi en cmm³
@@ -1011,76 +1011,6 @@ def total_quantification(mask_file, joint_norm_beds, quantification_file, label_
     }
     
 
-    """
-    Compute information of target image per labeled region in reference image and save to a TXT file.
-    Obtains information about the simulated distribution of activity in the phantom and saves it in a TXT file.
-    """
-    # --- Load images ---
-    target_img = nib.load(joint_norm_beds)
-    roi_img = nib.load(ct_image_act_2)
-    
-    
-    target_data = target_img.get_fdata()
-    roi_data = roi_img.get_fdata()
-
-    
-    # --- Ensure same shape ---
-    if target_data.shape != roi_data.shape:
-        raise ValueError("Target and reference images must have the same shape.")
-    
-    # --- Get all labels except 0 (background) ---
-    labels = np.unique(roi_data)
-    labels = labels[labels != 0]
-    
-    # --- Calculate mean per label ---
-    mean_values = [target_data[roi_data == label].mean() for label in labels]  #KBq/cc
-
-    #--- Calculate Volumen per label ---
-    voxel_counts = [np.sum(roi_data == label) for label in labels]
-    dx, dy, dz = np.array(roi_img.header.get_zooms()[:3])
-    voxel_volume = dx * dy * dz
-
-    volumes = [(count * voxel_volume)/1000 for count in voxel_counts]
-
-    # --- Calculate activity per region ---
-    activity_region_KBq = [m * v for m, v in zip(mean_values, volumes)]
-    activity_region_mCi = [a / (3.7 * 10**4) for a in activity_region_KBq]
-    mean_values_mCi = [b / c for b, c in zip(activity_region_mCi, volumes)]
-
-    #  --- Calculate TOTAL activity across all labels ---
-    total_activity_KBq = float(np.sum(activity_region_KBq))
-    total_activity_mCi = float(np.sum(activity_region_mCi))
-
-    # --- Save report as TXT ---
-    with open(quantification_file, 'w') as f:
-        # Encabezado
-        f.write(
-            f"{'Label':<10}{'MeanValue (mCi/cc)':>20}{'MeanValue (KBq/cc)':>20}{'Pixels':>15}"
-            f"{'Vol (ccm³)':>15}{'Act (mCi)':>15}{'Act (KBq)':>15}\n"
-        )
-        
-        # Filas por cada label
-        for label, mean_val_mCi, mean_val_KBq, count, vol, act_mCi, act_KBq in zip(
-            labels, mean_values_mCi, mean_values, voxel_counts, volumes, activity_region_mCi, activity_region_KBq
-        ):
-            f.write(
-                f"{int(label):<10}{mean_val_mCi:>20.4f}{mean_val_KBq:>20.4f}{count:>15.0f}"
-                f"{vol:>15.4f}{act_mCi:>15.4f}{act_KBq:>15.4f}\n"
-                )
-        # Linea separadora
-        f.write("="*90 + "\n")
-         
-        # Linea TOTAL
-        f.write(
-            f"{'TOTAL':<10}{'':>20}{'':>15}{'':>15}"
-            f"{total_activity_mCi:>15.4f}{total_activity_KBq:>15.4f}\n"
-        )
-
-    return {"labels": labels, "mean_values_mCi": mean_values_mCi, "mean_values_KBq": mean_values, "pixel_counts": voxel_counts,
-    "volumes": volumes, "activity_mCi": activity_region_mCi, "activity_KBq": activity_region_KBq,
-    "total_activity_mCi": total_activity_mCi, "total_activity_KBq": total_activity_KBq
-    }
-
 def total_quantification_wholeBody(mask_file, recons_norm_wholeBody_file, quantification_file): #TODO
     """
     Compute information of target image per labeled region in reference image and save to a TXT file.
@@ -1267,13 +1197,13 @@ def distribution_of_dose_into_phantom(self, maps_dir, act_map, info_act_map, lab
         "total_activity_KBq": total_activity_KBq
     }
 
-def coincidencias_mask_vs_image_Claudia(mask_file, act_map):  #ELIMINAR ES SOLO PARA COMPROBACIÓN
-    # --- Verificación de volúmenes por label ---
+def coincidences_mask_vs_image(mask_file, act_map):  #Remove it is only a check
+    # --- Verification of the label volumen  ---
     import numpy as np
     import nibabel as nib
 
     try:
-        orig_img = nib.load(act_map)  # imagen original base
+        orig_img = nib.load(act_map)  # original image
         new_img  = nib.load(mask_file)
         
         orig_data = orig_img.get_fdata()
@@ -1286,7 +1216,7 @@ def coincidencias_mask_vs_image_Claudia(mask_file, act_map):  #ELIMINAR ES SOLO 
         labels = labels[labels != 0]
         
         
-        print("\n--- Comparación de volúmenes por región ---")
+        print("\n--- Comparation of volumen per label ---")
         for label in labels:
             count_orig = np.sum(orig_data == label)
             count_new  = np.sum(new_data == label)
@@ -1296,7 +1226,7 @@ def coincidencias_mask_vs_image_Claudia(mask_file, act_map):  #ELIMINAR ES SOLO 
             
             print(f"Label {int(label):3d}:  original={vol_orig:.3f} cm³,  new={vol_new:.3f} cm³,  ratio={ratio:.3f}")
     except Exception as e:
-        print(f"[Aviso] No se pudo comparar volúmenes por label: {e}")
+        print(f"Notice: Could not compare volumes by label: {e}")
 
 def total_fov_correction(self, recons_dir):
 

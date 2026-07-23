@@ -34,5 +34,5 @@ add_noise: 0
 max_segment: 23
 zoomFactor: 1.55
 xyOutputSize: 128
-zOutputSize: 160  #47
+zOutputSize: 47
 zOutputVoxelSize: 3.27

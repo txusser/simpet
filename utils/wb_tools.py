@@ -198,7 +198,6 @@ class wbpetct2maps(object):
         rcommand = '%s %s %s 1B >> %s' % (change_format, act_out, act_out, self.log)
         tools.osrun(rcommand, self.log)
 
-
 def calculate_center_slices(self, act_map, scanner, zmin, zmax, overlapping=0.1):
     """Calculate the center slices of beds for the given axial range."""
 
@@ -253,7 +252,6 @@ def calculate_center_slices(self, act_map, scanner, zmin, zmax, overlapping=0.1)
 
     self.beds_cs = beds_cs
     return beds_cs
-
 
 def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output):
     output_dir = dirname(output)
@@ -342,7 +340,6 @@ def update_act_map(spmrun, act_map, att_map, orig_pet, simu_pet, output):
 
     updated_act_img = nib.AnalyzeImage(updated_act, simpet.affine, simpet.header)
     nib.save(updated_act_img, output)
-
 
 def cut_image_min_max_slices(input_img, min_slice, max_slice, output):
     img = nib.load(input_img)
@@ -572,7 +569,7 @@ def normalization_factor_correction(self):
         # Convert mCi to kBq
         phantom_dose_KBq = dose_mCi * 3.7e4  
         sim_time_original_global = float(self.params.get("simulation_time", 0))
-        print(f"Phantom dose in KBq: {phantom_dose_KBq}")   #borrar
+        print(f"Phantom dose in KBq: {phantom_dose_KBq}") 
 
         # Linear adjustment equation
         #lineal_ecuac = 5.9e-5 * phantom_dose_KBq + 0.978
@@ -586,7 +583,7 @@ def normalization_factor_correction(self):
         value_Q_norm = float(0.062 * (phantom_dose_KBq) + 986.39)
 
         value_Q_norm_corregido_time = value_Q_norm / (sim_time_original_global/300)  # 300 seg es el tiempo de adq cyl calibración
-        print(f"Normalization value per bed: {value_Q_norm}") #borrar
+        #print(f"Normalization value per bed: {value_Q_norm}")
         #results.append(value_Q_norm)
         results.append(value_Q_norm_corregido_time)
 
@@ -597,89 +594,6 @@ def normalization_factor_correction(self):
 
     print("Normalization factors by FOV:", [round(x, 3) for x in results])
     return results 
-
-def normalization_factor_correction_whole_body(self, joint_beds): 
-    factor_Q_norm = 940.34 
-    results = []
-    sim_dose_original_global = float(self.params.get("total_dose", 0))
-    print(f"Phantom dose (FOV):{sim_dose_original_global}")
-    
-    image_sim = nib.load(joint_beds)
-    image_sim_data = image_sim.get_fdata()
-
-    # Reemplazar NaN o inf por 0 (solo si hay)
-    image_sim_data = np.nan_to_num(image_sim_data, nan=0.0, posinf=0.0, neginf=0.0)
-    
-    # Calcular volumen del voxel
-    dx, dy, dz = np.array(image_sim.header.get_zooms()[:3])
-    voxel_volume = (dx * dy * dz)/1000  #cm^3
-
-    
-    #  Calcular sumas
-    total_voxel_sum = np.sum(image_sim_data)
-    Activity_image = (voxel_volume * total_voxel_sum)/10
-
-    # Calcular valor medio
-    # Numero total de voxeles
-    #num_voxels = image_sim_data.size
-
-    # Valor medio de todos los voxeles
-    #mean_voxel_value = total_voxel_sum / num_voxels
-    
-    # Creamos una máscara para voxeles distintos de cero
-    mask = image_sim_data != 0
-    # Sumamos solo los voxeles distintos de cero
-    sum_nonzero = np.sum(image_sim_data[mask])
-    # Contamos cuántos voxeles son distintos de cero
-    num_nonzero_voxels = np.count_nonzero(image_sim_data)
-    volumen_non_zero = voxel_volume * num_nonzero_voxels
-    print(f"Volumen_non_zero:{volumen_non_zero} cc")
-    # Valor medio ignorando ceros
-    #mean_nonzero = sum_nonzero / num_nonzero_voxels
-   
-    #Calculate the estimated concentration based on the total sum of the image
-
-    #conc_estimate_image = 1.34*10**-5 * sum_nonzero - 8.96*10**-9
-    act_estimate_image = float(4.22*10**-4 * sum_nonzero - 4.65*10**-8) #volumen de la voi en cmm³
-    conc_estimate_image = float(act_estimate_image/98.96) #volumen de la voi en cmm³
-    #print(mean_nonzero)
-    print(f"Total_suma:{sum_nonzero} au/cc")
-    print(f"Concentracion estimada:{conc_estimate_image} au/cc   Actividad estimada: {act_estimate_image}")
-    
-    print(f"Voxel volume: {voxel_volume:.3f} mm³")
-    print(f"Total_sum : {total_voxel_sum}")
-    print(f"Activity_image : {Activity_image}")
-
-
-    # Convert mCi to kBq
-    phantom_dose_KBq = sim_dose_original_global * 3.7*10**4 
-    #mean_nonzero = phantom_dose_KBq / num_nonzero_voxels 
-
-    #print(f"Phantom mean dose in KBq: {mean_nonzero}")
-    print(f"Phantom dose in KBq: {phantom_dose_KBq}")
-
-    # Linear adjustment equation
-    #lineal_ecuac = (0.0038 * (phantom_dose_KBq / 31.43) + 0.9725)
-    lineal_ecuac = (0.0000606 * phantom_dose_KBq + 0.975) 
-    print(f"Lineal Ecuation: {lineal_ecuac}")
-
-    #value_Q_norm = float(lineal_ecuac  * conc_estimate_image)
-    #value_Q_norm = float(lineal_ecuac  * conc_estimate_image * factor_Q_norm)
-    value_Q_norm = float((lineal_ecuac * factor_Q_norm)/1.47)
-    #value_Q_norm = float(factor_Q_norm * lineal_ecuac )
-    #value_Q_norm = float(lineal_ecuac)
-        
-    print(f"Normalization value per total: {value_Q_norm}")
-    results.append(value_Q_norm)
-    
-    
-
-    if len(results) == 0:
-        print(f"There is no FOV dose. Using factor = 1.0 by default")
-        return 1.0
-
-    print("Normalization factors by FOV:", [round(x, 3) for x in results])
-    return results
 
 def rotate_and_flip_mask(act_map, mask_map, rotated_mask_file, joint_beds, zmin, zmax):
     """
@@ -1010,81 +924,6 @@ def total_quantification(mask_file, joint_norm_beds, quantification_file, label_
         "total_activity_KBq": total_activity_KBq
     }
     
-
-def total_quantification_wholeBody(mask_file, recons_norm_wholeBody_file, quantification_file): #TODO
-    """
-    Compute information of target image per labeled region in reference image and save to a TXT file.
-    Obtains information about the simulated distribution of activity in the phantom and saves it in a TXT file.
-    """
-    # --- Load images ---
-    target_img = nib.load(recons_norm_wholeBody_file)
-    roi_img = nib.load(mask_file)
-    
-    
-    target_data = target_img.get_fdata()
-    roi_data = roi_img.get_fdata()
-
-    
-    # --- Ensure same shape ---
-    if target_data.shape != roi_data.shape:
-        raise ValueError("Target and reference images must have the same shape.")
-    
-    # --- Get all labels except 0 (background) ---
-    labels = np.unique(roi_data)
-    labels = labels[labels != 0]
-    
-    # --- Calculate mean per label ---
-    mean_values_KBq = [target_data[roi_data == label].mean() for label in labels]
-    mean_values_mCi = mean_values_mCi = [v * 0.00002703 for v in mean_values_KBq]   #mCi
-
-    #--- Calculate Volumen per label ---
-    voxel_counts = [np.sum(roi_data == label) for label in labels]
-    dx, dy, dz = np.array(roi_img.header.get_zooms()[:3])
-    voxel_volume = dx * dy * dz
-
-    volumes = [(count * voxel_volume)/1000 for count in voxel_counts]
-
-    # --- Calculate activity per region ---
-    activity_region_KBq = [m * v for m, v in zip(mean_values_KBq, volumes)]
-    activity_region_mCi = [a / (3.7 * 10**4) for a in activity_region_KBq]
-
-    #  --- Calculate TOTAL activity across all labels ---
-    total_activity_KBq = float(np.sum(activity_region_KBq))
-    total_activity_mCi = float(np.sum(activity_region_mCi))
-
-    
-
-    # --- Save report as TXT ---
-    with open(quantification_file, 'w') as f:
-        # Encabezado
-        f.write(
-            f"{'Label':<10}{'MeanValue (mCi/cc)':>20}{'MeanValue (KBq/cc)':>20}{'Pixels':>15}"
-            f"{'Vol (ccm³)':>15}{'Act (mCi)':>15}{'Act (KBq)':>15}\n"
-        )
-        
-        # Filas por cada label
-        for label, mean_val_mCi, mean_val_KBq, count, vol, act_mCi, act_KBq in zip(
-            labels, mean_values_mCi, mean_values_KBq, voxel_counts, volumes, activity_region_mCi, activity_region_KBq
-        ):
-            f.write(
-                f"{int(label):<10}{mean_val_mCi:>20.4f}{mean_val_KBq:>20.4f}{count:>15.0f}"
-                f"{vol:>15.4f}{act_mCi:>15.4f}{act_KBq:>15.4f}\n"
-                )
-        # Linea separadora
-        f.write("="*90 + "\n")
-         
-        # Linea TOTAL
-        f.write(
-            f"{'TOTAL':<10}{'':>20}{'':>15}{'':>15}"
-            f"{total_activity_mCi:>15.4f}{total_activity_KBq:>15.4f}\n"
-        )
-
-
-    return {"labels": labels, "mean_values_mCi": mean_values_mCi, "mean_values_KBq": mean_values_mCi, "pixel_counts": voxel_counts,
-    "volumes": volumes, "activity_mCi": activity_region_mCi, "activity_KBq": activity_region_KBq,
-    "total_activity_mCi": total_activity_mCi, "total_activity_KBq": total_activity_KBq 
-    }
-
 def distribution_of_dose_into_phantom(self, maps_dir, act_map, info_act_map, label_file_act_map):
     """
     Computes the actual distribution of activity by region labeled in act_map. 
@@ -1283,8 +1122,3 @@ def total_fov_correction(self, recons_dir):
         f.writelines(lines)
 
     return (hs_file_new)
-
-
-
-
-

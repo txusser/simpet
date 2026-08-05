@@ -8,6 +8,10 @@ from pyprojroot import here
 from utils import tools
 from utils import wb_tools
 
+def save_cfg(cfg, path):
+    with open(path, 'w') as f:
+        yaml.dump(cfg, f, default_flow_style=False)
+
 sys.path.append(str(here()))
 from simpet import SimPET
 
@@ -68,7 +72,10 @@ class WholebodySimulation(object):
         # THIS WILL POP UP EVEN IF ONLY RECONSTRUCTION IS DONE. MOVE IT OUT
         if not exists(output_dir):
             os.makedirs(output_dir)
-
+        
+        #Summary of General Parameters
+        save_cfg(self.cfg, join(output_dir, f"{patient_dir}_{self.scanner_model}_wholebody.yaml"))
+        
         log_file = join(output_dir, "logfile.log")
         
 
@@ -113,7 +120,9 @@ class WholebodySimulation(object):
             cfg_copy.params.center_slice = int(cs)
             cfg_copy.params.simulation_time = sim_time_bed
             cfg_copy.params.output_dir = join(output_name, f"Bed_{j}_CenterSlice_{cs}")
-
+            
+            # Save the configuration for each bed
+            save_cfg(OmegaConf.to_container(cfg_copy), join(bed_dir, f"{patient_dir}_{self.scanner_model}_bed{j}.yaml"))
             #  Run simulation
             bed_simu = SimPET(cfg_copy)
             bed_simu.run()
@@ -261,42 +270,3 @@ class WholebodySimulation(object):
 
         except Exception as e:
             print(f"Error: Quantification was not performed: {e}")
-
- 
-        
-        # #Apply normalization to whole body
-        # if self.Normalization == 1 and self.joints_beds == 1 and os.path.exists(joint_beds):
-        #     factor_wholeBody = wb_tools.normalization_factor_correction_whole_body(self, joint_beds)
-
-        #     # Load reconstructed image
-        #     img = nib.load(joint_beds)
-        #     data = img.get_fdata()
-                
-        #     # Apply the factor corresponding to each bed
-        #     data_norm = data * factor_wholeBody
-                    
-        #     # Save normalizated image
-        #     recons_dir = os.path.dirname(output_dir)
-        #     recons_norm_wholeBody_file = join(output_dir, 'rec_%s_%s_norm_wholeBody.hdr' % (recons_algorithm, recons_it))
-        #     img_norm = nib.Nifti1Image(data_norm, img.affine, img.header)
-        #     nib.save(img_norm, recons_norm_wholeBody_file)
-
-        #     #Quantification
-        #     quantification_file = join(output_dir, "Quantification_data_whole_body.txt")
-            
-        #     wb_tools.total_quantification_wholeBody(mask_file, recons_norm_wholeBody_file, quantification_file)
-            
-
-        #     print("Normalization Whole Body completed")
-        # else:
-        #      print("No Normalization Whole Body completed was performed")
-
-        #wb_tools.coincidences_mask_vs_image(mask_file, act_map)
-        
-        
-
-        
-
-    
-        
-        

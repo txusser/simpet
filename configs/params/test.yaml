@@ -10,7 +10,7 @@ model_type: "cylindrical"
 patient_dirname: "test_image"
 act_map: "act.hdr"
 att_map: "att.hdr"
-output_dir: "test_image"
+output_dir: "test_image_160slices"
 center_slice: 7
 total_dose: 0.1
 simulation_time: 30

@@ -1,0 +1,38 @@
+scanner_name: "NeuroLF_scanner_final"
+simset_material: 29
+average_doi: 0.285  
+scanner_radius: 13.4
+num_rings: 48
+axial_fov: 16.318   #16.318 original
+z_crystal_size: 0.319
+transaxial_crystal_size: 0.319
+crystal_thickness: 2.5     #2.5 
+energy_resolution: 14 #revizar por que nosotros entramos un valor y reporta otro en stir_sinogram.hs :Energy_resolution := 0.0273972602739726
+num_aa_bins: 128
+num_td_bins: 256
+min_energy_window: 425
+max_energy_window: 650
+coincidence_window: 5
+numberOfSubsets: 8  
+numberOfIterations: 48 
+savingInterval: 16 
+analytical_att_correction: 0         #1 esta corrigiendo por atenuación; 0 no esta corrigiendo. Si stir_recons_att_corr: 1 entonces analytical_att_correction debe ser 0  
+stir_recons_att_corr: 1 #1              # mas novedoso #1 esta corrigiendo por atenuación; 0 no esta corrigiendo. Si analytical_att_correction:1 entonces stir_recons_att_corr debe ser 0
+analytic_scatt_corr_factor: 0.15    #falta por revisar
+stir_scatt_corr_smoothing: 0        #falta por revisar
+stir_scatt_simulation: 0            #falta por revisar
+analytic_randoms_corr_factor: 0.2   #falta por revisar
+stir_randoms_corr_smoothing: 0      #falta por revisar
+recons_type: "OSEM3D"  #OSEM3D
+inter_iteration_filter: 1           #1 se está filtrando
+subiteration_interval: 4
+x_dir_filter_FWHM: 1.45 #    1.30            #valor inicial 1.5  #rango aceptable 1.20 a 1.45
+y_dir_filter_FWHM: 1.45 #    1.30            #valor inicial 1.5 #rango aceptable 1.20 a 1.45
+z_dir_filter_FWHM: 0.60 #    0.5               #valor inicial 1.5
+psf_value: 0 
+add_noise: 0
+max_segment: 47  #47 3D   #1 PARA 2D
+zoomFactor: 1.264   #1.264
+xyOutputSize: 325
+zOutputSize: 100
+zOutputVoxelSize: 1.64 #No hace nada

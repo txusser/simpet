@@ -6,12 +6,14 @@ import time
 import numpy as np
 import nibabel as nib
 import warnings
+import math                                 
 from multiprocessing import Process
 from pathlib import Path
 from os import PathLike
 from os.path import join, dirname, abspath, exists
 import src.simset.simset_tools as simset_tools
 from utils import tools
+from utils import wb_tools  
 
 
 def read_ws_from_simset_log(simset_log: PathLike) -> float:
@@ -76,11 +78,16 @@ class SimSET_Simulation(object):
         self.s_photons = params.get("sampling_photons")
         self.photons = params.get("photons")
         self.sim_time = params.get("simulation_time")
+
         self.divisions = params.get("divisions")
 
         self.detlistmode = params.get("detlistmode")
         self.phglistmode = params.get("phglistmode")
         self.add_randoms = params.get("add_randoms")
+       
+
+       
+
 
     def run(self):
         processes = []
@@ -90,10 +97,10 @@ class SimSET_Simulation(object):
         print('Scanner: %s' % self.scanner.get("scanner_name"))
         print('Activity map: %s' % self.act_map)
         print('Attenuation map: %s' % self.att_map)
-        print('Dose: %s mCi' % self.sim_dose)
+        print('Total Dose: %s mCi' % self.sim_dose)
         print('Acquisition time: %s seconds' % self.sim_time)
         print('------------------------------------------------------------')
-
+        
         for division in range(self.divisions):
             division_dir = join(self.output_dir, "division_" + str(division))
             os.makedirs(division_dir)
@@ -225,6 +232,7 @@ class SimSET_Simulation(object):
                 w_quotient = read_ws_from_simset_log(my_log)
 
                 sim_photons = int(self.s_photons * w_quotient)
+                print(f"sim_photoms : {sim_photons}")
 
             else:
                 # If the user stated photons, the provided value will be used
@@ -551,9 +559,22 @@ class SimSET_Reconstruction(object):
         print("Starting STIR reconstruction")
 
         recons_algorithm = self.scanner.get("recons_type")
-        sinogram_stir = join(self.output_dir, "stir_sinogram.hs")
+
+        #sinogram_stir = join(self.output_dir, "stir_sinogram.hs")
+        #TODO correction for sinogram using whole FOV adquisition 
+        if self.params.get("correction_total_fov") == 1:
+            recons_dir = self.output_dir
+            print(f"Recons Dir = {recons_dir}")
+            sinogram_stir_corrected = wb_tools.total_fov_correction(self, recons_dir)
+            sinogram_stir = join(self.output_dir, sinogram_stir_corrected)
+        else:
+            sinogram_stir = join(self.output_dir, "stir_sinogram.hs")
+
+        
         additive_sino_stir = join(self.output_dir, "stir_additivesino.hs")
         att_stir = join(self.output_dir, "stir_att.hs")
+        
+
 
         if any(
             exists(i) == False for i in [sinogram_stir, additive_sino_stir, att_stir]

@@ -544,9 +544,7 @@ def reorient_dcmtonii(image_path):
     #     shutil.copy(join(path,"f"+image), image_path)
         os.remove(join(path,"c"+image))
     #     os.remove(join(path,"f"+image))
-
-    
-    
+  
 def petmr2maps(pet_image, mri_image, ct_image, log_file, spm_run, output_dir, mode="SimSET"):
         """
         It will create act and att maps from PET and MR images.
